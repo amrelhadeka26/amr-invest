@@ -21,10 +21,10 @@
 <style>
 body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 /* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: white, black, blue only. */
-:root { --paper:#ffffff; --ink:#000000; --blue:#0b5cc1; --on-blue:#ffffff; --font: Inter, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; }
+:root { --paper:#ffffff; --ink:#000000; --blue:#0b5cc1; --on-blue:#ffffff; --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; }
 :root { color-scheme: light; }
 * { box-sizing: border-box; }
-body { background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
 .wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 56px; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
 .brand { font-weight: 700; font-size: 17px; }
@@ -201,6 +201,14 @@ details.notes[open] > summary { margin-bottom: 12px; }
 .disc { font-size: 13px; margin: 16px 0 0; }
 .foot { border-top: 1px solid var(--ink); }
 .foot a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+/* Toggles: centered, equal-width options, even inset, bold brand font */
+.controls { flex-direction: column; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; }
+.apptabs { margin-top: 28px; }
+.apptabs button, .seg button { font-family: var(--font); font-weight: 700; letter-spacing: -0.01em; }
+.seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-width: 1.5px; flex-wrap: nowrap; }
+.seg button { padding: 8px 18px; }
+@media (max-width: 420px) { .seg button { padding: 8px 12px; font-size: 13.5px; } }
 </style>
 </head>
 <body>
