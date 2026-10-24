@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://invest.amrelhadeka.com/sitemap.xml

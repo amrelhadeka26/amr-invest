@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Egypt Money Compare</title>
+<meta name="description" content="Compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Money Compare">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: white, black, blue only. */
+:root { --paper:#ffffff; --ink:#000000; --blue:#0b5cc1; --on-blue:#ffffff; --font: Inter, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper:#000000; --ink:#ffffff; color-scheme: dark; } }
+:root[data-theme="dark"] { --paper:#000000; --ink:#ffffff; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 56px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+.brand { font-weight: 700; font-size: 17px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.blue { color: var(--blue); }
+h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; letter-spacing: -0.03em; margin: 8px 0 0; text-wrap: balance; }
+.lede { font-size: 18px; margin: 12px 0 0; max-width: 40em; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; margin-top: 28px; }
+.seg { display: inline-flex; border: 1px solid var(--ink); border-radius: 999px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 14px; white-space: nowrap; font-weight: 500; color: var(--ink); background: transparent; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; min-height: 40px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg.preset button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.presetnote { font-size: 13px; margin-top: 10px; max-width: 60em; }
+.grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 36px; margin-top: 24px; align-items: start; }
+@media (max-width: 420px) { .seg button { padding: 8px 12px; font-size: 13.5px; } }
+@media (max-width: 800px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.panel { border: 1px solid var(--ink); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label { font-size: 14px; font-weight: 600; }
+.inp { display: flex; align-items: center; border: 1px solid var(--ink); border-radius: 10px; background: var(--paper); }
+.inp input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 17px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
+.inp span { padding: 0 12px; font-size: 13px; font-weight: 600; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { font: inherit; font-size: 12.5px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.yearsrow { display: flex; align-items: center; gap: 12px; }
+.yearsrow input { flex: 1; accent-color: var(--blue); }
+.yearsrow output { font-weight: 700; font-size: 17px; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.adv-only { display: none; }
+body.adv .adv-only { display: block; }
+body.adv .easy-only { display: none; }
+details.sect { border-top: 1px solid var(--ink); padding-top: 14px; }
+details.sect summary { cursor: pointer; font-weight: 600; font-size: 14px; list-style: none; display: flex; justify-content: space-between; }
+details.sect summary::after { content: "+"; } details.sect[open] summary::after { content: "−"; }
+.atable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12.5px; }
+.atable th { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; text-align: right; padding: 0 0 6px 4px; }
+.atable th:first-child, .atable td:first-child { text-align: left; padding-left: 0; }
+.atable td { padding: 4px 0 4px 4px; vertical-align: middle; }
+.atable input { width: 100%; min-width: 0; border: 1px solid var(--ink); border-radius: 6px; background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; padding: 5px 4px; text-align: right; font-variant-numeric: tabular-nums; }
+.small { font-size: 12px; line-height: 1.45; }
+.results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.cards { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 520px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+.card { border-radius: 18px; padding: 20px; }
+.card.k { background: var(--ink); color: var(--paper); }
+.card.b { background: var(--blue); color: var(--on-blue); }
+.card .big { font-size: clamp(24px, 4.4vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.card p { margin: 6px 0 0; font-size: 13.5px; }
+.list { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+.item { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--ink); }
+@media (max-width: 520px) { .item { grid-template-columns: minmax(0, 1fr) auto; } .item .barwrap { grid-column: 1 / -1; grid-row: 2; } }
+.item .nm { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+.item .nm small { display: block; font-weight: 400; font-size: 12px; }
+.barwrap { position: relative; height: 22px; }
+.barwrap .bar { position: absolute; left: 0; top: 4px; height: 14px; border-radius: 4px; background: var(--ink); transition: width .35s ease; }
+.barwrap .bar.best { background: var(--blue); }
+.barwrap .ref { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--ink); }
+.item .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; white-space: nowrap; }
+.item .v small { display: block; font-weight: 400; font-size: 11.5px; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-top: 4px; border: 1px solid var(--ink); }
+.tag.up { background: var(--blue); color: var(--on-blue); border-color: var(--blue); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px; }
+.legend .dash { display: inline-block; width: 18px; border-top: 2px dashed var(--ink); vertical-align: middle; margin-right: 6px; }
+.legend .sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; background: var(--blue); vertical-align: middle; margin-right: 6px; }
+.legend .swk { background: var(--ink); }
+.chartbox { border: 1px solid var(--ink); border-radius: 18px; padding: 16px 12px 8px; }
+.chartbox svg { width: 100%; height: auto; display: block; }
+.tablewrap { overflow-x: auto; border-top: 2px solid var(--ink); }
+.rt { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; min-width: 640px; }
+.rt th { text-align: right; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; padding: 10px 0 8px 10px; border-bottom: 1px solid var(--ink); }
+.rt th:first-child, .rt td:first-child { text-align: left; padding-left: 0; }
+.rt td { text-align: right; padding: 10px 0 10px 10px; border-bottom: 1px solid var(--ink); }
+.rt td.gain { color: var(--blue); font-weight: 700; }
+.notes { font-size: 13px; line-height: 1.6; margin-top: 28px; }
+.notes p { margin: 0 0 10px; max-width: 64em; }
+.notes a { color: var(--blue); }
+.foot { margin-top: 32px; padding-top: 14px; border-top: 2px solid var(--ink); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+
+
+[hidden] { display: none !important; }
+.apptabs { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.apptabs button { font: inherit; font-size: 16px; font-weight: 600; padding: 14px 10px; border: 0; background: var(--paper); color: var(--ink); cursor: pointer; min-height: 52px; }
+.apptabs button + button { border-left: 2px solid var(--ink); }
+.apptabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.pf { margin-top: 0; border-top: 0; padding-top: 0; min-width: 0; }
+.pf .pfgrid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.pf .pfgrid { grid-template-columns: minmax(0, 1fr) !important; }
+body.ptab .mode-only { display: none; }
+/* Portfolio builder */
+
+.pf h2 { font-size: clamp(24px, 4vw, 32px); line-height: 1.1; letter-spacing: -0.02em; margin: 6px 0 0; }
+.pf .sub { margin: 8px 0 0; font-size: 15px; max-width: 46em; }
+.pfgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; margin-top: 20px; align-items: start; }
+@media (max-width: 800px) { .pfgrid { grid-template-columns: minmax(0, 1fr); } }
+.mixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.mixes button { font: inherit; font-size: 13.5px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 7px 14px; cursor: pointer; min-height: 38px; }
+.mixes button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.stack { display: flex; height: 26px; border-radius: 6px; overflow: hidden; border: 1px solid var(--ink); margin-top: 18px; }
+.stack div { height: 100%; transition: width .3s ease; border-right: 2px solid var(--paper); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--paper); overflow: hidden; white-space: nowrap; }
+.stack div:last-child { border-right: 0; }
+.psw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--ink); vertical-align: -2px; margin-right: 8px; flex-shrink: 0; }
+.f-cd { background: var(--ink); }
+.f-egx { background: var(--blue); }
+.f-us { background: repeating-linear-gradient(45deg, var(--blue) 0 3px, var(--paper) 3px 6px); }
+.f-gold { background: repeating-linear-gradient(45deg, var(--ink) 0 3px, var(--paper) 3px 6px); }
+.f-re { background: repeating-linear-gradient(0deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
+.f-cash { background: var(--paper); }
+.stack .f-us, .stack .f-gold, .stack .f-re, .stack .f-cash { color: transparent; }
+.sliders { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 4px 12px; align-items: center; }
+.srow label { font-size: 14.5px; font-weight: 600; display: flex; align-items: center; }
+.srow output { text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.srow input { grid-column: 1 / -1; width: 100%; accent-color: var(--blue); }
+.total100 { margin-top: 14px; font-size: 13.5px; display: flex; justify-content: space-between; border-top: 1px solid var(--ink); padding-top: 10px; }
+.pfres { display: flex; flex-direction: column; gap: 12px; }
+.pfrows { border-top: 2px solid var(--ink); }
+.pfrow { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.pfrow b { font-weight: 700; }
+.pfrow .gain { color: var(--blue); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .stack div { transition: none; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top"><span class="brand">Amr El Hadeka</span><span class="eyebrow">Money tools · Egypt</span></header>
+
+  <p class="eyebrow blue" style="margin-top:28px">Egypt Money Compare</p>
+  <h1>Where could your money grow faster than prices?</h1>
+  <p class="lede">Compare a bank certificate, the EGX, US stocks, gold, property and cash, in Egyptian pounds and in today's money.</p>
+
+  <nav class="apptabs" role="tablist" aria-label="Tools">
+    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Compare</button>
+    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Build a portfolio</button>
+  </nav>
+  <div class="controls">
+    <div class="seg mode-only" role="group" aria-label="View">
+      <button type="button" id="m-easy" aria-pressed="true">Easy</button>
+      <button type="button" id="m-adv" aria-pressed="false">Advanced</button>
+    </div>
+    <div class="seg preset" role="group" aria-label="Scenario">
+      <button type="button" data-p="cautious" aria-pressed="false">Cautious</button>
+      <button type="button" data-p="balanced" aria-pressed="true">Balanced</button>
+      <button type="button" data-p="past" aria-pressed="false">Last 10 years</button>
+    </div>
+  </div>
+  <p class="presetnote" id="presetNote"></p>
+
+  <div class="grid">
+    <form class="panel" onsubmit="return false" aria-label="Your numbers">
+      <div class="field">
+        <label for="start">I have now</label>
+        <div class="inp"><input id="start" inputmode="numeric"><span>EGP</span></div>
+        <div class="quick" data-for="start"><button type="button" data-v="0">0</button><button type="button" data-v="50000">50K</button><button type="button" data-v="100000">100K</button><button type="button" data-v="500000">500K</button><button type="button" data-v="1000000">1M</button></div>
+      </div>
+      <div class="field">
+        <label for="monthly">I can add every month</label>
+        <div class="inp"><input id="monthly" inputmode="numeric"><span>EGP</span></div>
+        <div class="quick" data-for="monthly"><button type="button" data-v="1000">1K</button><button type="button" data-v="3000">3K</button><button type="button" data-v="5000">5K</button><button type="button" data-v="10000">10K</button></div>
+      </div>
+      <div class="field">
+        <label for="years">For</label>
+        <div class="yearsrow"><input type="range" id="years" min="1" max="25" step="1"><output id="yearsOut" for="years"></output></div>
+      </div>
+
+      <div class="adv-only">
+        <div class="field" style="margin-bottom:14px">
+          <label for="raise">Raise my monthly amount each year by</label>
+          <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
+        </div>
+        <div class="field">
+          <label for="infl">Inflation, yearly</label>
+          <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
+          <span class="small">Latest: 13.9% (Sept 2026)</span>
+        </div>
+
+        <details class="sect" open style="margin-top:16px">
+          <summary>Returns, yearly</summary>
+          <table class="atable">
+            <tbody>
+              <tr><td>Certificate, first 3 years</td><td><input id="cd1" inputmode="decimal" aria-label="Certificate rate first 3 years"></td><td>%</td></tr>
+              <tr><td>Certificate, after renewal</td><td><input id="cd2" inputmode="decimal" aria-label="Certificate rate after renewal"></td><td>%</td></tr>
+              <tr><td>EGX30, with dividends</td><td><input id="egx" inputmode="decimal" aria-label="EGX return"></td><td>%</td></tr>
+              <tr><td>US stocks, in USD</td><td><input id="us" inputmode="decimal" aria-label="US stocks return in USD"></td><td>%</td></tr>
+              <tr><td>Gold, in USD</td><td><input id="gold" inputmode="decimal" aria-label="Gold return in USD"></td><td>%</td></tr>
+              <tr><td>Pound's fall vs USD</td><td><input id="fx" inputmode="decimal" aria-label="Yearly fall of the pound"></td><td>%</td></tr>
+              <tr><td>Property price growth</td><td><input id="re" inputmode="decimal" aria-label="Property price growth"></td><td>%</td></tr>
+              <tr><td>Rent, after costs</td><td><input id="rent" inputmode="decimal" aria-label="Net rental yield"></td><td>%</td></tr>
+            </tbody>
+          </table>
+        </details>
+
+        <details class="sect" style="margin-top:14px">
+          <summary>Costs and taxes</summary>
+          <table class="atable">
+            <thead><tr><th>Option</th><th>Buy</th><th>Sell</th><th>Yearly</th></tr></thead>
+            <tbody>
+              <tr><td>Certificate</td><td><input id="c_cd_b" aria-label="Certificate buy cost"></td><td><input id="c_cd_s" aria-label="Certificate sell cost"></td><td><input id="c_cd_y" aria-label="Certificate yearly cost"></td></tr>
+              <tr><td>EGX30</td><td><input id="c_egx_b" aria-label="EGX buy cost"></td><td><input id="c_egx_s" aria-label="EGX sell cost"></td><td><input id="c_egx_y" aria-label="EGX yearly cost"></td></tr>
+              <tr><td>US stocks</td><td><input id="c_us_b" aria-label="US buy cost"></td><td><input id="c_us_s" aria-label="US sell cost"></td><td><input id="c_us_y" aria-label="US yearly cost"></td></tr>
+              <tr><td>Gold</td><td><input id="c_gold_b" aria-label="Gold buy cost"></td><td><input id="c_gold_s" aria-label="Gold sell cost"></td><td><input id="c_gold_y" aria-label="Gold yearly cost"></td></tr>
+              <tr><td>Property</td><td><input id="c_re_b" aria-label="Property buy cost"></td><td><input id="c_re_s" aria-label="Property sell cost"></td><td><input id="c_re_y" aria-label="Property yearly cost"></td></tr>
+            </tbody>
+          </table>
+          <p class="small" style="margin-top:10px">All in %. Buy = paid on every amount you put in. Sell = paid once at the end. Yearly = taken off the return each year (taxes on dividends, fees, maintenance).</p>
+        </details>
+      </div>
+
+      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-start">Reset</button>
+    </form>
+
+    <section class="results" id="tab-compare" aria-live="polite">
+      <div class="cards">
+        <div class="card b"><span class="eyebrow">Grows the most</span><div class="big" id="bestVal">—</div><p id="bestTxt">—</p></div>
+        <div class="card k"><span class="eyebrow">Needed to keep up with prices</span><div class="big" id="keepVal">—</div><p id="keepTxt">—</p></div>
+      </div>
+
+      <div class="legend" aria-hidden="true"><span><i class="sw"></i>Grows the most</span><span><i class="sw swk"></i>Others</span><span><i class="dash"></i>Keep up with prices</span></div>
+      <div class="list" id="list"></div>
+
+      <div class="adv-only">
+        <p class="eyebrow" style="margin:6px 0 8px">Year by year, value in EGP</p>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Value of each option over time"></svg></div>
+      </div>
+
+      <div class="adv-only tablewrap">
+        <table class="rt">
+          <caption class="sr">Detailed results</caption>
+          <thead><tr><th>Option</th><th>Net yearly, EGP</th><th>Value in EGP</th><th>In today's money</th><th>Beyond inflation*</th><th>Worst year on record</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <p class="small" style="margin-top:8px">*More (or less) than you need to keep up with prices, in today's money, after costs.</p>
+      </div>
+    </section>
+  <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
+    <p class="eyebrow blue">Portfolio builder</p>
+    <h2 id="pf-title">Mix your money.</h2>
+    <p class="sub">Split your amounts across the six options. Move one slider and the others adjust, so the total always stays at 100%.</p>
+    <div class="mixes" role="group" aria-label="Example mixes">
+      <button type="button" data-mix="safe">Mostly safe</button>
+      <button type="button" data-mix="balanced" aria-pressed="true">Balanced</button>
+      <button type="button" data-mix="growth">Growth</button>
+      <button type="button" data-mix="dollar">Dollar-heavy</button>
+    </div>
+    <p class="small" style="margin-top:8px">Example mixes for learning, not a recommendation for you.</p>
+    <div class="pfgrid">
+      <div>
+        <div class="stack" id="pfStack" aria-hidden="true"></div>
+        <div class="sliders" id="pfSliders"></div>
+        <div class="total100"><span>Total</span><b id="pfTotal">100%</b></div>
+      </div>
+      <div class="pfres" aria-live="polite">
+        <div class="cards" style="grid-template-columns:minmax(0,1fr)">
+          <div class="card b"><span class="eyebrow">Your portfolio could grow to</span><div class="big" id="pfVal">—</div><p id="pfTxt">—</p></div>
+        </div>
+        <div class="pfrows" id="pfRows"></div>
+        <p class="small" id="pfRisk"></p>
+      </div>
+    </div>
+  </section>
+  </div>
+
+
+
+
+  <div class="notes">
+    <p><b>Where the scenarios come from.</b> <b>Last 10 years</b> uses what actually happened: EGX30 rose 12.8% a year on price alone from end-2014 to end-2024, plus dividends (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">EGX30 yearly returns</a>). The S&amp;P 500 returned 14.8% a year in dollars, 2016–2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). 21K gold rose from 287.62 EGP a gram in April 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">Amwal Al Ghad</a>) to about 6,217 today (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>, 24K × 21/24), about 25.6% a year in pounds, which splits into about 7.6% for gold in dollars and 16.7% for the pound's fall. Property prices rose about 12.2% a year in the Aqarmap index years 2014–2024 shown by <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>, with gross rental yields of 6.7% nationally. <b>Balanced</b> and <b>Cautious</b> are lower, forward-looking guesses, because the last decade included two large devaluations.</p>
+    <p><b>Today's rates.</b> Inflation 13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS via Daily News Egypt</a>). 3-year fixed certificates about 17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise, Aug 2026</a>); the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: 55.31 EGP (<a href="https://www.poundsterlinglive.com/history/USD-EGP-2026" target="_blank" rel="noopener">23 Oct 2026</a>). Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
+    <p><b>Worst year on record</b> shows how hard each option has fallen in a single year: EGX30 −49.3% in 2011, property −9.6% in 2020 (Aqarmap), and the widely reported S&amp;P 500 −37% in 2008 and gold −28% in 2013 (in USD). Property also needs a large amount up front and can take months to sell. Certificates are the only fixed rate, and only until they mature.</p>
+    <p>Illustration only, not a prediction and not personal financial advice. Checked 24 October 2026.</p>
+  </div>
+
+  <footer class="foot"><span><b>Amr El Hadeka</b> · invest.amrelhadeka.com</span><span>Money notes, once a month</span></footer>
+</div>
+
+<script>
+(function () {
+  const PRESETS = {
+    cautious: { note: 'Cautious: lower returns and a slower fall of the pound than recent years.', cd1: 17.75, cd2: 12, egx: 12, us: 7, gold: 3, fx: 4, re: 9, rent: 4.5 },
+    balanced: { note: 'Balanced: a middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
+    past: { note: 'Last 10 years: what each option actually returned recently, including two big devaluations. The future may be calmer.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
+  };
+  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9,
+    c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
+    c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
+  const WORST = { cd: '0% (fixed)', egx: '−49.3% (2011)', us: '−37% (2008, USD)', gold: '−28% (2013, USD)', re: '−9.6% (2020)', cash: 'Never grows' };
+  const RATE_KEYS = ['cd1','cd2','egx','us','gold','fx','re','rent'];
+  const ALL = Object.keys(BASE).concat(RATE_KEYS);
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2) + 'M' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + 'K' : fmt(n);
+  const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
+  let state = { mode: 'easy', preset: 'balanced' };
+
+  function setVal(k, v) { const el = $(k); if (!el) return; el.value = (k === 'start' || k === 'monthly') ? fmt(v) : v; }
+  function applyPreset(p) { state.preset = p; const P = PRESETS[p]; RATE_KEYS.forEach(k => setVal(k, P[k])); document.querySelectorAll('.preset button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === p ? 'true' : 'false')); $('presetNote').textContent = P.note; }
+  function setMode(m) { state.mode = m; document.body.classList.toggle('adv', m === 'adv'); $('m-easy').setAttribute('aria-pressed', m === 'easy'); $('m-adv').setAttribute('aria-pressed', m === 'adv'); }
+
+  function load() {
+    let s = null; try { s = JSON.parse(localStorage.getItem('emc-v2') || 'null'); } catch (e) {}
+    Object.keys(BASE).forEach(k => setVal(k, s && s.v && s.v[k] != null ? s.v[k] : BASE[k]));
+    applyPreset(s && PRESETS[s.preset] ? s.preset : 'balanced');
+    if (s && s.v && s.custom) RATE_KEYS.forEach(k => { if (s.v[k] != null) setVal(k, s.v[k]); });
+    setMode(s && s.mode === 'adv' ? 'adv' : 'easy');
+  }
+  function save(v, custom) { try { localStorage.setItem('emc-v2', JSON.stringify({ v, preset: state.preset, mode: state.mode, custom })); } catch (e) {} }
+
+  // Monthly simulation. Returns yearly values (index 0 = start) and the final value after sell costs.
+  function sim(o, v) {
+    const months = v.years * 12, path = [];
+    let val = v.start * (1 - o.buy / 100), dep = v.monthly;
+    path.push(v.start);
+    for (let m = 1; m <= months; m++) {
+      const yr = o.rate(m);
+      const r = Math.pow(1 + (yr - o.yearly) / 100, 1 / 12) - 1;
+      val = val * (1 + r) + dep * (1 - o.buy / 100);
+      if (m % 12 === 0) { path.push(val * (1 - o.sell / 100)); dep *= 1 + v.raise / 100; }
+    }
+    return { path, final: val * (1 - o.sell / 100) };
+  }
+  function keepUp(v) {
+    const months = v.years * 12, r = Math.pow(1 + v.infl / 100, 1 / 12) - 1, path = [v.start];
+    let val = v.start, dep = v.monthly, put = v.start;
+    for (let m = 1; m <= months; m++) { val = val * (1 + r) + dep; put += dep; if (m % 12 === 0) { path.push(val); dep *= 1 + v.raise / 100; } }
+    return { path, final: val, put };
+  }
+
+  function calc() {
+    const v = {}; ALL.forEach(k => v[k] = num($(k).value));
+    v.years = Math.max(1, Math.min(25, Math.round(v.years)));
+    if (state.mode === 'easy') { v.raise = 0; }
+    $('yearsOut').textContent = v.years + (v.years === 1 ? ' year' : ' years');
+    const P = PRESETS[state.preset];
+    const custom = RATE_KEYS.some(k => Math.abs(v[k] - P[k]) > 1e-9);
+    save(v, custom);
+    const usd = r => ((1 + r / 100) * (1 + v.fx / 100) - 1) * 100;
+    const opts = [
+      { key: 'cd', name: 'Bank certificate', sub: 'Fixed for 3 years, then renewed', rate: m => m <= 36 ? v.cd1 : v.cd2, buy: v.c_cd_b, sell: v.c_cd_s, yearly: v.c_cd_y },
+      { key: 'egx', name: 'EGX30 stocks', sub: 'Egypt\'s top 30 companies', rate: () => v.egx, buy: v.c_egx_b, sell: v.c_egx_s, yearly: v.c_egx_y },
+      { key: 'us', name: 'US stocks', sub: 'S&P 500, counted in EGP', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
+      { key: 'gold', name: 'Gold', sub: 'Counted in EGP', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
+      { key: 're', name: 'Property', sub: 'Price growth + rent', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
+      { key: 'cash', name: 'Cash at home', sub: 'Under the mattress', rate: () => 0, buy: 0, sell: 0, yearly: 0 }
+    ];
+    if (state.mode === 'easy') opts.forEach(o => { if (o.key !== 'cash') { o.buy = BASE['c_' + o.key + '_b']; o.sell = BASE['c_' + o.key + '_s']; o.yearly = BASE['c_' + o.key + '_y']; } });
+    const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
+    opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
+    // effective net yearly rate (after costs) via bisection on a cost-free sim
+    opts.forEach(o => { let lo = -50, hi = 80; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
+    opts.sort((a, b) => b.value - a.value);
+    const best = opts[0];
+
+    $('bestVal').textContent = fmt(best.value) + ' EGP';
+    $('bestTxt').textContent = best.name + ', after costs. Worth ' + fmt(best.real) + ' EGP in today\'s money.';
+    $('keepVal').textContent = fmt(K.final) + ' EGP';
+    $('keepTxt').textContent = 'You put in ' + fmt(K.put) + ' EGP. At ' + v.infl + '% inflation, this is what it must reach to buy the same things.';
+
+    const max = Math.max(...opts.map(o => o.value), K.final) * 1.04;
+    $('list').innerHTML = opts.map((o, i) => {
+      const beats = o.value >= K.final;
+      return '<div class="item"><div class="nm">' + o.name + '<small>' + o.sub + '</small><span class="tag' + (beats ? ' up' : '') + '">' + (beats ? 'Beats inflation' : 'Loses to inflation') + '</span></div>' +
+        '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (o.value / max * 100) + '%"></div><div class="ref" style="left:' + (K.final / max * 100) + '%"></div></div>' +
+        '<div class="v">' + compact(o.value) + '<small>' + compact(o.real) + ' today</small></div></div>';
+    }).join('');
+
+    $('tbody').innerHTML = opts.map(o =>
+      '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(o.value) + '</td><td>' + fmt(o.real) + '</td>' +
+      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '">' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(o.beyond)) + '</td><td>' + WORST[o.key] + '</td></tr>').join('');
+
+    drawChart(opts, K, v);
+    renderPortfolio(opts, K, v);
+  }
+
+  function drawChart(opts, K, v) {
+    const W = 640, H = 300, L = 56, R = 130, T = 16, B = 34;
+    const yMax = Math.max(...opts.map(o => Math.max(...o.path)), Math.max(...K.path)) * 1.05;
+    const X = i => L + (W - L - R) * i / v.years, Y = val => T + (H - T - B) * (1 - val / yMax);
+    const step = Math.pow(10, Math.floor(Math.log10(yMax / 4))), nice = [1, 2, 2.5, 5, 10].map(s => s * step).find(s => yMax / s <= 5) || step * 10;
+    let g = '';
+    for (let t = 0; t <= yMax; t += nice) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="currentColor" stroke-opacity=".15"/><text x="' + (L - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end" font-size="11" fill="currentColor">' + compact(t) + '</text>';
+    const xs = v.years <= 10 ? 1 : v.years <= 20 ? 2 : 5;
+    for (let i = 0; i <= v.years; i += xs) g += '<text x="' + X(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="currentColor">' + (i === 0 ? 'Now' : 'Yr ' + i) + '</text>';
+    const line = (p, attrs) => '<polyline fill="none" points="' + p.map((val, i) => X(i).toFixed(1) + ',' + Y(val).toFixed(1)).join(' ') + '" ' + attrs + '/>';
+    g += line(K.path, 'stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"');
+    opts.slice().reverse().forEach((o, idx) => { const best = o === opts[0]; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
+    // end labels, spaced apart
+    const labels = opts.map((o, i) => ({ t: o.name + ' ' + compact(o.value), y: Y(o.value), best: i === 0 })).concat([{ t: 'Keep up ' + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
+    const over = labels.length ? labels[labels.length - 1].y - (H - B) : 0; if (over > 0) labels.forEach(l => l.y -= over);
+    labels.forEach(l => g += '<text x="' + (W - R + 8) + '" y="' + (l.y + 4) + '" font-size="11" font-weight="' + (l.best ? 700 : 500) + '" fill="' + (l.best ? 'var(--blue)' : 'currentColor') + '">' + l.t + '</text>');
+    $('chart').innerHTML = g;
+    $('chart').style.color = 'var(--ink)';
+  }
+
+  document.querySelectorAll('.quick[data-for] button').forEach(b => b.addEventListener('click', () => { setVal(b.parentNode.dataset.for, num(b.dataset.v)); calc(); }));
+  document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); }));
+  $('m-easy').addEventListener('click', () => { setMode('easy'); calc(); });
+  $('m-adv').addEventListener('click', () => { setMode('adv'); calc(); });
+  ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
+  ALL.forEach(k => { const el = $(k); if (el) el.addEventListener('input', calc); });
+  $('reset').addEventListener('click', () => { try { localStorage.removeItem('emc-v2'); } catch (e) {} Object.keys(BASE).forEach(k => setVal(k, BASE[k])); applyPreset('balanced'); try { localStorage.removeItem('emc-pf'); } catch (e) {} pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; calc(); pfRender(); });
+
+  // ---------- Portfolio builder ----------
+  const PF_KEYS = ['egx', 'us', 'gold', 'cd', 're', 'cash'];
+  const PF_NAMES = { egx: 'EGX30 stocks', us: 'US stocks', gold: 'Gold', cd: 'Bank certificate', re: 'Property', cash: 'Cash' };
+  const PF_WORST = { egx: -49.3, us: -37, gold: -28, cd: 0, re: -9.6, cash: 0 };
+  const MIXES = {
+    safe: { cd: 50, egx: 15, us: 10, gold: 15, re: 0, cash: 10 },
+    balanced: { cd: 20, egx: 30, us: 25, gold: 15, re: 10, cash: 0 },
+    growth: { cd: 5, egx: 40, us: 40, gold: 10, re: 5, cash: 0 },
+    dollar: { cd: 10, egx: 15, us: 50, gold: 25, re: 0, cash: 0 }
+  };
+  let pf = Object.assign({}, MIXES.balanced), pfMix = 'balanced';
+  try { const sv = JSON.parse(localStorage.getItem('emc-pf') || 'null'); if (sv && sv.w) { pf = sv.w; pfMix = sv.mix || ''; } } catch (e) {}
+  let lastOpts = null, lastK = null, lastV = null;
+
+  function pfBuild() {
+    $('pfSliders').innerHTML = PF_KEYS.map(k => '<div class="srow"><label for="pf_' + k + '"><i class="psw f-' + k + '"></i>' + PF_NAMES[k] + '</label><output id="pfo_' + k + '" for="pf_' + k + '"></output><input type="range" id="pf_' + k + '" min="0" max="100" step="1"></div>').join('');
+    PF_KEYS.forEach(k => $('pf_' + k).addEventListener('input', e => pfSet(k, +e.target.value)));
+  }
+  function pfSet(k, val) {
+    val = Math.max(0, Math.min(100, Math.round(val)));
+    const others = PF_KEYS.filter(x => x !== k), rest = 100 - val, sum = others.reduce((a, x) => a + pf[x], 0);
+    pf[k] = val;
+    if (sum > 0) others.forEach(x => pf[x] = Math.floor(pf[x] * rest / sum));
+    else others.forEach((x, i) => pf[x] = i === 0 ? rest : 0);
+    let diff = 100 - PF_KEYS.reduce((a, x) => a + pf[x], 0);
+    const order = others.slice().sort((a, b) => pf[b] - pf[a]);
+    for (let i = 0; diff > 0; i = (i + 1) % order.length) { pf[order[i]]++; diff--; }
+    pfMix = '';
+    pfRender();
+  }
+  function pfRender() {
+    document.querySelectorAll('.mixes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mix === pfMix ? 'true' : 'false'));
+    PF_KEYS.forEach(k => { $('pf_' + k).value = pf[k]; $('pfo_' + k).textContent = pf[k] + '%'; });
+    $('pfStack').innerHTML = PF_KEYS.filter(k => pf[k] > 0).map(k => '<div class="f-' + k + '" style="width:' + pf[k] + '%">' + (pf[k] >= 10 ? pf[k] + '%' : '') + '</div>').join('');
+    $('pfTotal').textContent = PF_KEYS.reduce((a, x) => a + pf[x], 0) + '%';
+    try { localStorage.setItem('emc-pf', JSON.stringify({ w: pf, mix: pfMix })); } catch (e) {}
+    if (lastOpts) renderPortfolio(lastOpts, lastK, lastV);
+  }
+  function renderPortfolio(opts, K, v) {
+    lastOpts = opts; lastK = K; lastV = v;
+    const byKey = {}; opts.forEach(o => byKey[o.key] = o);
+    const deflate = Math.pow(1 + v.infl / 100, v.years);
+    let total = 0, put = 0; const parts = [];
+    PF_KEYS.forEach(k => {
+      const w = pf[k] / 100; if (w <= 0) return;
+      const vv = Object.assign({}, v, { start: v.start * w, monthly: v.monthly * w });
+      const r = sim(byKey[k], vv).final; total += r;
+      parts.push({ k, w, value: r });
+    });
+    const beyond = (total - K.final) / deflate, beats = total >= K.final;
+    $('pfVal').textContent = fmt(total) + ' EGP';
+    $('pfTxt').textContent = 'Worth ' + fmt(total / deflate) + ' EGP in today\'s money, after costs. ' + (beats ? 'Beats' : 'Loses to') + ' inflation by ' + fmt(Math.abs(beyond)) + ' EGP in today\'s money.';
+    const best = opts[0];
+    const rows = parts.sort((a, b) => b.value - a.value).map(p => '<div class="pfrow"><span><i class="psw f-' + p.k + '"></i>' + PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%</span><b>' + fmt(p.value) + '</b></div>');
+    rows.push('<div class="pfrow"><span>Needed to keep up with prices</span><b>' + fmt(K.final) + '</b></div>');
+    rows.push('<div class="pfrow"><span>All in the top single option (' + best.name + ')</span><b>' + fmt(best.value) + '</b></div>');
+    $('pfRows').innerHTML = rows.join('');
+    const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
+    const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
+    $('pfRisk').textContent = 'Spread: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' of 6 options, biggest share ' + pf[big] + '% in ' + PF_NAMES[big] + '. If every part had its worst year on record at the same time (rough and unlikely), the mix would fall about ' + Math.abs(worst).toFixed(0) + '% that year. A single all-in choice is simpler but carries all of one option\'s risk.';
+  }
+  document.querySelectorAll('.mixes button').forEach(b => b.addEventListener('click', () => { pf = Object.assign({}, MIXES[b.dataset.mix]); pfMix = b.dataset.mix; pfRender(); }));
+  pfBuild();
+
+  // ---------- Tabs ----------
+  function setTab(t) {
+    const port = t === 'portfolio';
+    $('tab-compare').hidden = port; $('tab-portfolio').hidden = !port;
+    $('t-compare').setAttribute('aria-selected', !port); $('t-portfolio').setAttribute('aria-selected', port);
+    document.body.classList.toggle('ptab', port);
+    try { localStorage.setItem('emc-tab', t); } catch (e) {}
+  }
+  $('t-compare').addEventListener('click', () => setTab('compare'));
+  $('t-portfolio').addEventListener('click', () => setTab('portfolio'));
+  let startTab = 'compare';
+  try { startTab = localStorage.getItem('emc-tab') || 'compare'; } catch (e) {}
+  if (location.hash === '#portfolio') startTab = 'portfolio';
+  if (location.hash === '#compare') startTab = 'compare';
+  setTab(startTab);
+  load(); calc(); pfRender();
+})();
+</script>
+<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>
+</body>
+</html>
