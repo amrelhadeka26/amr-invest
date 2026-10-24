@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grow · Investment calculator | Amr El Hadeka</title>
-<meta name="description" content="Grow: a free investment calculator for Egypt. Compare bank certificates, EGX stocks, US stocks, gold and property after inflation, and build your own portfolio.">
-<meta name="theme-color" content="#ffffff">
 <link rel="canonical" href="https://invest.amrelhadeka.com/calculator/">
 <meta property="og:title" content="Grow · Investment calculator">
-<meta property="og:description" content="Where could your money grow faster than prices? Compare and build a portfolio, in Egyptian pounds.">
 <meta property="og:image" content="https://invest.amrelhadeka.com/assets/og.jpg">
+<meta name="description" content="Compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.">
+<meta name="theme-color" content="#ffffff">
+<meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -19,295 +19,476 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Grow · Investment calculator. Mobile-app layout: large title, grouped cards, bottom tab bar, bottom sheet. Brand: white, black, blue only. */
-:root {
-  --bg: #ffffff; --card: #ffffff; --ink: #000000; --blue: #0b5cc1; --on-blue: #ffffff; --line: #000000;
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Helvetica Neue", Arial, sans-serif;
-  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, "Helvetica Neue", Arial, sans-serif;
-  --r: 18px; --tab-h: 64px;
-}
-@media (prefers-color-scheme: dark) { :root { --bg: #000000; --card: #000000; --ink: #ffffff; --line: #ffffff; color-scheme: dark; } }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: white, black, blue only. */
+:root { --paper:#ffffff; --ink:#000000; --blue:#0b5cc1; --on-blue:#ffffff; --font: Inter, -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; }
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 56px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+.brand { font-weight: 700; font-size: 17px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.blue { color: var(--blue); }
+h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; letter-spacing: -0.03em; margin: 8px 0 0; text-wrap: balance; }
+.lede { font-size: 18px; margin: 12px 0 0; max-width: 40em; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; margin-top: 28px; }
+.seg { display: inline-flex; border: 1px solid var(--ink); border-radius: 999px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 14px; white-space: nowrap; font-weight: 500; color: var(--ink); background: transparent; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; min-height: 40px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg.preset button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.presetnote { font-size: 13px; margin-top: 10px; max-width: 60em; }
+.grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 36px; margin-top: 24px; align-items: start; }
+@media (max-width: 420px) { .seg button { padding: 8px 12px; font-size: 13.5px; } }
+@media (max-width: 800px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.panel { border: 1px solid var(--ink); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label { font-size: 14px; font-weight: 600; }
+.inp { display: flex; align-items: center; border: 1px solid var(--ink); border-radius: 10px; background: var(--paper); }
+.inp input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 17px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
+.inp span { padding: 0 12px; font-size: 13px; font-weight: 600; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { font: inherit; font-size: 12.5px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.yearsrow { display: flex; align-items: center; gap: 12px; }
+.yearsrow input { flex: 1; accent-color: var(--blue); }
+.yearsrow output { font-weight: 700; font-size: 17px; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.adv-only { display: none; }
+body.adv .adv-only { display: block; }
+body.adv .easy-only { display: none; }
+details.sect { border-top: 1px solid var(--ink); padding-top: 14px; }
+details.sect summary { cursor: pointer; font-weight: 600; font-size: 14px; list-style: none; display: flex; justify-content: space-between; }
+details.sect summary::after { content: "+"; } details.sect[open] summary::after { content: "−"; }
+.atable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12.5px; }
+.atable th { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; text-align: right; padding: 0 0 6px 4px; }
+.atable th:first-child, .atable td:first-child { text-align: left; padding-left: 0; }
+.atable td { padding: 4px 0 4px 4px; vertical-align: middle; }
+.atable input { width: 100%; min-width: 0; border: 1px solid var(--ink); border-radius: 6px; background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; padding: 5px 4px; text-align: right; font-variant-numeric: tabular-nums; }
+.small { font-size: 12px; line-height: 1.45; }
+.results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.cards { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 520px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+.card { border-radius: 18px; padding: 20px; }
+.card.k { background: var(--ink); color: var(--paper); }
+.card.b { background: var(--blue); color: var(--on-blue); }
+.card .big { font-size: clamp(24px, 4.4vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.card p { margin: 6px 0 0; font-size: 13.5px; }
+.list { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+.item { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--ink); }
+@media (max-width: 520px) { .item { grid-template-columns: minmax(0, 1fr) auto; } .item .barwrap { grid-column: 1 / -1; grid-row: 2; } }
+.item .nm { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+.item .nm small { display: block; font-weight: 400; font-size: 12px; }
+.barwrap { position: relative; height: 22px; }
+.barwrap .bar { position: absolute; left: 0; top: 4px; height: 14px; border-radius: 4px; background: var(--ink); transition: width .35s ease; }
+.barwrap .bar.best { background: var(--blue); }
+.barwrap .ref { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--ink); }
+.item .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; white-space: nowrap; }
+.item .v small { display: block; font-weight: 400; font-size: 11.5px; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-top: 4px; border: 1px solid var(--ink); }
+.tag.up { background: var(--blue); color: var(--on-blue); border-color: var(--blue); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px; }
+.legend .dash { display: inline-block; width: 18px; border-top: 2px dashed var(--ink); vertical-align: middle; margin-right: 6px; }
+.legend .sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; background: var(--blue); vertical-align: middle; margin-right: 6px; }
+.legend .swk { background: var(--ink); }
+.chartbox { border: 1px solid var(--ink); border-radius: 18px; padding: 16px 12px 8px; }
+.chartbox svg { width: 100%; height: auto; display: block; }
+.tablewrap { overflow-x: auto; border-top: 2px solid var(--ink); }
+.rt { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; min-width: 640px; }
+.rt th { text-align: right; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; padding: 10px 0 8px 10px; border-bottom: 1px solid var(--ink); }
+.rt th:first-child, .rt td:first-child { text-align: left; padding-left: 0; }
+.rt td { text-align: right; padding: 10px 0 10px 10px; border-bottom: 1px solid var(--ink); }
+.rt td.gain { color: var(--blue); font-weight: 700; }
+.notes { font-size: 13px; line-height: 1.6; margin-top: 28px; }
+.notes p { margin: 0 0 10px; max-width: 64em; }
+.notes a { color: var(--blue); }
+.foot { margin-top: 32px; padding-top: 14px; border-top: 2px solid var(--ink); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+
+
 [hidden] { display: none !important; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
-body { font-size: 17px; line-height: 1.4; letter-spacing: -0.01em; }
-button { font: inherit; color: inherit; }
-input { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.apptabs { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.apptabs button { font: inherit; font-size: 16px; font-weight: 600; padding: 14px 10px; border: 0; background: var(--paper); color: var(--ink); cursor: pointer; min-height: 52px; }
+.apptabs button + button { border-left: 2px solid var(--ink); }
+.apptabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.pf { margin-top: 0; border-top: 0; padding-top: 0; min-width: 0; }
+.pf .pfgrid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.pf .pfgrid { grid-template-columns: minmax(0, 1fr) !important; }
+body.ptab .mode-only { display: none; }
+/* Portfolio builder */
 
-.app { max-width: 520px; margin: 0 auto; min-height: 100vh; padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) calc(var(--tab-h) + 28px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-
-/* Nav bar */
-.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; min-height: 44px; }
-.nav a.home { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); font-size: 15px; font-weight: 500; }
-.nav a.home img { height: 26px; width: auto; display: block; }
-@media (prefers-color-scheme: dark) { .nav a.home img { filter: invert(1); } }
-.iconbtn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; cursor: pointer; }
-.iconbtn svg { width: 20px; height: 20px; }
-.title { margin: 18px 0 0; }
-.title h1 { margin: 0; font-family: var(--display); font-size: 40px; line-height: 1; font-weight: 700; letter-spacing: -0.035em; }
-.title p { margin: 6px 0 0; font-size: 17px; }
-.title .kicker { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--blue); margin: 0 0 4px; }
-
-/* Cards and rows */
-.sect { margin-top: 26px; }
-.sect > h2 { margin: 0 0 10px 4px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 10px 16px; }
-.row + .row { border-top: 1px solid var(--line); }
-.row .lbl { font-weight: 500; }
-.row .lbl small { display: block; font-weight: 400; font-size: 13px; }
-.money { display: flex; align-items: center; gap: 6px; }
-.money input { width: 9.5ch; text-align: right; border: 0; background: transparent; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 6px 0; }
-.money span { font-size: 13px; font-weight: 600; }
-.yearsrow { flex-direction: column; align-items: stretch; gap: 6px; }
-.yearsrow .top { display: flex; justify-content: space-between; }
-.yearsrow output { font-weight: 600; font-variant-numeric: tabular-nums; }
-input[type=range] { width: 100%; accent-color: var(--blue); height: 28px; margin: 0; }
-.stepper { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-.stepper button { width: 38px; height: 32px; border: 0; background: transparent; cursor: pointer; font-size: 18px; font-weight: 600; }
-.stepper button + button { border-left: 1px solid var(--line); }
-
-/* Segmented control */
-.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
-.segmented button { border: 0; background: transparent; border-radius: 9px; padding: 9px 4px; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; white-space: nowrap; }
-.segmented button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.hint { font-size: 13px; margin: 8px 4px 0; }
-
-/* Hero */
-.hero { background: var(--blue); color: var(--on-blue); border-radius: 24px; padding: 20px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; }
-.hero .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
-.hero .big { font-family: var(--display); font-size: 34px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; margin-top: 6px; font-variant-numeric: tabular-nums; }
-.hero p { margin: 6px 0 0; font-size: 14px; line-height: 1.35; }
-.hero svg { width: 96px; height: 96px; display: block; }
-.keep { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.keep b { font-variant-numeric: tabular-nums; font-size: 17px; }
-.keep small { display: block; font-size: 13px; }
-
-/* Option list */
-.opt { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 14px 16px; align-items: center; }
-.opt + .opt { border-top: 1px solid var(--line); }
-.opt .nm { font-weight: 600; }
-.opt .nm small { display: block; font-weight: 400; font-size: 13px; }
-.opt .val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-.opt .val small { display: block; font-weight: 400; font-size: 12px; }
-.opt .bar { grid-column: 1 / -1; height: 6px; border-radius: 999px; background: transparent; position: relative; margin-top: 4px; }
-.opt .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--ink); transition: width .35s ease; }
-.opt.best .bar i { background: var(--blue); }
-.opt .bar b { position: absolute; top: -4px; bottom: -4px; border-left: 2px dashed var(--ink); }
-.chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); margin-top: 5px; }
-.chip.up { background: var(--blue); color: var(--on-blue); border-color: var(--blue); }
-
-/* Portfolio */
-.donutwrap { display: grid; place-items: center; padding: 18px 0 6px; position: relative; }
-.donutwrap svg { width: 230px; height: 230px; display: block; }
-.donutcenter { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; pointer-events: none; }
-.donutcenter b { display: block; font-family: var(--display); font-size: 26px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.donutcenter span { font-size: 13px; }
-.mixes { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
-.mixes::-webkit-scrollbar { display: none; }
-.mixes button { flex: 0 0 auto; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; }
-.mixes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.slide { padding: 12px 16px 6px; }
-.slide + .slide { border-top: 1px solid var(--line); }
-.slide .top { display: flex; justify-content: space-between; align-items: center; }
-.slide label { font-weight: 600; display: flex; align-items: center; gap: 10px; }
-.slide output { font-weight: 700; font-variant-numeric: tabular-nums; }
-.sw { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--line); flex-shrink: 0; }
-.f-egx { background: var(--blue); }
+.pf h2 { font-size: clamp(24px, 4vw, 32px); line-height: 1.1; letter-spacing: -0.02em; margin: 6px 0 0; }
+.pf .sub { margin: 8px 0 0; font-size: 15px; max-width: 46em; }
+.pfgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; margin-top: 20px; align-items: start; }
+@media (max-width: 800px) { .pfgrid { grid-template-columns: minmax(0, 1fr); } }
+.mixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.mixes button { font: inherit; font-size: 13.5px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 7px 14px; cursor: pointer; min-height: 38px; }
+.mixes button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.stack { display: flex; height: 26px; border-radius: 6px; overflow: hidden; border: 1px solid var(--ink); margin-top: 18px; }
+.stack div { height: 100%; transition: width .3s ease; border-right: 2px solid var(--paper); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--paper); overflow: hidden; white-space: nowrap; }
+.stack div:last-child { border-right: 0; }
+.psw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--ink); vertical-align: -2px; margin-right: 8px; flex-shrink: 0; }
 .f-cd { background: var(--ink); }
-.f-us { background: repeating-linear-gradient(45deg, var(--blue) 0 3px, var(--bg) 3px 6px); }
-.f-gold { background: repeating-linear-gradient(45deg, var(--ink) 0 3px, var(--bg) 3px 6px); }
-.f-re { background: repeating-linear-gradient(0deg, var(--ink) 0 2px, var(--bg) 2px 5px); }
-.f-cash { background: var(--bg); }
-.pres { padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
-.pres + .pres { border-top: 1px solid var(--line); }
-.pres b.gain { color: var(--blue); }
+.f-egx { background: var(--blue); }
+.f-us { background: repeating-linear-gradient(45deg, var(--blue) 0 3px, var(--paper) 3px 6px); }
+.f-gold { background: repeating-linear-gradient(45deg, var(--ink) 0 3px, var(--paper) 3px 6px); }
+.f-re { background: repeating-linear-gradient(0deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
+.f-cash { background: var(--paper); }
+.stack .f-us, .stack .f-gold, .stack .f-re, .stack .f-cash { color: transparent; }
+.sliders { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 4px 12px; align-items: center; }
+.srow label { font-size: 14.5px; font-weight: 600; display: flex; align-items: center; }
+.srow output { text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.srow input { grid-column: 1 / -1; width: 100%; accent-color: var(--blue); }
+.total100 { margin-top: 14px; font-size: 13.5px; display: flex; justify-content: space-between; border-top: 1px solid var(--ink); padding-top: 10px; }
+.pfres { display: flex; flex-direction: column; gap: 12px; }
+.pfrows { border-top: 2px solid var(--ink); }
+.pfrow { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.pfrow b { font-weight: 700; }
+.pfrow .gain { color: var(--blue); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .stack div { transition: none; } }
 
-.foot { margin: 26px 4px 0; font-size: 12px; line-height: 1.5; }
-.foot a { color: var(--blue); }
-
-/* Tab bar */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--bg); border-top: 1px solid var(--line); padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.tabbar .in { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; }
-.tabbar button { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11.5px; font-weight: 600; cursor: pointer; min-height: 52px; }
-.tabbar svg { width: 26px; height: 26px; }
-.tabbar button[aria-selected="true"] { color: var(--blue); }
-
-/* Bottom sheet */
-.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 30; }
-.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 31; max-height: 88vh; overflow-y: auto; background: var(--bg); border-radius: 22px 22px 0 0; border-top: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.sheet .in { max-width: 520px; margin: 0 auto; }
-.grab { width: 40px; height: 5px; border-radius: 999px; background: var(--ink); margin: 0 auto 10px; opacity: .3; }
-.sheethead { display: flex; justify-content: space-between; align-items: center; }
-.sheethead h2 { margin: 0; font-size: 20px; font-weight: 700; }
-.done { border: 0; background: transparent; color: var(--blue); font-weight: 700; font-size: 17px; cursor: pointer; padding: 8px; }
-.arow input { width: 6ch; text-align: right; border: 1px solid var(--line); border-radius: 8px; background: transparent; padding: 6px 6px; font-variant-numeric: tabular-nums; }
-.arow .money { gap: 4px; }
-.textbtn { border: 0; background: transparent; color: var(--blue); font-weight: 600; cursor: pointer; padding: 10px 4px; font-size: 15px; }
-.src { font-size: 12.5px; line-height: 1.55; }
-.src p { margin: 0 0 8px; }
-.src a { color: var(--blue); }
-@media (prefers-reduced-motion: reduce) { .opt .bar i { transition: none; } }
-@media (min-width: 700px) { .app { padding-top: 24px; } }
+/* Friendly white theme: white background, blue for action and highlight, black only for text and thin lines. */
+html, body { background: #ffffff; }
+body { font-size: 17px; }
+.wrap { padding-block: 20px 64px; }
+.top { border-bottom: 1px solid var(--ink); padding-bottom: 12px; }
+.top a { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.top img { height: 30px; width: auto; display: block; }
+.top .homelink { font-size: 14px; font-weight: 600; color: var(--blue); text-decoration: none; }
+h1 { font-size: clamp(32px, 6.4vw, 46px); }
+.lede { font-size: 17px; }
+.apptabs { border: 1.5px solid var(--blue); border-radius: 999px; padding: 4px; gap: 4px; }
+.apptabs button { border-radius: 999px; min-height: 48px; font-size: 16px; }
+.apptabs button + button { border-left: 0; }
+.apptabs button[aria-selected="true"] { background: var(--blue); color: var(--on-blue); }
+.seg { border-color: var(--blue); }
+.seg button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.seg button { min-height: 42px; }
+.presetnote { font-size: 14px; }
+.panel { border: 1.5px solid var(--blue); border-radius: 24px; gap: 22px; }
+.field > label { font-size: 15px; }
+.inp { border: 1.5px solid var(--ink); border-radius: 14px; }
+.inp:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--blue); }
+.inp input { font-size: 20px; font-weight: 600; padding: 12px 14px; }
+.quick { gap: 8px; }
+.quick button { font-size: 14px; font-weight: 600; min-height: 36px; padding: 6px 14px; border-color: var(--blue); color: var(--blue); }
+.quick button:active { background: var(--blue); color: var(--on-blue); }
+.yearsrow output { font-size: 20px; color: var(--blue); }
+input[type=range] { height: 32px; }
+#reset { color: var(--blue) !important; border-color: var(--blue) !important; font-weight: 600 !important; }
+.card { border-radius: 24px; padding: 22px; }
+.card.k { background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); }
+.card .big { font-size: clamp(28px, 6vw, 36px); }
+.list { border-top: 0; gap: 10px; }
+.item { border: 1.5px solid var(--ink); border-radius: 18px; padding: 14px 16px; }
+.item:first-child { border-color: var(--blue); }
+.barwrap .bar { background: var(--paper); border: 1.5px solid var(--ink); border-radius: 999px; height: 12px; top: 5px; }
+.barwrap .bar.best { background: var(--blue); border-color: var(--blue); }
+.legend .sw { border-radius: 999px; }
+.legend .swk { background: var(--paper); border: 1.5px solid var(--ink); }
+.chartbox { border-radius: 24px; }
+.mixes button { border-color: var(--blue); color: var(--blue); font-weight: 600; }
+.mixes button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.pfrows { border-top: 1px solid var(--ink); }
+.stack { border-radius: 999px; height: 28px; }
+details.notes { margin-top: 32px; border: 1.5px solid var(--ink); border-radius: 18px; padding: 16px 18px; }
+details.notes > summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; display: flex; justify-content: space-between; color: var(--blue); }
+details.notes > summary::-webkit-details-marker { display: none; }
+details.notes > summary::after { content: "+"; font-size: 20px; line-height: 1; }
+details.notes[open] > summary::after { content: "−"; }
+details.notes[open] > summary { margin-bottom: 12px; }
+.disc { font-size: 13px; margin: 16px 0 0; }
+.foot { border-top: 1px solid var(--ink); }
+.foot a { color: var(--blue); text-decoration: none; font-weight: 600; }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="nav">
-    <a class="home" href="/" aria-label="Amr El Hadeka home"><img src="/assets/logo.png" alt="" width="240" height="218">Amr El Hadeka</a>
-    <button type="button" class="iconbtn" id="openSheet" aria-label="Assumptions">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
-    </button>
-  </div>
 
-  <div class="title">
-    <p class="kicker">Investment calculator</p>
-    <h1>Grow</h1>
-    <p>See where your money could grow faster than prices.</p>
-  </div>
 
-  <!-- Shared plan -->
-  <div class="sect">
-    <h2>Your plan</h2>
-    <div class="card">
-      <div class="row"><label class="lbl" for="start">I have now</label><div class="money"><input id="start" inputmode="numeric" autocomplete="off"><span>EGP</span></div></div>
-      <div class="row"><label class="lbl" for="monthly">Every month</label><div class="money"><input id="monthly" inputmode="numeric" autocomplete="off"><span>EGP</span></div></div>
-      <div class="row yearsrow">
-        <div class="top"><label class="lbl" for="years">For</label><div style="display:flex;align-items:center;gap:10px"><output id="yearsOut" for="years"></output><span class="stepper"><button type="button" id="yMinus" aria-label="One year less">−</button><button type="button" id="yPlus" aria-label="One year more">+</button></span></div></div>
-        <input type="range" id="years" min="1" max="25" step="1" aria-label="Years">
-      </div>
+<div class="wrap">
+  <header class="top"><a href="/" aria-label="Amr El Hadeka home"><img src="/assets/logo.png" alt="" width="240" height="218"><span class="brand">Amr El Hadeka</span></a><a class="homelink" href="/">‹ Home</a></header>
+
+  <p class="eyebrow blue" style="margin-top:28px">Grow · Investment calculator</p>
+  <h1>Where could your money grow faster than prices?</h1>
+  <p class="lede">Type what you have and what you can add each month. We'll show which option beats rising prices.</p>
+
+  <nav class="apptabs" role="tablist" aria-label="Tools">
+    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Compare</button>
+    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Build a portfolio</button>
+  </nav>
+  <div class="controls">
+    <div class="seg mode-only" role="group" aria-label="View">
+      <button type="button" id="m-easy" aria-pressed="true">Simple</button>
+      <button type="button" id="m-adv" aria-pressed="false">More options</button>
     </div>
-    <div class="sect" style="margin-top:14px">
-      <div class="segmented" role="group" aria-label="Scenario">
-        <button type="button" data-p="cautious">Cautious</button>
-        <button type="button" data-p="balanced">Balanced</button>
-        <button type="button" data-p="past">Last 10 yrs</button>
-      </div>
-      <p class="hint" id="presetNote"></p>
+    <div class="seg preset" role="group" aria-label="Scenario">
+      <button type="button" data-p="cautious" aria-pressed="false">Cautious</button>
+      <button type="button" data-p="balanced" aria-pressed="true">Balanced</button>
+      <button type="button" data-p="past" aria-pressed="false">Last 10 years</button>
     </div>
   </div>
+  <p class="presetnote" id="presetNote"></p>
 
-  <!-- Compare -->
-  <section id="v-compare" aria-label="Compare">
-    <div class="sect">
-      <div class="hero">
-        <div>
-          <span class="eyebrow">Grows the most</span>
-          <div class="big" id="bestVal">—</div>
-          <p id="bestTxt">—</p>
+  <div class="grid">
+    <form class="panel" onsubmit="return false" aria-label="Your numbers">
+      <div class="field">
+        <label for="start">I have now</label>
+        <div class="inp"><input id="start" inputmode="numeric"><span>EGP</span></div>
+        <div class="quick" data-for="start"><button type="button" data-v="0">0</button><button type="button" data-v="50000">50K</button><button type="button" data-v="100000">100K</button><button type="button" data-v="500000">500K</button><button type="button" data-v="1000000">1M</button></div>
+      </div>
+      <div class="field">
+        <label for="monthly">I can add each month</label>
+        <div class="inp"><input id="monthly" inputmode="numeric"><span>EGP</span></div>
+        <div class="quick" data-for="monthly"><button type="button" data-v="1000">1K</button><button type="button" data-v="3000">3K</button><button type="button" data-v="5000">5K</button><button type="button" data-v="10000">10K</button></div>
+      </div>
+      <div class="field">
+        <label for="years">For how long</label>
+        <div class="yearsrow"><input type="range" id="years" min="1" max="25" step="1"><output id="yearsOut" for="years"></output></div>
+      </div>
+
+      <div class="adv-only">
+        <div class="field" style="margin-bottom:14px">
+          <label for="raise">Raise my monthly amount each year by</label>
+          <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
         </div>
-        <svg id="heroDonut" viewBox="0 0 100 100" role="img" aria-label="What you put in versus growth"></svg>
+        <div class="field">
+          <label for="infl">Inflation, yearly</label>
+          <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
+          <span class="small">Latest: 13.9% (Sept 2026)</span>
+        </div>
+
+        <details class="sect" open style="margin-top:16px">
+          <summary>Returns, yearly</summary>
+          <table class="atable">
+            <tbody>
+              <tr><td>Certificate, first 3 years</td><td><input id="cd1" inputmode="decimal" aria-label="Certificate rate first 3 years"></td><td>%</td></tr>
+              <tr><td>Certificate, after renewal</td><td><input id="cd2" inputmode="decimal" aria-label="Certificate rate after renewal"></td><td>%</td></tr>
+              <tr><td>EGX30, with dividends</td><td><input id="egx" inputmode="decimal" aria-label="EGX return"></td><td>%</td></tr>
+              <tr><td>US stocks, in USD</td><td><input id="us" inputmode="decimal" aria-label="US stocks return in USD"></td><td>%</td></tr>
+              <tr><td>Gold, in USD</td><td><input id="gold" inputmode="decimal" aria-label="Gold return in USD"></td><td>%</td></tr>
+              <tr><td>Pound's fall vs USD</td><td><input id="fx" inputmode="decimal" aria-label="Yearly fall of the pound"></td><td>%</td></tr>
+              <tr><td>Property price growth</td><td><input id="re" inputmode="decimal" aria-label="Property price growth"></td><td>%</td></tr>
+              <tr><td>Rent, after costs</td><td><input id="rent" inputmode="decimal" aria-label="Net rental yield"></td><td>%</td></tr>
+            </tbody>
+          </table>
+        </details>
+
+        <details class="sect" style="margin-top:14px">
+          <summary>Costs and taxes</summary>
+          <table class="atable">
+            <thead><tr><th>Option</th><th>Buy</th><th>Sell</th><th>Yearly</th></tr></thead>
+            <tbody>
+              <tr><td>Certificate</td><td><input id="c_cd_b" aria-label="Certificate buy cost"></td><td><input id="c_cd_s" aria-label="Certificate sell cost"></td><td><input id="c_cd_y" aria-label="Certificate yearly cost"></td></tr>
+              <tr><td>EGX30</td><td><input id="c_egx_b" aria-label="EGX buy cost"></td><td><input id="c_egx_s" aria-label="EGX sell cost"></td><td><input id="c_egx_y" aria-label="EGX yearly cost"></td></tr>
+              <tr><td>US stocks</td><td><input id="c_us_b" aria-label="US buy cost"></td><td><input id="c_us_s" aria-label="US sell cost"></td><td><input id="c_us_y" aria-label="US yearly cost"></td></tr>
+              <tr><td>Gold</td><td><input id="c_gold_b" aria-label="Gold buy cost"></td><td><input id="c_gold_s" aria-label="Gold sell cost"></td><td><input id="c_gold_y" aria-label="Gold yearly cost"></td></tr>
+              <tr><td>Property</td><td><input id="c_re_b" aria-label="Property buy cost"></td><td><input id="c_re_s" aria-label="Property sell cost"></td><td><input id="c_re_y" aria-label="Property yearly cost"></td></tr>
+            </tbody>
+          </table>
+          <p class="small" style="margin-top:10px">All in %. Buy = paid on every amount you put in. Sell = paid once at the end. Yearly = taken off the return each year (taxes on dividends, fees, maintenance).</p>
+        </details>
       </div>
-      <div class="keep"><div>Needed to keep up with prices<small id="keepTxt">—</small></div><b id="keepVal">—</b></div>
+
+      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-start">Reset</button>
+    </form>
+
+    <section class="results" id="tab-compare" aria-live="polite">
+      <div class="cards">
+        <div class="card b"><span class="eyebrow">Grows the most</span><div class="big" id="bestVal">—</div><p id="bestTxt">—</p></div>
+        <div class="card k"><span class="eyebrow">Needed to keep up with prices</span><div class="big" id="keepVal">—</div><p id="keepTxt">—</p></div>
+      </div>
+
+      <div class="legend" aria-hidden="true"><span><i class="sw"></i>Grows the most</span><span><i class="sw swk"></i>Other options</span><span><i class="dash"></i>Keep up with prices</span></div>
+      <div class="list" id="list"></div>
+
+      <div class="adv-only">
+        <p class="eyebrow" style="margin:6px 0 8px">Year by year, value in EGP</p>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Value of each option over time"></svg></div>
+      </div>
+
+      <div class="adv-only tablewrap">
+        <table class="rt">
+          <caption class="sr">Detailed results</caption>
+          <thead><tr><th>Option</th><th>Net yearly, EGP</th><th>Value in EGP</th><th>In today's money</th><th>Beyond inflation*</th><th>Worst year on record</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <p class="small" style="margin-top:8px">*More (or less) than you need to keep up with prices, in today's money, after costs.</p>
+      </div>
+    </section>
+  <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
+    <p class="eyebrow blue">Portfolio builder</p>
+    <h2 id="pf-title">Mix your money.</h2>
+    <p class="sub">Split your amounts across the six options. Move one slider and the others adjust, so the total always stays at 100%.</p>
+    <div class="mixes" role="group" aria-label="Example mixes">
+      <button type="button" data-mix="safe">Mostly safe</button>
+      <button type="button" data-mix="balanced" aria-pressed="true">Balanced</button>
+      <button type="button" data-mix="growth">Growth</button>
+      <button type="button" data-mix="dollar">Dollar-heavy</button>
     </div>
-    <div class="sect">
-      <h2>All options</h2>
-      <div class="card" id="list"></div>
-      <p class="hint">Dashed line = what you need just to keep up with prices.</p>
+    <p class="small" style="margin-top:8px">Example mixes for learning, not a recommendation for you.</p>
+    <div class="pfgrid">
+      <div>
+        <div class="stack" id="pfStack" aria-hidden="true"></div>
+        <div class="sliders" id="pfSliders"></div>
+        <div class="total100"><span>Total</span><b id="pfTotal">100%</b></div>
+      </div>
+      <div class="pfres" aria-live="polite">
+        <div class="cards" style="grid-template-columns:minmax(0,1fr)">
+          <div class="card b"><span class="eyebrow">Your portfolio could grow to</span><div class="big" id="pfVal">—</div><p id="pfTxt">—</p></div>
+        </div>
+        <div class="pfrows" id="pfRows"></div>
+        <p class="small" id="pfRisk"></p>
+      </div>
     </div>
   </section>
-
-  <!-- Portfolio -->
-  <section id="v-portfolio" aria-label="Portfolio" hidden>
-    <div class="sect">
-      <div class="mixes" role="group" aria-label="Example mixes">
-        <button type="button" data-mix="safe">Mostly safe</button>
-        <button type="button" data-mix="balanced">Balanced</button>
-        <button type="button" data-mix="growth">Growth</button>
-        <button type="button" data-mix="dollar">Dollar-heavy</button>
-      </div>
-      <div class="donutwrap">
-        <svg id="pfDonut" viewBox="0 0 200 200" role="img" aria-label="Your portfolio mix"></svg>
-        <div class="donutcenter"><div><b id="pfVal">—</b><span>could grow to, EGP</span></div></div>
-      </div>
-      <p class="hint" style="text-align:center">Example mixes for learning, not a recommendation for you.</p>
-    </div>
-    <div class="sect">
-      <h2>Your mix · always 100%</h2>
-      <div class="card" id="pfSliders"></div>
-    </div>
-    <div class="sect">
-      <h2>Result</h2>
-      <div class="card" id="pfRes"></div>
-      <p class="hint" id="pfRisk"></p>
-    </div>
-  </section>
-
-  <p class="foot">Illustration only, not a prediction and not personal financial advice. Real returns vary and can be negative. <button type="button" class="textbtn" id="openSrc" style="padding:0;font-size:12px">Where the numbers come from</button><br>© 2026 Amr El Hadeka · <a href="/">invest.amrelhadeka.com</a></p>
-</div>
-
-<nav class="tabbar" aria-label="Tabs">
-  <div class="in" role="tablist">
-    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="v-compare">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>Compare
-    </button>
-    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="v-portfolio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>Portfolio
-    </button>
   </div>
-</nav>
 
-<div class="scrim" id="scrim" hidden></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
-  <div class="in">
-    <div class="grab"></div>
-    <div class="sheethead"><h2 id="sheetTitle">Assumptions</h2><button type="button" class="done" id="closeSheet">Done</button></div>
-    <div id="assumeBody">
-      <div class="sect"><h2>Inflation and raises</h2>
-        <div class="card">
-          <div class="row arow"><span class="lbl">Inflation<small>Latest: 13.9%, Sept 2026</small></span><span class="money"><input id="infl" inputmode="decimal" aria-label="Inflation"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">Raise monthly amount<small>Each year</small></span><span class="money"><input id="raise" inputmode="decimal" aria-label="Yearly raise"><span>%</span></span></div>
-        </div>
-      </div>
-      <div class="sect"><h2>Yearly returns · scenario</h2>
-        <div class="card">
-          <div class="row arow"><span class="lbl">Certificate, first 3 years</span><span class="money"><input id="cd1" inputmode="decimal" aria-label="Certificate first 3 years"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">Certificate, after renewal</span><span class="money"><input id="cd2" inputmode="decimal" aria-label="Certificate after renewal"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">EGX30, with dividends</span><span class="money"><input id="egx" inputmode="decimal" aria-label="EGX"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">US stocks<small>In USD</small></span><span class="money"><input id="us" inputmode="decimal" aria-label="US stocks"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">Gold<small>In USD</small></span><span class="money"><input id="gold" inputmode="decimal" aria-label="Gold"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">Pound's fall vs dollar</span><span class="money"><input id="fx" inputmode="decimal" aria-label="Pound fall"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">Property prices</span><span class="money"><input id="re" inputmode="decimal" aria-label="Property"><span>%</span></span></div>
-          <div class="row arow"><span class="lbl">Rent, after costs</span><span class="money"><input id="rent" inputmode="decimal" aria-label="Rent"><span>%</span></span></div>
-        </div>
-      </div>
-      <div class="sect"><h2>Costs and taxes · buy / sell / yearly</h2>
-        <div class="card" id="costRows"></div>
-        <p class="hint">Buy is paid on every amount you put in, sell once at the end, yearly comes off the return (dividend taxes, fees, upkeep).</p>
-      </div>
-      <button type="button" class="textbtn" id="reset">Reset everything</button>
-    </div>
-    <div id="srcBody" class="src" hidden>
-      <div class="sect"><h2>Where the numbers come from</h2></div>
-      <p><b>Last 10 years</b> uses what actually happened: EGX30 rose 12.8% a year on price alone from end-2014 to end-2024, plus dividends (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">EGX30 yearly returns</a>). The S&amp;P 500 returned 14.8% a year in dollars, 2016–2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). 21K gold went from 287.62 EGP a gram in April 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">Amwal Al Ghad</a>) to about 6,217 today (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>), about 25.6% a year in pounds: roughly 7.6% for gold in dollars and 16.7% for the pound's fall. Property rose about 12.2% a year in the Aqarmap index, 2014–2024, with gross rents of 6.7% (<a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>).</p>
-      <p><b>Balanced</b> and <b>Cautious</b> are lower forward-looking guesses, because the last decade included two big devaluations.</p>
-      <p><b>Today:</b> inflation 13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">Daily News Egypt</a>). 3-year fixed certificates about 17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise</a>). EGX trades pay 0.05% stamp duty each way since August 2026 (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Default costs for gold, brokers and property are estimates.</p>
-      <p><b>Worst years on record:</b> EGX30 −49.3% (2011), S&amp;P 500 −37% (2008, USD), gold −28% (2013, USD), property −9.6% (2020). Checked 24 October 2026.</p>
-    </div>
-  </div>
+
+
+
+  <details class="notes">
+    <summary>Where the numbers come from</summary>
+    <p><b>Where the scenarios come from.</b> <b>Last 10 years</b> uses what actually happened: EGX30 rose 12.8% a year on price alone from end-2014 to end-2024, plus dividends (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">EGX30 yearly returns</a>). The S&amp;P 500 returned 14.8% a year in dollars, 2016–2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). 21K gold rose from 287.62 EGP a gram in April 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">Amwal Al Ghad</a>) to about 6,217 today (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>, 24K × 21/24), about 25.6% a year in pounds, which splits into about 7.6% for gold in dollars and 16.7% for the pound's fall. Property prices rose about 12.2% a year in the Aqarmap index years 2014–2024 shown by <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>, with gross rental yields of 6.7% nationally. <b>Balanced</b> and <b>Cautious</b> are lower, forward-looking guesses, because the last decade included two large devaluations.</p>
+    <p><b>Today's rates.</b> Inflation 13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS via Daily News Egypt</a>). 3-year fixed certificates about 17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise, Aug 2026</a>); the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: 55.31 EGP (<a href="https://www.poundsterlinglive.com/history/USD-EGP-2026" target="_blank" rel="noopener">23 Oct 2026</a>). Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
+    <p><b>Worst year on record</b> shows how hard each option has fallen in a single year: EGX30 −49.3% in 2011, property −9.6% in 2020 (Aqarmap), and the widely reported S&amp;P 500 −37% in 2008 and gold −28% in 2013 (in USD). Property also needs a large amount up front and can take months to sell. Certificates are the only fixed rate, and only until they mature.</p>
+    <p>Checked 24 October 2026.</p>
+  </details>
+  <p class="disc">Illustration only, not a prediction and not personal financial advice. Real returns change and can be negative.</p>
+
+  <footer class="foot"><span><b>Amr El Hadeka</b> · invest.amrelhadeka.com</span><a href="/#join">Get money notes, once a month ›</a></footer>
 </div>
 
 <script>
 (function () {
-  const $ = id => document.getElementById(id);
-  const fmt = n => Math.round(n).toLocaleString('en-US');
-  const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2) + 'M' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + 'K' : fmt(n);
-  const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
-  const store = { get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
-
   const PRESETS = {
-    cautious: { note: 'Lower returns and a slower fall of the pound than recent years.', cd1: 17.75, cd2: 12, egx: 12, us: 7, gold: 3, fx: 4, re: 9, rent: 4.5 },
-    balanced: { note: 'A middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
-    past: { note: 'What each option actually returned recently, including two big devaluations.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
+    cautious: { note: 'Cautious: lower returns and a slower fall of the pound than recent years.', cd1: 17.75, cd2: 12, egx: 12, us: 7, gold: 3, fx: 4, re: 9, rent: 4.5 },
+    balanced: { note: 'Balanced: a middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
+    past: { note: 'Last 10 years: what each option actually returned recently, including two big devaluations. The future may be calmer.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
   };
   const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9,
     c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
     c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
-  const RATE_KEYS = ['cd1', 'cd2', 'egx', 'us', 'gold', 'fx', 're', 'rent'];
-  const NAMES = { cd: 'Bank certificate', egx: 'EGX30 stocks', us: 'US stocks', gold: 'Gold', re: 'Property', cash: 'Cash at home' };
-  const SUBS = { cd: 'Fixed 3 years, then renewed', egx: "Egypt's top 30 companies", us: 'S&P 500, counted in EGP', gold: 'Counted in EGP', re: 'Price growth + rent', cash: 'Never grows' };
+  const WORST = { cd: '0% (fixed)', egx: '−49.3% (2011)', us: '−37% (2008, USD)', gold: '−28% (2013, USD)', re: '−9.6% (2020)', cash: 'Never grows' };
+  const RATE_KEYS = ['cd1','cd2','egx','us','gold','fx','re','rent'];
+  const ALL = Object.keys(BASE).concat(RATE_KEYS);
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2) + 'M' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + 'K' : fmt(n);
+  const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
+  let state = { mode: 'easy', preset: 'balanced' };
+
+  function setVal(k, v) { const el = $(k); if (!el) return; el.value = (k === 'start' || k === 'monthly') ? fmt(v) : v; }
+  function applyPreset(p) { state.preset = p; const P = PRESETS[p]; RATE_KEYS.forEach(k => setVal(k, P[k])); document.querySelectorAll('.preset button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === p ? 'true' : 'false')); $('presetNote').textContent = P.note; }
+  function setMode(m) { state.mode = m; document.body.classList.toggle('adv', m === 'adv'); $('m-easy').setAttribute('aria-pressed', m === 'easy'); $('m-adv').setAttribute('aria-pressed', m === 'adv'); }
+
+  function load() {
+    let s = null; try { s = JSON.parse(localStorage.getItem('emc-v2') || 'null'); } catch (e) {}
+    Object.keys(BASE).forEach(k => setVal(k, s && s.v && s.v[k] != null ? s.v[k] : BASE[k]));
+    applyPreset(s && PRESETS[s.preset] ? s.preset : 'balanced');
+    if (s && s.v && s.custom) RATE_KEYS.forEach(k => { if (s.v[k] != null) setVal(k, s.v[k]); });
+    setMode(s && s.mode === 'adv' ? 'adv' : 'easy');
+  }
+  function save(v, custom) { try { localStorage.setItem('emc-v2', JSON.stringify({ v, preset: state.preset, mode: state.mode, custom })); } catch (e) {} }
+
+  // Monthly simulation. Returns yearly values (index 0 = start) and the final value after sell costs.
+  function sim(o, v) {
+    const months = v.years * 12, path = [];
+    let val = v.start * (1 - o.buy / 100), dep = v.monthly;
+    path.push(v.start);
+    for (let m = 1; m <= months; m++) {
+      const yr = o.rate(m);
+      const r = Math.pow(1 + (yr - o.yearly) / 100, 1 / 12) - 1;
+      val = val * (1 + r) + dep * (1 - o.buy / 100);
+      if (m % 12 === 0) { path.push(val * (1 - o.sell / 100)); dep *= 1 + v.raise / 100; }
+    }
+    return { path, final: val * (1 - o.sell / 100) };
+  }
+  function keepUp(v) {
+    const months = v.years * 12, r = Math.pow(1 + v.infl / 100, 1 / 12) - 1, path = [v.start];
+    let val = v.start, dep = v.monthly, put = v.start;
+    for (let m = 1; m <= months; m++) { val = val * (1 + r) + dep; put += dep; if (m % 12 === 0) { path.push(val); dep *= 1 + v.raise / 100; } }
+    return { path, final: val, put };
+  }
+
+  function calc() {
+    const v = {}; ALL.forEach(k => v[k] = num($(k).value));
+    v.years = Math.max(1, Math.min(25, Math.round(v.years)));
+    if (state.mode === 'easy') { v.raise = 0; }
+    $('yearsOut').textContent = v.years + (v.years === 1 ? ' year' : ' years');
+    const P = PRESETS[state.preset];
+    const custom = RATE_KEYS.some(k => Math.abs(v[k] - P[k]) > 1e-9);
+    save(v, custom);
+    const usd = r => ((1 + r / 100) * (1 + v.fx / 100) - 1) * 100;
+    const opts = [
+      { key: 'cd', name: 'Bank certificate', sub: 'Fixed for 3 years, then renewed', rate: m => m <= 36 ? v.cd1 : v.cd2, buy: v.c_cd_b, sell: v.c_cd_s, yearly: v.c_cd_y },
+      { key: 'egx', name: 'EGX30 stocks', sub: 'Egypt\'s top 30 companies', rate: () => v.egx, buy: v.c_egx_b, sell: v.c_egx_s, yearly: v.c_egx_y },
+      { key: 'us', name: 'US stocks', sub: 'S&P 500, counted in EGP', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
+      { key: 'gold', name: 'Gold', sub: 'Counted in EGP', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
+      { key: 're', name: 'Property', sub: 'Price growth + rent', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
+      { key: 'cash', name: 'Cash at home', sub: 'Under the mattress', rate: () => 0, buy: 0, sell: 0, yearly: 0 }
+    ];
+    if (state.mode === 'easy') opts.forEach(o => { if (o.key !== 'cash') { o.buy = BASE['c_' + o.key + '_b']; o.sell = BASE['c_' + o.key + '_s']; o.yearly = BASE['c_' + o.key + '_y']; } });
+    const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
+    opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
+    // effective net yearly rate (after costs) via bisection on a cost-free sim
+    opts.forEach(o => { let lo = -50, hi = 80; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
+    opts.sort((a, b) => b.value - a.value);
+    const best = opts[0];
+
+    $('bestVal').textContent = fmt(best.value) + ' EGP';
+    $('bestTxt').textContent = best.name + ', after costs. Worth ' + fmt(best.real) + ' EGP in today\'s money.';
+    $('keepVal').textContent = fmt(K.final) + ' EGP';
+    $('keepTxt').textContent = 'You put in ' + fmt(K.put) + ' EGP. At ' + v.infl + '% inflation, this is what it must reach to buy the same things.';
+
+    const max = Math.max(...opts.map(o => o.value), K.final) * 1.04;
+    $('list').innerHTML = opts.map((o, i) => {
+      const beats = o.value >= K.final;
+      return '<div class="item"><div class="nm">' + o.name + '<small>' + o.sub + '</small><span class="tag' + (beats ? ' up' : '') + '">' + (beats ? 'Beats inflation' : 'Loses to inflation') + '</span></div>' +
+        '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (o.value / max * 100) + '%"></div><div class="ref" style="left:' + (K.final / max * 100) + '%"></div></div>' +
+        '<div class="v">' + compact(o.value) + '<small>' + compact(o.real) + ' today</small></div></div>';
+    }).join('');
+
+    $('tbody').innerHTML = opts.map(o =>
+      '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(o.value) + '</td><td>' + fmt(o.real) + '</td>' +
+      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '">' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(o.beyond)) + '</td><td>' + WORST[o.key] + '</td></tr>').join('');
+
+    drawChart(opts, K, v);
+    renderPortfolio(opts, K, v);
+  }
+
+  function drawChart(opts, K, v) {
+    const W = 640, H = 300, L = 56, R = 130, T = 16, B = 34;
+    const yMax = Math.max(...opts.map(o => Math.max(...o.path)), Math.max(...K.path)) * 1.05;
+    const X = i => L + (W - L - R) * i / v.years, Y = val => T + (H - T - B) * (1 - val / yMax);
+    const step = Math.pow(10, Math.floor(Math.log10(yMax / 4))), nice = [1, 2, 2.5, 5, 10].map(s => s * step).find(s => yMax / s <= 5) || step * 10;
+    let g = '';
+    for (let t = 0; t <= yMax; t += nice) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="currentColor" stroke-opacity=".15"/><text x="' + (L - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end" font-size="11" fill="currentColor">' + compact(t) + '</text>';
+    const xs = v.years <= 10 ? 1 : v.years <= 20 ? 2 : 5;
+    for (let i = 0; i <= v.years; i += xs) g += '<text x="' + X(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="currentColor">' + (i === 0 ? 'Now' : 'Yr ' + i) + '</text>';
+    const line = (p, attrs) => '<polyline fill="none" points="' + p.map((val, i) => X(i).toFixed(1) + ',' + Y(val).toFixed(1)).join(' ') + '" ' + attrs + '/>';
+    g += line(K.path, 'stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"');
+    opts.slice().reverse().forEach((o, idx) => { const best = o === opts[0]; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
+    // end labels, spaced apart
+    const labels = opts.map((o, i) => ({ t: o.name + ' ' + compact(o.value), y: Y(o.value), best: i === 0 })).concat([{ t: 'Keep up ' + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
+    const over = labels.length ? labels[labels.length - 1].y - (H - B) : 0; if (over > 0) labels.forEach(l => l.y -= over);
+    labels.forEach(l => g += '<text x="' + (W - R + 8) + '" y="' + (l.y + 4) + '" font-size="11" font-weight="' + (l.best ? 700 : 500) + '" fill="' + (l.best ? 'var(--blue)' : 'currentColor') + '">' + l.t + '</text>');
+    $('chart').innerHTML = g;
+    $('chart').style.color = 'var(--ink)';
+  }
+
+  document.querySelectorAll('.quick[data-for] button').forEach(b => b.addEventListener('click', () => { setVal(b.parentNode.dataset.for, num(b.dataset.v)); calc(); }));
+  document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); }));
+  $('m-easy').addEventListener('click', () => { setMode('easy'); calc(); });
+  $('m-adv').addEventListener('click', () => { setMode('adv'); calc(); });
+  ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
+  ALL.forEach(k => { const el = $(k); if (el) el.addEventListener('input', calc); });
+  $('reset').addEventListener('click', () => { try { localStorage.removeItem('emc-v2'); } catch (e) {} Object.keys(BASE).forEach(k => setVal(k, BASE[k])); applyPreset('balanced'); try { localStorage.removeItem('emc-pf'); } catch (e) {} pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; calc(); pfRender(); });
+
+  // ---------- Portfolio builder ----------
   const PF_KEYS = ['egx', 'us', 'gold', 'cd', 're', 'cash'];
+  const PF_NAMES = { egx: 'EGX30 stocks', us: 'US stocks', gold: 'Gold', cd: 'Bank certificate', re: 'Property', cash: 'Cash' };
   const PF_WORST = { egx: -49.3, us: -37, gold: -28, cd: 0, re: -9.6, cash: 0 };
   const MIXES = {
     safe: { cd: 50, egx: 15, us: 10, gold: 15, re: 0, cash: 10 },
@@ -315,191 +496,78 @@ input[type=range] { width: 100%; accent-color: var(--blue); height: 28px; margin
     growth: { cd: 5, egx: 40, us: 40, gold: 10, re: 5, cash: 0 },
     dollar: { cd: 10, egx: 15, us: 50, gold: 25, re: 0, cash: 0 }
   };
+  let pf = Object.assign({}, MIXES.balanced), pfMix = 'balanced';
+  try { const sv = JSON.parse(localStorage.getItem('emc-pf') || 'null'); if (sv && sv.w) { pf = sv.w; pfMix = sv.mix || ''; } } catch (e) {}
+  let lastOpts = null, lastK = null, lastV = null;
 
-  // ---------- state ----------
-  const saved = store.get('grow-v1') || {};
-  let S = Object.assign({}, BASE, PRESETS.balanced, saved.v || {});
-  let preset = saved.preset && PRESETS[saved.preset] ? saved.preset : 'balanced';
-  let tab = saved.tab === 'portfolio' ? 'portfolio' : 'compare';
-  let pf = Object.assign({}, MIXES.balanced, saved.pf || {}), pfMix = saved.pfMix != null ? saved.pfMix : 'balanced';
-  if (location.hash === '#portfolio') tab = 'portfolio';
-  const persist = () => store.set('grow-v1', { v: S, preset, tab, pf, pfMix });
-
-  // ---------- engine ----------
-  function sim(o, v) {
-    const months = v.years * 12;
-    let val = v.start * (1 - o.buy / 100), dep = v.monthly;
-    for (let m = 1; m <= months; m++) {
-      const r = Math.pow(1 + (o.rate(m) - o.yearly) / 100, 1 / 12) - 1;
-      val = val * (1 + r) + dep * (1 - o.buy / 100);
-      if (m % 12 === 0) dep *= 1 + v.raise / 100;
-    }
-    return val * (1 - o.sell / 100);
+  function pfBuild() {
+    $('pfSliders').innerHTML = PF_KEYS.map(k => '<div class="srow"><label for="pf_' + k + '"><i class="psw f-' + k + '"></i>' + PF_NAMES[k] + '</label><output id="pfo_' + k + '" for="pf_' + k + '"></output><input type="range" id="pf_' + k + '" min="0" max="100" step="1"></div>').join('');
+    PF_KEYS.forEach(k => $('pf_' + k).addEventListener('input', e => pfSet(k, +e.target.value)));
   }
-  function keepUp(v) {
-    const r = Math.pow(1 + v.infl / 100, 1 / 12) - 1;
-    let val = v.start, dep = v.monthly, put = v.start;
-    for (let m = 1; m <= v.years * 12; m++) { val = val * (1 + r) + dep; put += dep; if (m % 12 === 0) dep *= 1 + v.raise / 100; }
-    return { final: val, put };
-  }
-  function options(v) {
-    const usd = r => ((1 + r / 100) * (1 + v.fx / 100) - 1) * 100;
-    const c = k => ({ buy: v['c_' + k + '_b'], sell: v['c_' + k + '_s'], yearly: v['c_' + k + '_y'] });
-    return [
-      Object.assign({ key: 'cd', rate: m => m <= 36 ? v.cd1 : v.cd2 }, c('cd')),
-      Object.assign({ key: 'egx', rate: () => v.egx }, c('egx')),
-      Object.assign({ key: 'us', rate: () => usd(v.us) }, c('us')),
-      Object.assign({ key: 'gold', rate: () => usd(v.gold) }, c('gold')),
-      Object.assign({ key: 're', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100 }, c('re')),
-      { key: 'cash', rate: () => 0, buy: 0, sell: 0, yearly: 0 }
-    ];
-  }
-
-  // ---------- donut ----------
-  const PATS = '<defs>' +
-    '<pattern id="p-us" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--bg)"/><rect width="3" height="6" style="fill:var(--blue)"/></pattern>' +
-    '<pattern id="p-gold" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" style="fill:var(--bg)"/><rect width="3" height="6" style="fill:var(--ink)"/></pattern>' +
-    '<pattern id="p-re" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" style="fill:var(--bg)"/><rect width="5" height="2" style="fill:var(--ink)"/></pattern></defs>';
-  const PAINT = { egx: 'var(--blue)', cd: 'var(--ink)', us: 'url(#p-us)', gold: 'url(#p-gold)', re: 'url(#p-re)', cash: 'var(--bg)' };
-  function arc(cx, cy, r, a0, a1) {
-    const p = a => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-    const [x0, y0] = p(a0), [x1, y1] = p(a1), large = a1 - a0 > Math.PI ? 1 : 0;
-    return 'M' + x0.toFixed(2) + ' ' + y0.toFixed(2) + 'A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2);
-  }
-  function donut(svg, parts, size, w, gap, outline) {
-    const c = size / 2, r = c - w / 2 - 2;
-    const total = parts.reduce((a, p) => a + p.v, 0) || 1;
-    let a = -Math.PI / 2, out = '';
-    out += '<circle cx="' + c + '" cy="' + c + '" r="' + r + '" fill="none" style="stroke:' + outline + '" stroke-width="' + (w + 2) + '" stroke-opacity=".15"/>';
-    parts.forEach(p => {
-      if (p.v <= 0) return;
-      const sweep = p.v / total * Math.PI * 2;
-      const g = parts.filter(x => x.v > 0).length > 1 ? gap : 0;
-      const a0 = a + g / 2, a1 = a + sweep - g / 2;
-      if (sweep >= Math.PI * 2 - 1e-6) out += '<circle cx="' + c + '" cy="' + c + '" r="' + r + '" fill="none" style="stroke:' + p.paint + '" stroke-width="' + w + '"/>';
-      else if (a1 > a0) out += '<path d="' + arc(c, c, r, a0, a1) + '" fill="none" style="stroke:' + p.paint + '" stroke-width="' + w + '"/>';
-      a += sweep;
-    });
-    svg.innerHTML = out;
-  }
-
-  // ---------- render ----------
-  function readInputs() {
-    S.start = num($('start').value); S.monthly = num($('monthly').value);
-    S.years = Math.max(1, Math.min(25, Math.round(num($('years').value))));
-    ['infl', 'raise'].concat(RATE_KEYS).forEach(k => S[k] = num($(k).value));
-    PF_KEYS.filter(k => k !== 'cash').forEach(k => ['b', 's', 'y'].forEach(t => { const el = $('c_' + k + '_' + t); if (el) S['c_' + k + '_' + t] = num(el.value); }));
-  }
-  function writeInputs() {
-    $('start').value = fmt(S.start); $('monthly').value = fmt(S.monthly); $('years').value = S.years;
-    ['infl', 'raise'].concat(RATE_KEYS).forEach(k => $(k).value = S[k]);
-    PF_KEYS.filter(k => k !== 'cash').forEach(k => ['b', 's', 'y'].forEach(t => { const el = $('c_' + k + '_' + t); if (el) el.value = S['c_' + k + '_' + t]; }));
-  }
-  function render() {
-    $('yearsOut').textContent = S.years + (S.years === 1 ? ' year' : ' years');
-    document.querySelectorAll('.segmented button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === preset ? 'true' : 'false'));
-    const custom = RATE_KEYS.some(k => Math.abs(S[k] - PRESETS[preset][k]) > 1e-9);
-    $('presetNote').textContent = (custom ? 'Custom returns, based on ' + ({ cautious: 'Cautious', balanced: 'Balanced', past: 'Last 10 years' })[preset] + '. ' : '') + PRESETS[preset].note;
-
-    const v = S, K = keepUp(v), defl = Math.pow(1 + v.infl / 100, v.years);
-    const opts = options(v).map(o => Object.assign(o, { value: sim(o, v) }));
-    opts.forEach(o => o.real = o.value / defl);
-    opts.sort((a, b) => b.value - a.value);
-    const best = opts[0];
-
-    $('bestVal').textContent = fmt(best.value) + ' EGP';
-    $('bestTxt').textContent = NAMES[best.key] + '. Worth ' + compact(best.real) + ' in today\'s money. You put in ' + compact(K.put) + '.';
-    donut($('heroDonut'), [{ v: Math.min(K.put, best.value), paint: 'var(--on-blue)' }, { v: Math.max(best.value - K.put, 0), paint: 'var(--ink)' }], 100, 16, 0.08, 'var(--on-blue)');
-    $('keepVal').textContent = compact(K.final);
-    $('keepTxt').textContent = 'At ' + v.infl + '% inflation, over ' + v.years + (v.years === 1 ? ' year' : ' years');
-
-    const max = Math.max(...opts.map(o => o.value), K.final) * 1.02;
-    $('list').innerHTML = opts.map((o, i) => {
-      const up = o.value >= K.final;
-      return '<div class="opt' + (i === 0 ? ' best' : '') + '"><div class="nm">' + NAMES[o.key] + '<small>' + SUBS[o.key] + '</small><span class="chip' + (up ? ' up' : '') + '">' + (up ? 'Beats inflation' : 'Loses to inflation') + '</span></div>' +
-        '<div class="val">' + compact(o.value) + '<small>' + compact(o.real) + ' today</small></div>' +
-        '<div class="bar" aria-hidden="true"><i style="width:' + (o.value / max * 100) + '%"></i><b style="left:' + (K.final / max * 100) + '%"></b></div></div>';
-    }).join('');
-
-    renderPortfolio(opts, K, v, defl);
-    document.querySelectorAll('.mixes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mix === pfMix ? 'true' : 'false'));
-    persist();
-  }
-
-  function buildSliders() {
-    $('pfSliders').innerHTML = PF_KEYS.map(k => '<div class="slide"><div class="top"><label for="pf_' + k + '"><i class="sw f-' + k + '"></i>' + NAMES[k].replace(' at home', '') + '</label><output id="pfo_' + k + '" for="pf_' + k + '"></output></div><input type="range" id="pf_' + k + '" min="0" max="100" step="1"></div>').join('');
-    PF_KEYS.forEach(k => $('pf_' + k).addEventListener('input', e => setWeight(k, +e.target.value)));
-    $('costRows').innerHTML = ['cd', 'egx', 'us', 'gold', 're'].map(k => '<div class="row arow"><span class="lbl">' + NAMES[k] + '</span><span class="money">' +
-      ['b', 's', 'y'].map(t => '<input id="c_' + k + '_' + t + '" inputmode="decimal" aria-label="' + NAMES[k] + ' ' + ({ b: 'buy', s: 'sell', y: 'yearly' })[t] + ' cost">').join('') + '<span>%</span></span></div>').join('');
-  }
-  function setWeight(k, val) {
+  function pfSet(k, val) {
     val = Math.max(0, Math.min(100, Math.round(val)));
     const others = PF_KEYS.filter(x => x !== k), rest = 100 - val, sum = others.reduce((a, x) => a + pf[x], 0);
     pf[k] = val;
-    if (sum > 0) others.forEach(x => pf[x] = Math.floor(pf[x] * rest / sum)); else others.forEach((x, i) => pf[x] = i === 0 ? rest : 0);
+    if (sum > 0) others.forEach(x => pf[x] = Math.floor(pf[x] * rest / sum));
+    else others.forEach((x, i) => pf[x] = i === 0 ? rest : 0);
     let diff = 100 - PF_KEYS.reduce((a, x) => a + pf[x], 0);
     const order = others.slice().sort((a, b) => pf[b] - pf[a]);
     for (let i = 0; diff > 0; i = (i + 1) % order.length) { pf[order[i]]++; diff--; }
     pfMix = '';
-    render();
+    pfRender();
   }
-  function renderPortfolio(opts, K, v, defl) {
+  function pfRender() {
+    document.querySelectorAll('.mixes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mix === pfMix ? 'true' : 'false'));
     PF_KEYS.forEach(k => { $('pf_' + k).value = pf[k]; $('pfo_' + k).textContent = pf[k] + '%'; });
-    const by = {}; opts.forEach(o => by[o.key] = o);
-    let total = 0; const parts = [];
-    PF_KEYS.forEach(k => { const w = pf[k] / 100; if (w <= 0) return; const r = sim(by[k], Object.assign({}, v, { start: v.start * w, monthly: v.monthly * w })); total += r; parts.push({ k, w, value: r }); });
-    donut($('pfDonut'), PF_KEYS.map(k => ({ v: pf[k], paint: PAINT[k] })), 200, 34, 0.035, 'var(--ink)');
-    $('pfVal').textContent = compact(total);
-    const up = total >= K.final, beyond = (total - K.final) / defl;
-    const rows = [
-      '<div class="pres"><span>Your portfolio</span><b>' + fmt(total) + ' EGP</b></div>',
-      '<div class="pres"><span>In today\'s money</span><b>' + fmt(total / defl) + '</b></div>',
-      '<div class="pres"><span>' + (up ? 'Beats inflation by' : 'Loses to inflation by') + '</span><b class="' + (up ? 'gain' : '') + '">' + (up ? '+' : '−') + fmt(Math.abs(beyond)) + '</b></div>',
-      '<div class="pres"><span>All in ' + NAMES[opts[0].key] + '</span><b>' + fmt(opts[0].value) + '</b></div>'
-    ];
-    $('pfRes').innerHTML = rows.join('');
+    $('pfStack').innerHTML = PF_KEYS.filter(k => pf[k] > 0).map(k => '<div class="f-' + k + '" style="width:' + pf[k] + '%">' + (pf[k] >= 10 ? pf[k] + '%' : '') + '</div>').join('');
+    $('pfTotal').textContent = PF_KEYS.reduce((a, x) => a + pf[x], 0) + '%';
+    try { localStorage.setItem('emc-pf', JSON.stringify({ w: pf, mix: pfMix })); } catch (e) {}
+    if (lastOpts) renderPortfolio(lastOpts, lastK, lastV);
+  }
+  function renderPortfolio(opts, K, v) {
+    lastOpts = opts; lastK = K; lastV = v;
+    const byKey = {}; opts.forEach(o => byKey[o.key] = o);
+    const deflate = Math.pow(1 + v.infl / 100, v.years);
+    let total = 0, put = 0; const parts = [];
+    PF_KEYS.forEach(k => {
+      const w = pf[k] / 100; if (w <= 0) return;
+      const vv = Object.assign({}, v, { start: v.start * w, monthly: v.monthly * w });
+      const r = sim(byKey[k], vv).final; total += r;
+      parts.push({ k, w, value: r });
+    });
+    const beyond = (total - K.final) / deflate, beats = total >= K.final;
+    $('pfVal').textContent = fmt(total) + ' EGP';
+    $('pfTxt').textContent = 'Worth ' + fmt(total / deflate) + ' EGP in today\'s money, after costs. ' + (beats ? 'Beats' : 'Loses to') + ' inflation by ' + fmt(Math.abs(beyond)) + ' EGP in today\'s money.';
+    const best = opts[0];
+    const rows = parts.sort((a, b) => b.value - a.value).map(p => '<div class="pfrow"><span><i class="psw f-' + p.k + '"></i>' + PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%</span><b>' + fmt(p.value) + '</b></div>');
+    rows.push('<div class="pfrow"><span>Needed to keep up with prices</span><b>' + fmt(K.final) + '</b></div>');
+    rows.push('<div class="pfrow"><span>All in the top single option (' + best.name + ')</span><b>' + fmt(best.value) + '</b></div>');
+    $('pfRows').innerHTML = rows.join('');
     const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
     const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
-    $('pfRisk').textContent = 'Biggest share: ' + pf[big] + '% in ' + NAMES[big].replace(' at home', '') + '. If every part had its worst year on record at once (rough, unlikely), this mix would fall about ' + Math.abs(worst).toFixed(0) + '% that year.';
+    $('pfRisk').textContent = 'Spread: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' of 6 options, biggest share ' + pf[big] + '% in ' + PF_NAMES[big] + '. If every part had its worst year on record at the same time (rough and unlikely), the mix would fall about ' + Math.abs(worst).toFixed(0) + '% that year. A single all-in choice is simpler but carries all of one option\'s risk.';
   }
+  document.querySelectorAll('.mixes button').forEach(b => b.addEventListener('click', () => { pf = Object.assign({}, MIXES[b.dataset.mix]); pfMix = b.dataset.mix; pfRender(); }));
+  pfBuild();
 
-  // ---------- events ----------
+  // ---------- Tabs ----------
   function setTab(t) {
-    tab = t;
-    $('v-compare').hidden = t !== 'compare'; $('v-portfolio').hidden = t !== 'portfolio';
-    $('t-compare').setAttribute('aria-selected', t === 'compare'); $('t-portfolio').setAttribute('aria-selected', t === 'portfolio');
-    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
-    persist();
+    const port = t === 'portfolio';
+    $('tab-compare').hidden = port; $('tab-portfolio').hidden = !port;
+    $('t-compare').setAttribute('aria-selected', !port); $('t-portfolio').setAttribute('aria-selected', port);
+    document.body.classList.toggle('ptab', port);
+    try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
   $('t-compare').addEventListener('click', () => setTab('compare'));
   $('t-portfolio').addEventListener('click', () => setTab('portfolio'));
-  document.querySelectorAll('.segmented button').forEach(b => b.addEventListener('click', () => { preset = b.dataset.p; RATE_KEYS.forEach(k => S[k] = PRESETS[preset][k]); writeInputs(); render(); }));
-  document.querySelectorAll('.mixes button').forEach(b => b.addEventListener('click', () => { pf = Object.assign({}, MIXES[b.dataset.mix]); pfMix = b.dataset.mix; render(); }));
-  $('yMinus').addEventListener('click', () => { S.years = Math.max(1, S.years - 1); $('years').value = S.years; render(); });
-  $('yPlus').addEventListener('click', () => { S.years = Math.min(25, S.years + 1); $('years').value = S.years; render(); });
-  function openSheet(which) {
-    $('assumeBody').hidden = which !== 'assume'; $('srcBody').hidden = which !== 'src';
-    $('sheetTitle').textContent = which === 'src' ? 'Sources' : 'Assumptions';
-    $('sheet').hidden = false; $('scrim').hidden = false; document.body.style.overflow = 'hidden'; $('closeSheet').focus();
-  }
-  function closeSheet() { $('sheet').hidden = true; $('scrim').hidden = true; document.body.style.overflow = ''; }
-  $('openSheet').addEventListener('click', () => openSheet('assume'));
-  $('openSrc').addEventListener('click', () => openSheet('src'));
-  $('closeSheet').addEventListener('click', closeSheet);
-  $('scrim').addEventListener('click', closeSheet);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('sheet').hidden) closeSheet(); });
-  $('reset').addEventListener('click', () => { S = Object.assign({}, BASE, PRESETS.balanced); preset = 'balanced'; pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; writeInputs(); render(); });
-
-  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); defs.setAttribute('width', '0'); defs.setAttribute('height', '0'); defs.setAttribute('aria-hidden', 'true'); defs.style.position = 'absolute'; defs.innerHTML = PATS; document.body.prepend(defs);
-  buildSliders();
-  writeInputs();
-  document.querySelectorAll('input').forEach(el => { if (el.id && !el.id.startsWith('pf_')) el.addEventListener('input', () => { readInputs(); render(); }); });
-  ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
-  ['start', 'monthly'].forEach(k => $(k).addEventListener('focus', e => setTimeout(() => e.target.select(), 0)));
-  setTab(tab);
-  render();
-  if ('serviceWorker' in navigator && location.protocol === 'https:') window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  let startTab = 'compare';
+  try { startTab = localStorage.getItem('emc-tab') || 'compare'; } catch (e) {}
+  if (location.hash === '#portfolio') startTab = 'portfolio';
+  if (location.hash === '#compare') startTab = 'compare';
+  setTab(startTab);
+  load(); calc(); pfRender();
 })();
 </script>
+<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>
 </body>
 </html>
