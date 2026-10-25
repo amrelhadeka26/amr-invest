@@ -13,7 +13,7 @@ const fmt = n => Number(n || 0).toLocaleString('en-US');
 function page(title, body) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>${title}</title>
 <style>
-:root{--ink:#000;--blue:#0B5CC1;--paper:#fff}
+:root{--ink:#000;--blue:#000;--paper:#fff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 .wrap{max-width:820px;margin:0 auto;padding:28px 16px 64px}

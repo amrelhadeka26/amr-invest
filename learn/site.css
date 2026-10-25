@@ -12,10 +12,10 @@ h1,h2{margin:0;font-weight:700;letter-spacing:-0.025em;line-height:1.07}
 .btn-dark:hover{background:#000}
 .btn-light{background:transparent;color:var(--ink)}
 .btn-light:hover{background:var(--soft)}
-:focus-visible{outline:3px solid #0071E3;outline-offset:2px}
+:focus-visible{outline:3px solid #000;outline-offset:2px}
 
 .grow-box{max-width:760px;margin:64px auto 96px;border:1px solid var(--line);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:14px;background:var(--white)}
-.grow-head{display:block;background:#0B5CC1;color:#fff;border-radius:20px;padding:30px 20px;text-align:center;text-decoration:none}
+.grow-head{display:block;background:#000;color:#fff;border-radius:20px;padding:30px 20px;text-align:center;text-decoration:none}
 .grow-name{color:#fff;font-size:clamp(40px,7vw,56px);letter-spacing:-0.04em;line-height:1}
 .grow-head p{margin:10px 0 0;font-size:clamp(16px,2.2vw,19px);color:#fff}
 .gtiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}

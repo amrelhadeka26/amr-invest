@@ -20,8 +20,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-/* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: white, black, blue only. */
-:root { --paper:#ffffff; --ink:#000000; --blue:#0b5cc1; --on-blue:#ffffff; --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; }
+/* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: black and white only. */
+:root { --paper:#ffffff; --ink:#000000; --blue:#000000; --on-blue:#ffffff; --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; }
 :root { color-scheme: light; }
 * { box-sizing: border-box; }
 body { background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
@@ -129,12 +129,12 @@ body.ptab .mode-only { display: none; }
 .stack div:last-child { border-right: 0; }
 .psw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--ink); vertical-align: -2px; margin-right: 8px; flex-shrink: 0; }
 .f-cd { background: var(--ink); }
-.f-egx { background: var(--blue); }
-.f-us { background: repeating-linear-gradient(45deg, var(--blue) 0 3px, var(--paper) 3px 6px); }
+.f-egx { background: repeating-linear-gradient(90deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
+.f-us { background: repeating-linear-gradient(-45deg, var(--ink) 0 3px, var(--paper) 3px 6px); }
 .f-gold { background: repeating-linear-gradient(45deg, var(--ink) 0 3px, var(--paper) 3px 6px); }
 .f-re { background: repeating-linear-gradient(0deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
 .f-cash { background: var(--paper); }
-.stack .f-us, .stack .f-gold, .stack .f-re, .stack .f-cash { color: transparent; }
+.stack .f-egx, .stack .f-us, .stack .f-gold, .stack .f-re, .stack .f-cash { color: transparent; }
 .sliders { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
 .srow { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 4px 12px; align-items: center; }
 .srow label { font-size: 14.5px; font-weight: 600; display: flex; align-items: center; }
