@@ -241,6 +241,11 @@ details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
 .goal-only { display: none !important; }
 body.gtab .goal-only { display: flex !important; }
 body.gtab .nogoal { display: none !important; }
+
+.sublabel { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
+.assume-body .seg.preset { align-self: stretch; }
+.assume-body .presetnote { text-align: left; margin: 10px 0 18px; }
+details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 </style>
 </head>
 <body>
@@ -286,22 +291,26 @@ body.gtab .nogoal { display: none !important; }
       <details class="assume" id="assume">
         <summary>Customize assumptions</summary>
         <div class="assume-body">
-        <div class="seg preset" role="group" aria-label="Scenario">
+        <p class="sublabel" id="outlookLbl">Investment outlook</p>
+        <div class="seg preset" role="group" aria-labelledby="outlookLbl">
           <button type="button" data-p="cautious" aria-pressed="false">Cautious</button>
           <button type="button" data-p="balanced" aria-pressed="true">Balanced</button>
           <button type="button" data-p="past" aria-pressed="false">Last 10 years</button>
         </div>
         <p class="presetnote" id="presetNote"></p>
         <div class="field" style="margin-bottom:14px">
-          <label for="raise">Raise my monthly amount each year by</label>
-          <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
-        </div>
-        <div class="field">
           <label for="infl">Inflation, yearly</label>
           <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
           <span class="small">Latest: 13.9% (Sept 2026)</span>
         </div>
+        <div class="field">
+          <label for="raise">Raise my monthly amount each year by</label>
+          <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
+        </div>
 
+        <details class="assume adv" id="advset">
+        <summary>Advanced settings</summary>
+        <div>
         <details class="sect" open style="margin-top:16px">
           <summary>Returns, yearly</summary>
           <table class="atable">
@@ -333,9 +342,11 @@ body.gtab .nogoal { display: none !important; }
           <p class="small" style="margin-top:10px">All in %. Buy = paid on every amount you put in. Sell = paid once at the end. Yearly = taken off the return each year (taxes on dividends, fees, maintenance).</p>
         </details>
         </div>
+        </details>
+        </div>
       </details>
 
-      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-start">Reset</button>
+      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-end">Reset</button>
     </form>
 
     <section class="results" id="tab-compare" aria-live="polite">
