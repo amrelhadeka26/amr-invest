@@ -633,7 +633,7 @@ body.atab .nogoal { display: none !important; }
   }
 
   const RISK = {
-    cd:   { lvl: 0, label: 'Low ups and downs', risk: 'Your money is locked in, and if inflation rises above the rate you fall behind.', min: 1 },
+    cd:   { lvl: 0, label: 'Low ups and downs', risk: 'Locked for 3 years, and breaking it early costs you. If inflation rises above the rate, you fall behind.', min: 3 },
     re:   { lvl: 1, label: 'Low ups and downs', risk: 'Hard to sell quickly, and it needs a large amount to start.', min: 5 },
     gold: { lvl: 2, label: 'Medium ups and downs', risk: 'Pays no income, and can stay flat for years.', min: 3 },
     us:   { lvl: 3, label: 'High ups and downs', risk: 'Moves with US markets and with the dollar rate.', min: 5 },
@@ -645,13 +645,13 @@ body.atab .nogoal { display: none !important; }
     const rows = opts.slice().sort((a, b) => (a.key === 'cash') - (b.key === 'cash') || RISK[a.key].lvl - RISK[b.key].lvl || PF_WORST[b.key] - PF_WORST[a.key]);
     const fits = rows.filter(o => o.key !== 'cash' && yrs >= RISK[o.key].min);
     $('aHead').textContent = yrs < 3 ? 'Short timeline' : yrs < 5 ? 'Medium timeline' : 'Long timeline';
-    $('aSub').textContent = 'For ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + (fits.length ? fits.length + ' of 5 options give you enough time to recover from a bad year.' : 'only steady options are safe. Money you need soon shouldn\'t be in stocks.');
+    $('aSub').textContent = 'For ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + (fits.length ? fits.length + ' of 5 options ' + (fits.length === 1 ? 'gives' : 'give') + ' you enough time to recover from a bad year.' : 'none of these options fits. Keep money you need soon somewhere you can withdraw anytime.');
     $('aList').innerHTML = rows.map(o => {
       const R = RISK[o.key], w = PF_WORST[o.key];
       const ok = o.key === 'cash' ? false : yrs >= R.min;
       let dip = '';
       if (base > 0 && w < 0) dip = '<p class="rdip">In a year like its worst, ' + money(base, 0) + ' could drop to <b>' + money(base * (1 + w / 100), 0) + '</b> for a while.</p>';
-      else if (o.key === 'cash') dip = '<p class="rdip">Over ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + money(base > 0 ? base : 100000, 0) + ' buys only about <b>' + Math.round(100 * Math.pow((1 + (usdMode() ? v.fx : 0) / 100) / (1 + v.infl / 100), yrs)) + '%</b> of what it buys today.</p>';
+      else if (o.key === 'cash') dip = '<p class="rdip">Over ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + (base > 0 ? money(base, 0) : (usdMode() ? 'a dollar' : 'a pound')) + ' buys only about <b>' + Math.round(100 * Math.pow((1 + (usdMode() ? v.fx : 0) / 100) / (1 + v.infl / 100), yrs)) + '%</b> of what it buys today.</p>';
       const fitTxt = o.key === 'cash' ? 'Not for growing money' : ok ? 'Fits ' + yrs + (yrs === 1 ? ' year' : ' years') : 'Better for ' + R.min + '+ years';
       return '<div class="rcard"><div class="rtop"><div><b>' + o.name + '</b><span class="rlvl l' + R.lvl + '">' + R.label + '</span></div>' +
         '<span class="rfit' + (ok ? ' ok' : '') + '">' + fitTxt + '</span></div>' +
