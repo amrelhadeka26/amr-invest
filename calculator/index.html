@@ -235,6 +235,12 @@ details.assume[open] > summary::after { transform: rotate(-135deg) translateY(-3
 .keep p { margin: 6px 0 0; font-size: 13.5px; }
 details.detail { border-top: 1px solid var(--ink); }
 details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
+
+/* goal tab */
+.apptabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.goal-only { display: none !important; }
+body.gtab .goal-only { display: flex !important; }
+body.gtab .nogoal { display: none !important; }
 </style>
 </head>
 <body>
@@ -249,24 +255,31 @@ details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
 
   <nav class="apptabs" role="tablist" aria-label="Tools">
     <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Compare</button>
-    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Build a portfolio</button>
+    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Portfolio</button>
+    <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">Goal</button>
   </nav>
 
 
   <div class="grid">
     <form class="panel" onsubmit="return false" aria-label="Your numbers">
+      <div class="field goal-only">
+        <label for="goal">My goal costs today</label>
+        <div class="inp"><input id="goal" inputmode="numeric"><span>EGP</span></div>
+        <div class="quick" data-goal><button type="button" data-v="500000">500K</button><button type="button" data-v="1000000">1M</button><button type="button" data-v="3000000">3M</button><button type="button" data-v="5000000">5M</button></div>
+        <span class="small">A car, a flat's down payment, your child's university. Type what it costs now.</span>
+      </div>
       <div class="field">
         <label for="start">I have now</label>
         <div class="inp"><input id="start" inputmode="numeric"><span>EGP</span></div>
         <div class="quick" data-for="start"><button type="button" data-v="0">0</button><button type="button" data-v="50000">50K</button><button type="button" data-v="100000">100K</button><button type="button" data-v="500000">500K</button><button type="button" data-v="1000000">1M</button></div>
       </div>
-      <div class="field">
+      <div class="field nogoal">
         <label for="monthly">I can add each month</label>
         <div class="inp"><input id="monthly" inputmode="numeric"><span>EGP</span></div>
         <div class="quick" data-for="monthly"><button type="button" data-v="1000">1K</button><button type="button" data-v="3000">3K</button><button type="button" data-v="5000">5K</button><button type="button" data-v="10000">10K</button></div>
       </div>
       <div class="field">
-        <label for="years">For how long</label>
+        <label for="years" id="yearsLbl">For how long</label>
         <div class="yearsrow"><input type="range" id="years" min="1" max="25" step="1"><output id="yearsOut" for="years"></output></div>
       </div>
 
@@ -357,6 +370,21 @@ details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
         <p class="small" style="margin-top:8px">*More (or less) than you need to keep up with prices, in today's money, after costs.</p>
       </div>
       </details>
+    </section>
+  <section class="results goal" id="tab-goal" aria-live="polite" hidden>
+      <div class="hero">
+        <span class="eyebrow" id="gEyebrow">To reach your goal, save</span>
+        <div class="hero-big" id="gMonthly">—</div>
+        <div class="hero-today" id="gWith">—</div>
+        <div class="hero-rows">
+          <div><span>Goal in today's money</span><b id="gToday">—</b></div>
+          <div><span id="gFutLbl">Price then</span><b id="gFuture">—</b></div>
+        </div>
+        <p class="hero-note" id="gNote">—</p>
+      </div>
+      <p class="eyebrow" style="margin:4px 0 -6px">Monthly amount needed with each option</p>
+      <div class="list" id="gList"></div>
+      <p class="small">Prices rise with inflation, so your goal will cost more later. We grow it by the inflation rate in your assumptions, then work out the monthly amount each option needs to get there, after costs.</p>
     </section>
   <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
     <p class="eyebrow blue">Portfolio builder</p>
@@ -483,7 +511,7 @@ details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
     const grow = best.value - K.put;
     $('growVal').textContent = (grow >= 0 ? '+' : '−') + fmt(Math.abs(grow)) + ' EGP';
     $('growVal').classList.toggle('up', grow >= 0);
-    $('bestTxt').textContent = 'With the option that grows the most: ' + best.name.toLowerCase() + ', after costs.';
+    $('bestTxt').textContent = 'With the option that grows the most: ' + best.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + ', after costs.';
     $('keepVal').textContent = fmt(K.final) + ' EGP';
     $('keepTxt').textContent = 'At ' + v.infl + '% inflation, this is what your money must reach to buy the same things. ' + (best.value >= K.final ? best.name + ' beats it by ' + fmt((best.value - K.final)) + ' EGP.' : 'No option beats it at these numbers.');
 
@@ -501,6 +529,45 @@ details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
 
     drawChart(opts, K, v);
     renderPortfolio(opts, K, v);
+    renderGoal(opts, v);
+  }
+
+  function renderGoal(opts, v) {
+    const G = num($('goal').value), yrs = v.years;
+    try { localStorage.setItem('emc-goal', String(G)); } catch (e) {}
+    const target = G * Math.pow(1 + v.infl / 100, yrs);
+    const rows = opts.map(o => {
+      const f0 = sim(o, Object.assign({}, v, { monthly: 0 })).final;
+      const f1 = sim(o, Object.assign({}, v, { monthly: 1000 })).final;
+      const need = (target - f0) / ((f1 - f0) / 1000);
+      return { o, need: Math.max(0, need), done: f0 >= target };
+    }).sort((a, b) => a.need - b.need);
+    const best = rows[0], cash = rows.find(r => r.o.key === 'cash');
+    const yTxt = yrs + (yrs === 1 ? ' year' : ' years');
+    $('gToday').textContent = fmt(G) + ' EGP';
+    $('gFutLbl').textContent = 'Price in ' + yTxt;
+    $('gFuture').textContent = fmt(target) + ' EGP';
+    if (G <= 0) {
+      $('gEyebrow').textContent = 'Your goal'; $('gMonthly').textContent = 'Type a goal';
+      $('gWith').textContent = 'Enter what your goal costs today.'; $('gNote').textContent = ''; $('gList').innerHTML = ''; return;
+    }
+    if (best.done) {
+      $('gEyebrow').textContent = 'Good news';
+      $('gMonthly').textContent = 'You\'re on track';
+      $('gWith').textContent = 'What you have now already gets there with ' + best.o.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + '.';
+    } else {
+      $('gEyebrow').textContent = 'To reach your goal, save';
+      $('gMonthly').textContent = fmt(best.need) + ' EGP';
+      $('gWith').textContent = 'a month, with ' + best.o.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + ', for ' + yTxt + '.';
+    }
+    $('gNote').textContent = cash && !best.done && cash.need > best.need
+      ? 'Keeping it as cash at home would take ' + fmt(cash.need) + ' EGP a month, ' + fmt(cash.need - best.need) + ' more.'
+      : '';
+    const max = Math.max(...rows.map(r => r.need)) * 1.04 || 1;
+    $('gList').innerHTML = rows.map((r, i) =>
+      '<div class="item"><div class="nm">' + r.o.name + '<small>' + r.o.sub + '</small></div>' +
+      '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (r.need / max * 100) + '%"></div></div>' +
+      '<div class="v">' + (r.done ? 'On track' : fmt(r.need)) + '<small>' + (r.done ? 'no monthly needed' : 'a month') + '</small></div></div>').join('');
   }
 
   function drawChart(opts, K, v) {
@@ -597,18 +664,25 @@ details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
 
   // ---------- Tabs ----------
   function setTab(t) {
-    const port = t === 'portfolio';
-    $('tab-compare').hidden = port; $('tab-portfolio').hidden = !port;
-    $('t-compare').setAttribute('aria-selected', !port); $('t-portfolio').setAttribute('aria-selected', port);
-    document.body.classList.toggle('ptab', port);
+    if (!['compare', 'portfolio', 'goal'].includes(t)) t = 'compare';
+    ['compare', 'portfolio', 'goal'].forEach(k => { $('tab-' + k).hidden = k !== t; $('t-' + k).setAttribute('aria-selected', k === t); });
+    document.body.classList.toggle('ptab', t === 'portfolio');
+    document.body.classList.toggle('gtab', t === 'goal');
+    $('yearsLbl').textContent = t === 'goal' ? 'I want it in' : 'For how long';
     try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
   $('t-compare').addEventListener('click', () => setTab('compare'));
   $('t-portfolio').addEventListener('click', () => setTab('portfolio'));
+  $('t-goal').addEventListener('click', () => setTab('goal'));
   let startTab = 'compare';
   try { startTab = localStorage.getItem('emc-tab') || 'compare'; } catch (e) {}
   if (location.hash === '#portfolio') startTab = 'portfolio';
   if (location.hash === '#compare') startTab = 'compare';
+  if (location.hash === '#goal') startTab = 'goal';
+  (function () { let g = 1000000; try { const x = localStorage.getItem('emc-goal'); if (x) g = num(x); } catch (e) {} $('goal').value = fmt(g); })();
+  $('goal').addEventListener('input', calc);
+  $('goal').addEventListener('blur', () => { $('goal').value = fmt(num($('goal').value)); });
+  document.querySelectorAll('.quick[data-goal] button').forEach(b => b.addEventListener('click', () => { $('goal').value = fmt(num(b.dataset.v)); calc(); }));
   setTab(startTab);
   load(); calc(); pfRender();
 })();
