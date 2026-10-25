@@ -272,6 +272,21 @@ body.atab .nogoal { display: none !important; }
 .rmeter i.on { background: var(--ink); }
 .rworst, .rdip, .rrisk { margin: 4px 0 0; font-size: 14px; }
 .rrisk { margin-top: 8px; }
+
+/* grow. card, same as the homepage */
+.grow-box { margin: 24px 0 0; border: 1px solid #D2D2D7; border-radius: 28px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.grow-head { background: var(--blue); color: var(--on-blue); border-radius: 20px; padding: 28px 20px; text-align: center; }
+.grow-name { margin: 0; color: var(--on-blue); font-size: clamp(40px, 7vw, 56px); letter-spacing: -0.04em; line-height: 1; }
+.grow-head p { margin: 10px 0 0; font-size: clamp(16px, 2.2vw, 19px); }
+.gtiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.gtile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border: 1px solid #D2D2D7; border-radius: 20px; padding: 18px; text-decoration: none; color: var(--ink); transition: border-color .2s; }
+.gtile:hover { border-color: var(--ink); }
+.gtile.on { border: 2px solid var(--blue); padding: 17px; }
+.gtile svg { width: 28px; height: 28px; margin-bottom: 10px; }
+.gtile b { font-size: clamp(20px, 3.4vw, 26px); letter-spacing: -0.02em; line-height: 1.1; }
+.gtile span { font-size: 14px; }
+.apptabs { scroll-margin-top: 12px; }
+@media (max-width: 600px) { .grow-box { border-radius: 24px; padding: 10px; gap: 10px; } .gtiles { gap: 10px; } .gtile { padding: 14px; } .gtile.on { padding: 13px; } }
 </style>
 </head>
 <body>
@@ -280,9 +295,15 @@ body.atab .nogoal { display: none !important; }
 <div class="wrap">
   <header class="top"><a href="/" aria-label="Amr El Hadeka home"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a><a class="homelink" href="/">‹ Home</a></header>
 
-  <p class="eyebrow blue" style="margin-top:28px">grow. · Investment tools</p>
-  <h1>Where could your money grow faster than prices?</h1>
-  <p class="lede">Type what you have and what you can add each month. We'll show which option beats rising prices.</p>
+  <div class="grow-box">
+<div class="grow-head"><h1 class="grow-name">grow.</h1><p>One platform. Your complete investment picture.</p></div>
+<div class="gtiles">
+<a class="gtile" href="#calculate" data-tab="compare"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="3"/><path d="M8 7.5h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg><b>Calculate</b><span>Project your wealth</span></a>
+<a class="gtile" href="#portfolio" data-tab="portfolio"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></svg><b>Portfolio</b><span>Diversify investments</span></a>
+<a class="gtile" href="#analyze" data-tab="analyze"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="m7 14 3-3.5 3 3 4-5"/></svg><b>Analyze</b><span>Understand risk</span></a>
+<a class="gtile" href="#goals" data-tab="goal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>Goals</b><span>Plan your future</span></a>
+</div>
+</div>
   <p class="stamp" id="dataStamp">Data refreshed daily at 8:00 Cairo time</p>
 
   <nav class="apptabs" role="tablist" aria-label="Tools">
@@ -807,6 +828,7 @@ body.atab .nogoal { display: none !important; }
     document.body.classList.toggle('gtab', t === 'goal');
     document.body.classList.toggle('atab', t === 'analyze');
     $('yearsLbl').textContent = t === 'goal' ? 'I want it in' : 'For how long';
+    document.querySelectorAll('.gtile').forEach(el => el.classList.toggle('on', el.dataset.tab === t));
     try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
   $('t-compare').addEventListener('click', () => setTab('compare'));
@@ -846,6 +868,11 @@ body.atab .nogoal { display: none !important; }
     }
   }
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h) { setTab(h); calc(); } });
+  document.querySelectorAll('.gtile[data-tab]').forEach(el => el.addEventListener('click', e => {
+    e.preventDefault(); setTab(el.dataset.tab); calc();
+    try { history.replaceState(null, '', el.getAttribute('href')); } catch (x) {}
+    document.querySelector('.apptabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
   function start() { setTab(startTab); drawChips(); load(); calc(); pfRender(); }
   fetch('data.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(applyData).catch(() => {}).finally(start);
 })();
