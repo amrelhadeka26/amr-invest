@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Grow · Investment calculator | Amr El Hadeka</title>
-<link rel="canonical" href="https://invest.amrelhadeka.com/calculator/">
-<meta property="og:title" content="Grow · Investment calculator">
+<title>grow. · Investment tools for Egyptians | Amr El Hadeka</title>
+<link rel="canonical" href="https://invest.amrelhadeka.com/grow/">
+<meta property="og:title" content="grow. · Your complete investment picture">
 <meta property="og:image" content="https://invest.amrelhadeka.com/assets/og.jpg">
 <meta name="description" content="Compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.">
 <meta name="theme-color" content="#ffffff">
@@ -251,6 +251,27 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 .currow { flex-direction: row !important; align-items: center; justify-content: space-between; gap: 12px; }
 .currow .sublabel { margin: 0; }
 .seg.cur button { min-height: 36px; padding: 6px 16px; font-size: 14px; }
+
+.stamp { margin: 10px 0 0; font-size: 13px; font-weight: 600; color: var(--blue); display: flex; align-items: center; gap: 6px; }
+.stamp::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+
+/* four tabs */
+.apptabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 480px) { .apptabs button { font-size: 14px; padding-left: 2px; padding-right: 2px; } }
+body.atab .nogoal { display: none !important; }
+/* analyze */
+.risklist { display: flex; flex-direction: column; gap: 12px; }
+.rcard { border: 1.5px solid var(--ink); border-radius: 20px; padding: 18px 20px; }
+.rtop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.rtop b { display: block; font-size: 17px; }
+.rlvl { font-size: 13px; }
+.rfit { font-size: 12px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.rfit.ok { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+.rmeter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 12px 0 10px; }
+.rmeter i { height: 6px; border-radius: 3px; border: 1px solid var(--ink); }
+.rmeter i.on { background: var(--ink); }
+.rworst, .rdip, .rrisk { margin: 4px 0 0; font-size: 14px; }
+.rrisk { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -259,14 +280,16 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 <div class="wrap">
   <header class="top"><a href="/" aria-label="Amr El Hadeka home"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a><a class="homelink" href="/">‹ Home</a></header>
 
-  <p class="eyebrow blue" style="margin-top:28px">Grow · Investment calculator</p>
+  <p class="eyebrow blue" style="margin-top:28px">grow. · Investment tools</p>
   <h1>Where could your money grow faster than prices?</h1>
   <p class="lede">Type what you have and what you can add each month. We'll show which option beats rising prices.</p>
+  <p class="stamp" id="dataStamp">Data refreshed daily at 8:00 Cairo time</p>
 
   <nav class="apptabs" role="tablist" aria-label="Tools">
-    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Compare</button>
+    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Calculate</button>
     <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Portfolio</button>
-    <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">Goal</button>
+    <button type="button" role="tab" id="t-analyze" aria-selected="false" aria-controls="tab-analyze">Analyze</button>
+    <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">Goals</button>
   </nav>
 
 
@@ -313,7 +336,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
         <div class="field" style="margin-bottom:14px">
           <label for="infl">Inflation, yearly</label>
           <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
-          <span class="small">Latest: 13.9% (Sept 2026)</span>
+          <span class="small" id="infLatest">Latest: 13.9% (September 2026)</span>
         </div>
         <div class="field">
           <label for="raise">Raise my monthly amount each year by</label>
@@ -395,6 +418,16 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
       </div>
       </details>
     </section>
+  <section class="results analyze" id="tab-analyze" aria-live="polite" hidden>
+      <div class="hero">
+        <span class="eyebrow">Understand risk</span>
+        <div class="hero-big" id="aHead">—</div>
+        <div class="hero-today" id="aSub">—</div>
+        <p class="hero-note">Every option can have a bad year. What matters is whether you can wait it out.</p>
+      </div>
+      <div class="risklist" id="aList"></div>
+      <p class="small">Worst years are the biggest one-year falls on record for each option (EGX30 in 2011, the S&amp;P 500 in 2008, gold in 2013 in dollars, Egyptian property prices in 2020). The future can be better or worse.</p>
+    </section>
   <section class="results goal" id="tab-goal" aria-live="polite" hidden>
       <div class="hero">
         <span class="eyebrow" id="gEyebrow">To reach your goal, save</span>
@@ -444,7 +477,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   <details class="notes">
     <summary>Where the numbers come from</summary>
     <p><b>Where the scenarios come from.</b> <b>Last 10 years</b> uses what actually happened: EGX30 rose 12.8% a year on price alone from end-2014 to end-2024, plus dividends (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">EGX30 yearly returns</a>). The S&amp;P 500 returned 14.8% a year in dollars, 2016–2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). 21K gold rose from 287.62 EGP a gram in April 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">Amwal Al Ghad</a>) to about 6,217 today (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>, 24K × 21/24), about 25.6% a year in pounds, which splits into about 7.6% for gold in dollars and 16.7% for the pound's fall. Property prices rose about 12.2% a year in the Aqarmap index years 2014–2024 shown by <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>, with gross rental yields of 6.7% nationally. <b>Balanced</b> and <b>Cautious</b> are lower, forward-looking guesses, because the last decade included two large devaluations.</p>
-    <p><b>Today's rates.</b> Inflation 13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS via Daily News Egypt</a>). 3-year fixed certificates about 17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise, Aug 2026</a>); the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: 55.31 EGP (<a href="https://www.poundsterlinglive.com/history/USD-EGP-2026" target="_blank" rel="noopener">23 Oct 2026</a>). Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
+    <p><b>Today's rates.</b> Inflation <span id="srcInfl">13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS via Daily News Egypt</a>)</span>. 3-year fixed certificates about <span id="srcCd">17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise, August 2026</a>)</span>; the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: <span id="srcUsd">55.29 EGP (<a href="https://www.exchangerate-api.com/" target="_blank" rel="noopener">ExchangeRate-API</a>, 24 Oct 2026)</span>, refreshed every day at 8:00 Cairo time. Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
     <p><b>Worst year on record</b> shows how hard each option has fallen in a single year: EGX30 −49.3% in 2011, property −9.6% in 2020 (Aqarmap), and the widely reported S&amp;P 500 −37% in 2008 and gold −28% in 2013 (in USD). Property also needs a large amount up front and can take months to sell. Certificates are the only fixed rate, and only until they mature.</p>
     <p>Checked 24 October 2026.</p>
   </details>
@@ -460,7 +493,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     balanced: { note: 'Balanced: a middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
     past: { note: 'Last 10 years: what each option actually returned recently, including two big devaluations. The future may be calmer.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
   };
-  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9, rate0: 55.31,
+  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9, rate0: 55.29,
     c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
     c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
   const WORST = { cd: '0% (fixed)', egx: '−49.3% (2011)', us: '−37% (2008, USD)', gold: '−28% (2013, USD)', re: '−9.6% (2020)', cash: 'Never grows' };
@@ -486,7 +519,8 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 
   function load() {
     let s = null; try { s = JSON.parse(localStorage.getItem('emc-v2') || 'null'); } catch (e) {}
-    Object.keys(BASE).forEach(k => setVal(k, s && s.v && s.v[k] != null ? s.v[k] : BASE[k]));
+    const FRESH = ['rate0', 'infl'];
+    Object.keys(BASE).forEach(k => setVal(k, s && s.v && s.v[k] != null && !FRESH.includes(k) ? s.v[k] : BASE[k]));
     applyPreset(s && PRESETS[s.preset] ? s.preset : 'balanced');
     if (s && s.v && s.custom) RATE_KEYS.forEach(k => { if (s.v[k] != null) setVal(k, s.v[k]); });
     if (s && s.mode === 'adv') $('assume').open = true;
@@ -574,6 +608,36 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     drawChart(opts, K, v);
     renderPortfolio(opts, K, v);
     renderGoal(opts, v);
+    renderAnalyze(opts, v);
+  }
+
+  const RISK = {
+    cd:   { lvl: 0, label: 'Low ups and downs', risk: 'Your money is locked in, and if inflation rises above the rate you fall behind.', min: 1 },
+    re:   { lvl: 1, label: 'Low ups and downs', risk: 'Hard to sell quickly, and it needs a large amount to start.', min: 5 },
+    gold: { lvl: 2, label: 'Medium ups and downs', risk: 'Pays no income, and can stay flat for years.', min: 3 },
+    us:   { lvl: 3, label: 'High ups and downs', risk: 'Moves with US markets and with the dollar rate.', min: 5 },
+    egx:  { lvl: 3, label: 'High ups and downs', risk: 'Big swings with Egypt\'s economy and the pound.', min: 5 },
+    cash: { lvl: 0, label: 'No ups and downs', risk: 'It loses buying power every single year to rising prices.', min: 0 }
+  };
+  function renderAnalyze(opts, v) {
+    const base = v.start, yrs = v.years;
+    const rows = opts.slice().sort((a, b) => (a.key === 'cash') - (b.key === 'cash') || RISK[a.key].lvl - RISK[b.key].lvl || PF_WORST[b.key] - PF_WORST[a.key]);
+    const fits = rows.filter(o => o.key !== 'cash' && yrs >= RISK[o.key].min);
+    $('aHead').textContent = yrs < 3 ? 'Short timeline' : yrs < 5 ? 'Medium timeline' : 'Long timeline';
+    $('aSub').textContent = 'For ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + (fits.length ? fits.length + ' of 5 options give you enough time to recover from a bad year.' : 'only steady options are safe. Money you need soon shouldn\'t be in stocks.');
+    $('aList').innerHTML = rows.map(o => {
+      const R = RISK[o.key], w = PF_WORST[o.key];
+      const ok = o.key === 'cash' ? false : yrs >= R.min;
+      let dip = '';
+      if (base > 0 && w < 0) dip = '<p class="rdip">In a year like its worst, ' + money(base, 0) + ' could drop to <b>' + money(base * (1 + w / 100), 0) + '</b> for a while.</p>';
+      else if (o.key === 'cash') dip = '<p class="rdip">Over ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + money(base > 0 ? base : 100000, 0) + ' buys only about <b>' + Math.round(100 * Math.pow((1 + (usdMode() ? v.fx : 0) / 100) / (1 + v.infl / 100), yrs)) + '%</b> of what it buys today.</p>';
+      const fitTxt = o.key === 'cash' ? 'Not for growing money' : ok ? 'Fits ' + yrs + (yrs === 1 ? ' year' : ' years') : 'Better for ' + R.min + '+ years';
+      return '<div class="rcard"><div class="rtop"><div><b>' + o.name + '</b><span class="rlvl l' + R.lvl + '">' + R.label + '</span></div>' +
+        '<span class="rfit' + (ok ? ' ok' : '') + '">' + fitTxt + '</span></div>' +
+        '<div class="rmeter" aria-hidden="true">' + [0, 1, 2, 3].map(i => '<i' + (i <= R.lvl && o.key !== 'cash' ? ' class="on"' : '') + '></i>').join('') + '</div>' +
+        '<p class="rworst">Worst year on record: <b>' + WORST[o.key] + '</b></p>' + dip +
+        '<p class="rrisk">' + R.risk + '</p></div>';
+    }).join('');
   }
 
   function renderGoal(opts, v) {
@@ -735,27 +799,55 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 
   // ---------- Tabs ----------
   function setTab(t) {
-    if (!['compare', 'portfolio', 'goal'].includes(t)) t = 'compare';
-    ['compare', 'portfolio', 'goal'].forEach(k => { $('tab-' + k).hidden = k !== t; $('t-' + k).setAttribute('aria-selected', k === t); });
+    if (t === 'calculate') t = 'compare';
+    if (t === 'goals') t = 'goal';
+    if (!['compare', 'portfolio', 'analyze', 'goal'].includes(t)) t = 'compare';
+    ['compare', 'portfolio', 'analyze', 'goal'].forEach(k => { $('tab-' + k).hidden = k !== t; $('t-' + k).setAttribute('aria-selected', k === t); });
     document.body.classList.toggle('ptab', t === 'portfolio');
     document.body.classList.toggle('gtab', t === 'goal');
+    document.body.classList.toggle('atab', t === 'analyze');
     $('yearsLbl').textContent = t === 'goal' ? 'I want it in' : 'For how long';
     try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
   $('t-compare').addEventListener('click', () => setTab('compare'));
   $('t-portfolio').addEventListener('click', () => setTab('portfolio'));
   $('t-goal').addEventListener('click', () => setTab('goal'));
+  $('t-analyze').addEventListener('click', () => setTab('analyze'));
   let startTab = 'compare';
   try { startTab = localStorage.getItem('emc-tab') || 'compare'; } catch (e) {}
   if (location.hash === '#portfolio') startTab = 'portfolio';
   if (location.hash === '#compare') startTab = 'compare';
-  if (location.hash === '#goal') startTab = 'goal';
+  if (location.hash) { const h = location.hash.slice(1); if (['compare', 'calculate', 'portfolio', 'analyze', 'goal', 'goals'].includes(h)) startTab = h; }
   (function () { let g = 1000000; try { const x = localStorage.getItem('emc-goal'); if (x) g = num(x); } catch (e) {} $('goal').value = fmt(g); })();
   $('goal').addEventListener('input', calc);
   $('goal').addEventListener('blur', () => { $('goal').value = fmt(num($('goal').value)); });
-  setTab(startTab);
-  drawChips();
-  load(); calc(); pfRender();
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const link = (name, url) => /^https:\/\//.test(url || '') ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
+  const longDate = iso => { const d = new Date(iso + (iso.length === 10 ? 'T12:00:00Z' : '')); return isNaN(d) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Cairo' }); };
+  function applyData(d) {
+    if (!d) return;
+    const ok = x => typeof x === 'number' && isFinite(x) && x > 0;
+    if (d.usd_egp && ok(d.usd_egp.value)) {
+      BASE.rate0 = d.usd_egp.value;
+      $('srcUsd').innerHTML = d.usd_egp.value.toFixed(2) + ' EGP (' + link(d.usd_egp.source_name, d.usd_egp.source_url) + ', ' + esc(longDate(d.usd_egp.as_of)) + ')';
+    }
+    if (d.inflation && ok(d.inflation.value)) {
+      BASE.infl = d.inflation.value;
+      $('infLatest').textContent = 'Latest: ' + d.inflation.value + '% (' + d.inflation.period + ')';
+      $('srcInfl').innerHTML = d.inflation.value + '% in ' + esc(d.inflation.period) + ' (' + link(d.inflation.source_name, d.inflation.source_url) + ')';
+    }
+    if (d.cd3 && ok(d.cd3.value)) {
+      Object.keys(PRESETS).forEach(k => PRESETS[k].cd1 = d.cd3.value);
+      $('srcCd').innerHTML = d.cd3.value + '% (' + link(d.cd3.source_name + ', ' + d.cd3.as_of, d.cd3.source_url) + ')';
+    }
+    if (d.updated) {
+      const t = new Date(d.updated);
+      if (!isNaN(t)) $('dataStamp').textContent = 'Updated ' + t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }) + ', ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' }) + ' · refreshed daily';
+    }
+  }
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h) { setTab(h); calc(); } });
+  function start() { setTab(startTab); drawChips(); load(); calc(); pfRender(); }
+  fetch('data.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(applyData).catch(() => {}).finally(start);
 })();
 </script>
 <script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>

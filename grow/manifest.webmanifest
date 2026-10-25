@@ -1,8 +1,8 @@
 {
-  "name": "Grow · Investment calculator",
+  "name": "grow. · Investment tools",
   "short_name": "Grow",
-  "description": "Compare certificates, EGX30, US stocks, gold, property and cash in EGP after inflation, and build your own portfolio.",
-  "id": "/calculator/",
+  "description": "Calculate, build a portfolio, understand risk and plan goals, in EGP or USD, after inflation.",
+  "id": "/grow/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

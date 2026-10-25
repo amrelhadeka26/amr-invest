@@ -1,0 +1,36 @@
+name: Daily data update
+
+# 8:00 Cairo time. GitHub schedules run in UTC, so this fires at 05:00 and 06:00 UTC
+# and the script only updates once a day, at or after 8:00 Cairo (summer or winter time).
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Refresh data
+        env:
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
+        run: python scripts/update_data.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet; then echo "No change"; exit 0; fi
+          git config user.name "grow-data-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "Daily data: $(TZ=Africa/Cairo date +'%Y-%m-%d %H:%M') Cairo"
+          git push

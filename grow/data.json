@@ -1,0 +1,21 @@
+{
+  "updated": "2026-10-25T08:00:00+03:00",
+  "usd_egp": {
+    "value": 55.29,
+    "as_of": "2026-10-24",
+    "source_name": "ExchangeRate-API",
+    "source_url": "https://www.exchangerate-api.com/"
+  },
+  "inflation": {
+    "value": 13.9,
+    "period": "September 2026",
+    "source_name": "CAPMAS via Daily News Egypt",
+    "source_url": "https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/"
+  },
+  "cd3": {
+    "value": 17.75,
+    "as_of": "August 2026",
+    "source_name": "Enterprise",
+    "source_url": "https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/"
+  }
+}
