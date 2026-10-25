@@ -37,7 +37,8 @@ h1,h2{margin:0;font-weight:700;letter-spacing:-0.025em;line-height:1.07}
 .btn-light:hover{background:var(--soft)}
 :focus-visible{outline:3px solid #0071E3;outline-offset:2px}
 
-.grow-box{max-width:760px;margin:64px auto 96px;border:1px solid var(--line);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:14px;background:var(--white)}
+.grow{padding:110px 0 0}
+.grow-box{max-width:760px;margin:0 auto;border:1px solid var(--line);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:14px;background:var(--white)}
 .grow-head{display:block;background:#0B5CC1;color:#fff;border-radius:20px;padding:30px 20px;text-align:center;text-decoration:none}
 .grow-name{color:#fff;font-size:clamp(40px,7vw,56px);letter-spacing:-0.04em;line-height:1}
 .grow-head p{margin:10px 0 0;font-size:clamp(16px,2.2vw,19px);color:#fff}
@@ -49,7 +50,7 @@ h1,h2{margin:0;font-weight:700;letter-spacing:-0.025em;line-height:1.07}
 .gtile span{font-size:15px;color:var(--muted)}
 .grow-go{align-self:center;margin-top:8px;min-height:50px;padding:0 30px}
 .grow-fresh{margin:0 0 6px;text-align:center;font-size:13px;color:var(--muted)}
-@media (max-width:600px){.grow-box{margin:48px 16px 64px;padding:12px;border-radius:24px;gap:12px}.gtiles{gap:12px}.gtile{padding:16px}.grow-go{align-self:stretch}}
+@media (max-width:600px){.grow{padding-top:72px}.grow-box{margin:0 16px;padding:12px;border-radius:24px;gap:12px}.gtiles{gap:12px}.gtile{padding:16px}.grow-go{align-self:stretch}}
 
 /* header */
 .site-header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid #E8E8ED}
@@ -63,7 +64,7 @@ h1,h2{margin:0;font-weight:700;letter-spacing:-0.025em;line-height:1.07}
 .nav .btn{min-height:32px;padding:0 14px;font-size:13px}
 
 /* hero */
-.hero{text-align:center;padding:96px 0 0}
+.hero{text-align:center;padding:96px 0 104px}
 .hero h1{max-width:900px;margin:0 auto 12px;font-size:clamp(40px,7vw,80px);line-height:1.05;letter-spacing:-0.03em}
 .hero .lead{max-width:640px;margin:0 auto 28px;font-size:clamp(19px,2.4vw,28px);line-height:1.2}
 .cta-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
@@ -111,7 +112,7 @@ footer a{color:var(--ink-2)}
 .notice{margin:16px auto 0;max-width:520px;font-size:15px;color:var(--ink-2)}
 
 @media (max-width:600px){
-  .hero{padding-top:64px}
+  .hero{padding:64px 0 72px}
   .about img{height:380px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -165,18 +166,6 @@ section[id]{scroll-margin-top:60px}
 <a class="btn btn-light" href="#learn">Start learning ›</a>
 </div>
 </div>
-
-<div class="grow-box">
-<a class="grow-head" href="/grow/"><h2 class="grow-name">grow.</h2><p>One platform. Your complete investment picture.</p></a>
-<div class="gtiles">
-<a class="gtile" href="/grow/#calculate"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="3"/><path d="M8 7.5h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg><b>Calculate</b><span>Project your wealth</span></a>
-<a class="gtile" href="/grow/#portfolio"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></svg><b>Portfolio</b><span>Diversify investments</span></a>
-<a class="gtile" href="/grow/#analyze"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="m7 14 3-3.5 3 3 4-5"/></svg><b>Analyze</b><span>Understand risk</span></a>
-<a class="gtile" href="/grow/#goals"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>Goals</b><span>Plan your future</span></a>
-</div>
-<a class="btn btn-dark grow-go" href="/grow/">Explore grow ›</a>
-<p class="grow-fresh">Dollar rate refreshed every day at 8:00 Cairo time. Works in EGP or USD.</p>
-</div>
 </section>
 
 <section class="band-black statement">
@@ -192,6 +181,20 @@ section[id]{scroll-margin-top:60px}
 <article class="myth"><span class="n">Myth 2</span><h3>I have to understand the market first.</h3><p>A few core ideas are enough. The rest you learn as you go.</p><a class="more" href="/learn/learn-as-you-go/" aria-label="See more: I have to understand the market first.">See more ›</a></article>
 <article class="myth"><span class="n">Myth 3</span><h3>Investing is basically gambling.</h3><p>Diversified, long-term investing works nothing like a bet.</p><a class="more" href="/learn/not-gambling/" aria-label="See more: Investing is basically gambling.">See more ›</a></article>
 </div>
+</div>
+</section>
+
+<section class="grow" id="grow">
+<div class="grow-box">
+<a class="grow-head" href="/grow/"><h2 class="grow-name">grow.</h2><p>One platform. Your complete investment picture.</p></a>
+<div class="gtiles">
+<a class="gtile" href="/grow/#calculate"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="3"/><path d="M8 7.5h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg><b>Calculate</b><span>Project your wealth</span></a>
+<a class="gtile" href="/grow/#portfolio"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></svg><b>Portfolio</b><span>Diversify investments</span></a>
+<a class="gtile" href="/grow/#analyze"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="m7 14 3-3.5 3 3 4-5"/></svg><b>Analyze</b><span>Understand risk</span></a>
+<a class="gtile" href="/grow/#goals"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>Goals</b><span>Plan your future</span></a>
+</div>
+<a class="btn btn-dark grow-go" href="/grow/">Explore grow ›</a>
+<p class="grow-fresh">Dollar rate refreshed several times a day. Works in EGP or USD.</p>
 </div>
 </section>
 
