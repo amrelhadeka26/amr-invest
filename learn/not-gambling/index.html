@@ -47,6 +47,7 @@
 .note{font-size:14px;color:var(--muted);margin-top:28px}
 @media (max-width:600px){.article{padding-top:96px}.body{font-size:18px}.dek{font-size:19px}.cta .btn{flex:1 1 100%}}
 </style>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}))}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 <header class="site-header">
@@ -117,5 +118,6 @@
 </div>
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+<script>track('view','lesson-not-gambling',1);</script>
 </body>
 </html>

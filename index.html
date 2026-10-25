@@ -162,6 +162,7 @@ section[id]{scroll-margin-top:60px}
 /* phone: center the links between logo and button */
 @media (max-width:600px){.nav{flex:1 1 auto}.nav a:first-child{margin-left:auto}.nav .btn{margin-left:auto}}
 </style>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}))}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 
@@ -304,5 +305,6 @@ section[id]{scroll-margin-top:60px}
   });
 })();
 </script>
+<script>track('view','home',1);document.querySelectorAll('.gtile').forEach(function(a){a.addEventListener('click',function(){track('tile',(a.getAttribute('href')||'').split('#')[1])})});var g=document.querySelector('.grow-go');if(g)g.addEventListener('click',function(){track('explore','home')});document.querySelectorAll('.myth .more').forEach(function(a){a.addEventListener('click',function(){track('lesson',(a.getAttribute('href')||'').split('/')[2])})});</script>
 </body>
 </html>

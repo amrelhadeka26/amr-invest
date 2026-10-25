@@ -291,6 +291,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 .rnums span { display: block; font-size: 12px; }
 .rnums b { font-size: 18px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 </style>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}))}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 
@@ -753,10 +754,11 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     const nice = x => { const a = Math.abs(x); const st = a >= 1e5 ? 1000 : a >= 1e4 ? 500 : a >= 1000 ? 50 : 10; return Math.round(x / st) * st; };
     ['start', 'monthly', 'goal'].forEach(k => { $(k).value = fmt(nice(conv(num($(k).value)))); });
     cur = c; try { localStorage.setItem('emc-cur', c); } catch (e) {}
+    if (window.track) track('currency', c, 1);
     drawChips(); calc();
   }
   document.querySelectorAll('.seg.cur button').forEach(b => b.addEventListener('click', () => setCur(b.dataset.cur)));
-  document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); }));
+  document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); if (window.track) track('outlook', b.dataset.p, 1); }));
   $('assume').addEventListener('toggle', () => { state.mode = $('assume').open ? 'adv' : 'easy'; calc(); });
   ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
   ALL.forEach(k => { const el = $(k); if (el) el.addEventListener('input', calc); });
@@ -837,6 +839,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     document.body.classList.toggle('atab', t === 'analyze');
     $('yearsLbl').textContent = t === 'goal' ? 'I want it in' : 'For how long';
     document.querySelectorAll('.gtile').forEach(el => el.classList.toggle('on', el.dataset.tab === t));
+    window.__tab = t; if (window.track) track('tab', t, 1);
     try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
   $('t-compare').addEventListener('click', () => setTab('compare'));
@@ -849,7 +852,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   if (location.hash === '#compare') startTab = 'compare';
   if (location.hash) { const h = location.hash.slice(1); if (['compare', 'calculate', 'portfolio', 'analyze', 'goal', 'goals'].includes(h)) startTab = h; }
   (function () { let g = 1000000; try { const x = localStorage.getItem('emc-goal'); if (x) g = num(x); } catch (e) {} $('goal').value = fmt(g); })();
-  $('goal').addEventListener('input', calc);
+  $('goal').addEventListener('input', () => { calc(); if (window.track) track('goal', 'set', 1); });
   $('goal').addEventListener('blur', () => { $('goal').value = fmt(num($('goal').value)); });
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const link = (name, url) => /^https:\/\//.test(url || '') ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
@@ -881,6 +884,11 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     try { history.replaceState(null, '', el.getAttribute('href')); } catch (x) {}
     document.querySelector('.apptabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }));
+  const used = () => { if (window.track) track('use', window.__tab || 'compare', 1); };
+  document.querySelector('form.panel').addEventListener('input', used);
+  document.querySelector('form.panel').addEventListener('click', e => { if (e.target.closest('.quick button, .seg button')) used(); });
+  document.addEventListener('input', e => { if (e.target.closest('#tab-portfolio')) used(); });
+  if (window.track) track('view', 'grow', 1);
   function start() { setTab(startTab); drawChips(); load(); calc(); pfRender(); }
   fetch('data.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(applyData).catch(() => {}).finally(start);
 })();
