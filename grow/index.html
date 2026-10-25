@@ -258,7 +258,6 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 /* four tabs */
 .apptabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 480px) { .apptabs button { font-size: 14px; padding-left: 2px; padding-right: 2px; } }
-body.atab .nogoal { display: none !important; }
 /* analyze */
 .risklist { display: flex; flex-direction: column; gap: 12px; }
 .rcard { border: 1.5px solid var(--ink); border-radius: 20px; padding: 18px 20px; }
@@ -287,6 +286,10 @@ body.atab .nogoal { display: none !important; }
 .gtile span { font-size: 14px; }
 .apptabs { scroll-margin-top: 12px; }
 @media (max-width: 600px) { .grow-box { border-radius: 24px; padding: 10px; gap: 10px; } .gtiles { gap: 10px; } .gtile { padding: 14px; } .gtile.on { padding: 13px; } }
+
+.rnums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 2px 0 8px; }
+.rnums span { display: block; font-size: 12px; }
+.rnums b { font-size: 18px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -441,7 +444,7 @@ body.atab .nogoal { display: none !important; }
     </section>
   <section class="results analyze" id="tab-analyze" aria-live="polite" hidden>
       <div class="hero">
-        <span class="eyebrow">Understand risk</span>
+        <span class="eyebrow">Best fit for your timeline</span>
         <div class="hero-big" id="aHead">—</div>
         <div class="hero-today" id="aSub">—</div>
         <p class="hero-note">Every option can have a bad year. What matters is whether you can wait it out.</p>
@@ -641,22 +644,27 @@ body.atab .nogoal { display: none !important; }
     cash: { lvl: 0, label: 'No ups and downs', risk: 'It loses buying power every single year to rising prices.', min: 0 }
   };
   function renderAnalyze(opts, v) {
-    const base = v.start, yrs = v.years;
+    const yrs = v.years, yTxt = yrs + (yrs === 1 ? ' year' : ' years');
     const rows = opts.slice().sort((a, b) => (a.key === 'cash') - (b.key === 'cash') || RISK[a.key].lvl - RISK[b.key].lvl || PF_WORST[b.key] - PF_WORST[a.key]);
     const fits = rows.filter(o => o.key !== 'cash' && yrs >= RISK[o.key].min);
-    $('aHead').textContent = yrs < 3 ? 'Short timeline' : yrs < 5 ? 'Medium timeline' : 'Long timeline';
-    $('aSub').textContent = 'For ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + (fits.length ? fits.length + ' of 5 options ' + (fits.length === 1 ? 'gives' : 'give') + ' you enough time to recover from a bad year.' : 'none of these options fits. Keep money you need soon somewhere you can withdraw anytime.');
+    const pick = fits.find(o => o.beyond >= 0);
+    const close = fits.slice().sort((a, b) => b.beyond - a.beyond)[0];
+    $('aHead').textContent = pick ? pick.name : fits.length ? 'Nothing beats prices' : 'Too short to invest';
+    $('aSub').textContent = pick
+      ? 'The steadiest option that fits ' + yTxt + ' and still beats rising prices. It could grow to ' + money(pick.value, yrs) + '.'
+      : (fits.length ? 'At these numbers, no option that fits ' + yTxt + ' beats rising prices. The closest is ' + close.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + ', at ' + money(close.value, yrs) + '.' : 'For ' + yTxt + ', none of these options fits. Keep money you need soon somewhere you can withdraw anytime.');
     $('aList').innerHTML = rows.map(o => {
       const R = RISK[o.key], w = PF_WORST[o.key];
       const ok = o.key === 'cash' ? false : yrs >= R.min;
-      let dip = '';
-      if (base > 0 && w < 0) dip = '<p class="rdip">In a year like its worst, ' + money(base, 0) + ' could drop to <b>' + money(base * (1 + w / 100), 0) + '</b> for a while.</p>';
-      else if (o.key === 'cash') dip = '<p class="rdip">Over ' + yrs + (yrs === 1 ? ' year' : ' years') + ', ' + (base > 0 ? money(base, 0) : (usdMode() ? 'a dollar' : 'a pound')) + ' buys only about <b>' + Math.round(100 * Math.pow((1 + (usdMode() ? v.fx : 0) / 100) / (1 + v.infl / 100), yrs)) + '%</b> of what it buys today.</p>';
-      const fitTxt = o.key === 'cash' ? 'Not for growing money' : ok ? 'Fits ' + yrs + (yrs === 1 ? ' year' : ' years') : 'Better for ' + R.min + '+ years';
+      const fitTxt = o.key === 'cash' ? 'Not for growing money' : ok ? 'Fits ' + yTxt : 'Better for ' + R.min + '+ years';
+      const nums = o.key === 'cash'
+        ? '<div class="rnums"><div><span>After ' + yTxt + '</span><b>' + money(o.value, yrs) + '</b></div><div><span>In today\'s money</span><b>' + money(o.real, 0) + '</b></div></div>'
+        : '<div class="rnums"><div><span>Could grow to</span><b>' + money(o.value, yrs) + '</b></div><div><span>If its worst year hit at the end</span><b>' + (w < 0 ? money(o.value * (1 + w / 100), yrs) : money(o.value, yrs)) + '</b></div></div>';
       return '<div class="rcard"><div class="rtop"><div><b>' + o.name + '</b><span class="rlvl l' + R.lvl + '">' + R.label + '</span></div>' +
         '<span class="rfit' + (ok ? ' ok' : '') + '">' + fitTxt + '</span></div>' +
         '<div class="rmeter" aria-hidden="true">' + [0, 1, 2, 3].map(i => '<i' + (i <= R.lvl && o.key !== 'cash' ? ' class="on"' : '') + '></i>').join('') + '</div>' +
-        '<p class="rworst">Worst year on record: <b>' + WORST[o.key] + '</b></p>' + dip +
+        nums +
+        '<p class="rworst">Worst year on record: <b>' + WORST[o.key] + '</b> · ' + (o.beyond >= 0 ? 'Beats rising prices' : 'Loses to rising prices') + '</p>' +
         '<p class="rrisk">' + R.risk + '</p></div>';
     }).join('');
   }
