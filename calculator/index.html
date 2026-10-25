@@ -211,6 +211,30 @@ details.notes[open] > summary { margin-bottom: 12px; }
 @media (max-width: 420px) { .seg button { padding: 8px 12px; font-size: 13.5px; } }
 
 .top .homelink { color: var(--ink); }
+
+/* simplified compare: assumptions fold + one big result */
+details.assume { border-top: 1px solid var(--blue); padding-top: 14px; }
+details.assume > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; }
+details.assume > summary::-webkit-details-marker { display: none; }
+details.assume > summary::after { content: ""; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); transition: transform .2s; }
+details.assume[open] > summary::after { transform: rotate(-135deg) translateY(-3px); }
+.assume-body { margin-top: 16px; display: flex; flex-direction: column; }
+.assume-body .seg.preset { align-self: center; margin-bottom: 8px; }
+.assume-body .presetnote { margin: 0 0 16px; font-size: 13px; text-align: center; }
+.hero { background: var(--blue); color: var(--on-blue); border-radius: 24px; padding: 24px 22px; }
+.hero .eyebrow { font-size: 12px; }
+.hero-big { font-size: clamp(36px, 9vw, 48px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.hero-today { font-size: 16px; margin-top: 6px; }
+.hero-today span { font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.35); }
+.hero-rows span { display: block; font-size: 13px; }
+.hero-rows b { font-size: 19px; font-variant-numeric: tabular-nums; }
+.hero-note { margin: 14px 0 0; font-size: 13px; }
+.keep { border: 1.5px solid var(--ink); border-radius: 20px; padding: 18px 20px; }
+.keep b { font-size: 24px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.keep p { margin: 6px 0 0; font-size: 13.5px; }
+details.detail { border-top: 1px solid var(--ink); }
+details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
 </style>
 </head>
 <body>
@@ -227,18 +251,7 @@ details.notes[open] > summary { margin-bottom: 12px; }
     <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Compare</button>
     <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Build a portfolio</button>
   </nav>
-  <div class="controls">
-    <div class="seg mode-only" role="group" aria-label="View">
-      <button type="button" id="m-easy" aria-pressed="true">Simple</button>
-      <button type="button" id="m-adv" aria-pressed="false">More options</button>
-    </div>
-    <div class="seg preset" role="group" aria-label="Scenario">
-      <button type="button" data-p="cautious" aria-pressed="false">Cautious</button>
-      <button type="button" data-p="balanced" aria-pressed="true">Balanced</button>
-      <button type="button" data-p="past" aria-pressed="false">Last 10 years</button>
-    </div>
-  </div>
-  <p class="presetnote" id="presetNote"></p>
+
 
   <div class="grid">
     <form class="panel" onsubmit="return false" aria-label="Your numbers">
@@ -257,7 +270,15 @@ details.notes[open] > summary { margin-bottom: 12px; }
         <div class="yearsrow"><input type="range" id="years" min="1" max="25" step="1"><output id="yearsOut" for="years"></output></div>
       </div>
 
-      <div class="adv-only">
+      <details class="assume" id="assume">
+        <summary>Customize assumptions</summary>
+        <div class="assume-body">
+        <div class="seg preset" role="group" aria-label="Scenario">
+          <button type="button" data-p="cautious" aria-pressed="false">Cautious</button>
+          <button type="button" data-p="balanced" aria-pressed="true">Balanced</button>
+          <button type="button" data-p="past" aria-pressed="false">Last 10 years</button>
+        </div>
+        <p class="presetnote" id="presetNote"></p>
         <div class="field" style="margin-bottom:14px">
           <label for="raise">Raise my monthly amount each year by</label>
           <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
@@ -298,26 +319,36 @@ details.notes[open] > summary { margin-bottom: 12px; }
           </table>
           <p class="small" style="margin-top:10px">All in %. Buy = paid on every amount you put in. Sell = paid once at the end. Yearly = taken off the return each year (taxes on dividends, fees, maintenance).</p>
         </details>
-      </div>
+        </div>
+      </details>
 
       <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-start">Reset</button>
     </form>
 
     <section class="results" id="tab-compare" aria-live="polite">
-      <div class="cards">
-        <div class="card b"><span class="eyebrow">Grows the most</span><div class="big" id="bestVal">—</div><p id="bestTxt">—</p></div>
-        <div class="card k"><span class="eyebrow">Needed to keep up with prices</span><div class="big" id="keepVal">—</div><p id="keepTxt">—</p></div>
+      <div class="hero">
+        <span class="eyebrow">Your money could grow to</span>
+        <div class="hero-big" id="bestVal">—</div>
+        <div class="hero-today"><span id="bestReal">—</span> in today's money</div>
+        <div class="hero-rows">
+          <div><span>You put in</span><b id="putVal">—</b></div>
+          <div><span>Growth</span><b class="up" id="growVal">—</b></div>
+        </div>
+        <p class="hero-note" id="bestTxt">—</p>
       </div>
+      <div class="keep"><span class="eyebrow">Needed to keep up with prices</span><div><b id="keepVal">—</b></div><p id="keepTxt">—</p></div>
 
       <div class="legend" aria-hidden="true"><span><i class="sw"></i>Grows the most</span><span><i class="sw swk"></i>Other options</span><span><i class="dash"></i>Keep up with prices</span></div>
       <div class="list" id="list"></div>
 
-      <div class="adv-only">
-        <p class="eyebrow" style="margin:6px 0 8px">Year by year, value in EGP</p>
+      <details class="sect detail" id="detail">
+      <summary>Year by year and full table</summary>
+      <div>
+        <p class="eyebrow" style="margin:14px 0 8px">Year by year, value in EGP</p>
         <div class="chartbox"><svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Value of each option over time"></svg></div>
       </div>
 
-      <div class="adv-only tablewrap">
+      <div class="tablewrap" style="margin-top:16px">
         <table class="rt">
           <caption class="sr">Detailed results</caption>
           <thead><tr><th>Option</th><th>Net yearly, EGP</th><th>Value in EGP</th><th>In today's money</th><th>Beyond inflation*</th><th>Worst year on record</th></tr></thead>
@@ -325,6 +356,7 @@ details.notes[open] > summary { margin-bottom: 12px; }
         </table>
         <p class="small" style="margin-top:8px">*More (or less) than you need to keep up with prices, in today's money, after costs.</p>
       </div>
+      </details>
     </section>
   <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
     <p class="eyebrow blue">Portfolio builder</p>
@@ -390,14 +422,15 @@ details.notes[open] > summary { margin-bottom: 12px; }
 
   function setVal(k, v) { const el = $(k); if (!el) return; el.value = (k === 'start' || k === 'monthly') ? fmt(v) : v; }
   function applyPreset(p) { state.preset = p; const P = PRESETS[p]; RATE_KEYS.forEach(k => setVal(k, P[k])); document.querySelectorAll('.preset button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === p ? 'true' : 'false')); $('presetNote').textContent = P.note; }
-  function setMode(m) { state.mode = m; document.body.classList.toggle('adv', m === 'adv'); $('m-easy').setAttribute('aria-pressed', m === 'easy'); $('m-adv').setAttribute('aria-pressed', m === 'adv'); }
+  function setMode(m) { state.mode = m; }
 
   function load() {
     let s = null; try { s = JSON.parse(localStorage.getItem('emc-v2') || 'null'); } catch (e) {}
     Object.keys(BASE).forEach(k => setVal(k, s && s.v && s.v[k] != null ? s.v[k] : BASE[k]));
     applyPreset(s && PRESETS[s.preset] ? s.preset : 'balanced');
     if (s && s.v && s.custom) RATE_KEYS.forEach(k => { if (s.v[k] != null) setVal(k, s.v[k]); });
-    setMode(s && s.mode === 'adv' ? 'adv' : 'easy');
+    if (s && s.mode === 'adv') $('assume').open = true;
+    setMode('adv');
   }
   function save(v, custom) { try { localStorage.setItem('emc-v2', JSON.stringify({ v, preset: state.preset, mode: state.mode, custom })); } catch (e) {} }
 
@@ -424,7 +457,6 @@ details.notes[open] > summary { margin-bottom: 12px; }
   function calc() {
     const v = {}; ALL.forEach(k => v[k] = num($(k).value));
     v.years = Math.max(1, Math.min(25, Math.round(v.years)));
-    if (state.mode === 'easy') { v.raise = 0; }
     $('yearsOut').textContent = v.years + (v.years === 1 ? ' year' : ' years');
     const P = PRESETS[state.preset];
     const custom = RATE_KEYS.some(k => Math.abs(v[k] - P[k]) > 1e-9);
@@ -438,7 +470,6 @@ details.notes[open] > summary { margin-bottom: 12px; }
       { key: 're', name: 'Property', sub: 'Price growth + rent', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
       { key: 'cash', name: 'Cash at home', sub: 'Under the mattress', rate: () => 0, buy: 0, sell: 0, yearly: 0 }
     ];
-    if (state.mode === 'easy') opts.forEach(o => { if (o.key !== 'cash') { o.buy = BASE['c_' + o.key + '_b']; o.sell = BASE['c_' + o.key + '_s']; o.yearly = BASE['c_' + o.key + '_y']; } });
     const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
     opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
     // effective net yearly rate (after costs) via bisection on a cost-free sim
@@ -447,9 +478,14 @@ details.notes[open] > summary { margin-bottom: 12px; }
     const best = opts[0];
 
     $('bestVal').textContent = fmt(best.value) + ' EGP';
-    $('bestTxt').textContent = best.name + ', after costs. Worth ' + fmt(best.real) + ' EGP in today\'s money.';
+    $('bestReal').textContent = fmt(best.real) + ' EGP';
+    $('putVal').textContent = fmt(K.put) + ' EGP';
+    const grow = best.value - K.put;
+    $('growVal').textContent = (grow >= 0 ? '+' : '−') + fmt(Math.abs(grow)) + ' EGP';
+    $('growVal').classList.toggle('up', grow >= 0);
+    $('bestTxt').textContent = 'With the option that grows the most: ' + best.name.toLowerCase() + ', after costs.';
     $('keepVal').textContent = fmt(K.final) + ' EGP';
-    $('keepTxt').textContent = 'You put in ' + fmt(K.put) + ' EGP. At ' + v.infl + '% inflation, this is what it must reach to buy the same things.';
+    $('keepTxt').textContent = 'At ' + v.infl + '% inflation, this is what your money must reach to buy the same things. ' + (best.value >= K.final ? best.name + ' beats it by ' + fmt((best.value - K.final)) + ' EGP.' : 'No option beats it at these numbers.');
 
     const max = Math.max(...opts.map(o => o.value), K.final) * 1.04;
     $('list').innerHTML = opts.map((o, i) => {
@@ -490,8 +526,7 @@ details.notes[open] > summary { margin-bottom: 12px; }
 
   document.querySelectorAll('.quick[data-for] button').forEach(b => b.addEventListener('click', () => { setVal(b.parentNode.dataset.for, num(b.dataset.v)); calc(); }));
   document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); }));
-  $('m-easy').addEventListener('click', () => { setMode('easy'); calc(); });
-  $('m-adv').addEventListener('click', () => { setMode('adv'); calc(); });
+  $('assume').addEventListener('toggle', () => { state.mode = $('assume').open ? 'adv' : 'easy'; calc(); });
   ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
   ALL.forEach(k => { const el = $(k); if (el) el.addEventListener('input', calc); });
   $('reset').addEventListener('click', () => { try { localStorage.removeItem('emc-v2'); } catch (e) {} Object.keys(BASE).forEach(k => setVal(k, BASE[k])); applyPreset('balanced'); try { localStorage.removeItem('emc-pf'); } catch (e) {} pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; calc(); pfRender(); });
