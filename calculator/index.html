@@ -246,6 +246,11 @@ body.gtab .nogoal { display: none !important; }
 .assume-body .seg.preset { align-self: stretch; }
 .assume-body .presetnote { text-align: left; margin: 10px 0 18px; }
 details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
+
+/* currency switch */
+.currow { flex-direction: row !important; align-items: center; justify-content: space-between; gap: 12px; }
+.currow .sublabel { margin: 0; }
+.seg.cur button { min-height: 36px; padding: 6px 16px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -267,21 +272,28 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 
   <div class="grid">
     <form class="panel" onsubmit="return false" aria-label="Your numbers">
+      <div class="field currow">
+        <span class="sublabel" id="curLbl">My money is in</span>
+        <div class="seg cur" role="group" aria-labelledby="curLbl">
+          <button type="button" data-cur="EGP" aria-pressed="true">EGP</button>
+          <button type="button" data-cur="USD" aria-pressed="false">USD</button>
+        </div>
+      </div>
       <div class="field goal-only">
         <label for="goal">My goal costs today</label>
-        <div class="inp"><input id="goal" inputmode="numeric"><span>EGP</span></div>
-        <div class="quick" data-goal><button type="button" data-v="500000">500K</button><button type="button" data-v="1000000">1M</button><button type="button" data-v="3000000">3M</button><button type="button" data-v="5000000">5M</button></div>
+        <div class="inp"><input id="goal" inputmode="numeric"><span class="curunit">EGP</span></div>
+        <div class="quick" data-goal data-egp="500000,1000000,3000000,5000000" data-usd="10000,25000,50000,100000"></div>
         <span class="small">A car, a flat's down payment, your child's university. Type what it costs now.</span>
       </div>
       <div class="field">
         <label for="start">I have now</label>
-        <div class="inp"><input id="start" inputmode="numeric"><span>EGP</span></div>
-        <div class="quick" data-for="start"><button type="button" data-v="0">0</button><button type="button" data-v="50000">50K</button><button type="button" data-v="100000">100K</button><button type="button" data-v="500000">500K</button><button type="button" data-v="1000000">1M</button></div>
+        <div class="inp"><input id="start" inputmode="numeric"><span class="curunit">EGP</span></div>
+        <div class="quick" data-for="start" data-egp="0,50000,100000,500000,1000000" data-usd="0,1000,5000,10000,25000"></div>
       </div>
       <div class="field nogoal">
         <label for="monthly">I can add each month</label>
-        <div class="inp"><input id="monthly" inputmode="numeric"><span>EGP</span></div>
-        <div class="quick" data-for="monthly"><button type="button" data-v="1000">1K</button><button type="button" data-v="3000">3K</button><button type="button" data-v="5000">5K</button><button type="button" data-v="10000">10K</button></div>
+        <div class="inp"><input id="monthly" inputmode="numeric"><span class="curunit">EGP</span></div>
+        <div class="quick" data-for="monthly" data-egp="1000,3000,5000,10000" data-usd="50,100,250,500"></div>
       </div>
       <div class="field">
         <label for="years" id="yearsLbl">For how long</label>
@@ -323,6 +335,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
               <tr><td>Pound's fall vs USD</td><td><input id="fx" inputmode="decimal" aria-label="Yearly fall of the pound"></td><td>%</td></tr>
               <tr><td>Property price growth</td><td><input id="re" inputmode="decimal" aria-label="Property price growth"></td><td>%</td></tr>
               <tr><td>Rent, after costs</td><td><input id="rent" inputmode="decimal" aria-label="Net rental yield"></td><td>%</td></tr>
+              <tr><td>Dollar today, in EGP</td><td><input id="rate0" inputmode="decimal" aria-label="US dollar rate today in pounds"></td><td>EGP</td></tr>
             </tbody>
           </table>
         </details>
@@ -368,14 +381,14 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
       <details class="sect detail" id="detail">
       <summary>Year by year and full table</summary>
       <div>
-        <p class="eyebrow" style="margin:14px 0 8px">Year by year, value in EGP</p>
+        <p class="eyebrow" style="margin:14px 0 8px" id="chartLbl">Year by year, value in EGP</p>
         <div class="chartbox"><svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Value of each option over time"></svg></div>
       </div>
 
       <div class="tablewrap" style="margin-top:16px">
         <table class="rt">
           <caption class="sr">Detailed results</caption>
-          <thead><tr><th>Option</th><th>Net yearly, EGP</th><th>Value in EGP</th><th>In today's money</th><th>Beyond inflation*</th><th>Worst year on record</th></tr></thead>
+          <thead><tr><th>Option</th><th id="thRate">Net yearly, EGP</th><th id="thVal">Value in EGP</th><th>In today's money</th><th>Beyond inflation*</th><th>Worst year on record</th></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
         <p class="small" style="margin-top:8px">*More (or less) than you need to keep up with prices, in today's money, after costs.</p>
@@ -447,7 +460,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     balanced: { note: 'Balanced: a middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
     past: { note: 'Last 10 years: what each option actually returned recently, including two big devaluations. The future may be calmer.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
   };
-  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9,
+  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9, rate0: 55.31,
     c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
     c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
   const WORST = { cd: '0% (fixed)', egx: '−49.3% (2011)', us: '−37% (2008, USD)', gold: '−28% (2013, USD)', re: '−9.6% (2020)', cash: 'Never grows' };
@@ -456,6 +469,14 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   const $ = id => document.getElementById(id);
   const fmt = n => Math.round(n).toLocaleString('en-US');
   const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2) + 'M' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + 'K' : fmt(n);
+  let cur = 'EGP'; try { if (localStorage.getItem('emc-cur') === 'USD') cur = 'USD'; } catch (e) {}
+  const CV = { r0: 55.31, fx: 7 };
+  const usdMode = () => cur === 'USD';
+  const fxAt = y => CV.r0 * Math.pow(1 + CV.fx / 100, y);
+  const M = (x, y) => usdMode() ? x / fxAt(y || 0) : x;
+  const money = (x, y) => usdMode() ? '$' + fmt(M(x, y)) : fmt(x) + ' EGP';
+  const compactU = n => Math.abs(n) >= 1e3 && Math.abs(n) < 1e5 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : compact(n);
+  const moneyC = (x, y) => usdMode() ? '$' + compactU(M(x, y)) : compact(x);
   const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
   let state = { mode: 'easy', preset: 'balanced' };
 
@@ -479,6 +500,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     let val = v.start * (1 - o.buy / 100), dep = v.monthly;
     path.push(v.start);
     for (let m = 1; m <= months; m++) {
+      if (v.fxm) dep *= v.fxm;
       const yr = o.rate(m);
       const r = Math.pow(1 + (yr - o.yearly) / 100, 1 / 12) - 1;
       val = val * (1 + r) + dep * (1 - o.buy / 100);
@@ -489,7 +511,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   function keepUp(v) {
     const months = v.years * 12, r = Math.pow(1 + v.infl / 100, 1 / 12) - 1, path = [v.start];
     let val = v.start, dep = v.monthly, put = v.start;
-    for (let m = 1; m <= months; m++) { val = val * (1 + r) + dep; put += dep; if (m % 12 === 0) { path.push(val); dep *= 1 + v.raise / 100; } }
+    for (let m = 1; m <= months; m++) { if (v.fxm) dep *= v.fxm; val = val * (1 + r) + dep; put += dep; if (m % 12 === 0) { path.push(val); dep *= 1 + v.raise / 100; } }
     return { path, final: val, put };
   }
 
@@ -500,14 +522,22 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     const P = PRESETS[state.preset];
     const custom = RATE_KEYS.some(k => Math.abs(v[k] - P[k]) > 1e-9);
     save(v, custom);
+    CV.r0 = v.rate0 > 0 ? v.rate0 : BASE.rate0; CV.fx = v.fx;
+    const U = { start: v.start, monthly: v.monthly, raise: v.raise };
+    if (usdMode()) {
+      v.start *= CV.r0; v.monthly *= CV.r0;
+      v.fxm = Math.pow(1 + v.fx / 100, 1 / 12);
+    }
+    let putU = U.start, dep = U.monthly;
+    for (let y = 0; y < v.years; y++) { putU += dep * 12; dep *= 1 + U.raise / 100; }
     const usd = r => ((1 + r / 100) * (1 + v.fx / 100) - 1) * 100;
     const opts = [
       { key: 'cd', name: 'Bank certificate', sub: 'Fixed for 3 years, then renewed', rate: m => m <= 36 ? v.cd1 : v.cd2, buy: v.c_cd_b, sell: v.c_cd_s, yearly: v.c_cd_y },
       { key: 'egx', name: 'EGX30 stocks', sub: 'Egypt\'s top 30 companies', rate: () => v.egx, buy: v.c_egx_b, sell: v.c_egx_s, yearly: v.c_egx_y },
-      { key: 'us', name: 'US stocks', sub: 'S&P 500, counted in EGP', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
-      { key: 'gold', name: 'Gold', sub: 'Counted in EGP', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
+      { key: 'us', name: 'US stocks', sub: usdMode() ? 'S&P 500' : 'S&P 500, counted in EGP', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
+      { key: 'gold', name: 'Gold', sub: usdMode() ? 'Priced in dollars' : 'Counted in EGP', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
       { key: 're', name: 'Property', sub: 'Price growth + rent', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
-      { key: 'cash', name: 'Cash at home', sub: 'Under the mattress', rate: () => 0, buy: 0, sell: 0, yearly: 0 }
+      { key: 'cash', name: usdMode() ? 'Dollars at home' : 'Cash at home', sub: 'Under the mattress', rate: () => usdMode() ? v.fx : 0, buy: 0, sell: 0, yearly: 0 }
     ];
     const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
     opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
@@ -516,48 +546,51 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     opts.sort((a, b) => b.value - a.value);
     const best = opts[0];
 
-    $('bestVal').textContent = fmt(best.value) + ' EGP';
-    $('bestReal').textContent = fmt(best.real) + ' EGP';
-    $('putVal').textContent = fmt(K.put) + ' EGP';
-    const grow = best.value - K.put;
-    $('growVal').textContent = (grow >= 0 ? '+' : '−') + fmt(Math.abs(grow)) + ' EGP';
+    $('bestVal').textContent = money(best.value, v.years);
+    $('bestReal').textContent = money(best.real, 0);
+    $('putVal').textContent = usdMode() ? '$' + fmt(putU) : fmt(K.put) + ' EGP';
+    const grow = usdMode() ? M(best.value, v.years) - putU : best.value - K.put;
+    $('growVal').textContent = (grow >= 0 ? '+' : '−') + (usdMode() ? '$' + fmt(Math.abs(grow)) : fmt(Math.abs(grow)) + ' EGP');
     $('growVal').classList.toggle('up', grow >= 0);
     $('bestTxt').textContent = 'With the option that grows the most: ' + best.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + ', after costs.';
-    $('keepVal').textContent = fmt(K.final) + ' EGP';
-    $('keepTxt').textContent = 'At ' + v.infl + '% inflation, this is what your money must reach to buy the same things. ' + (best.value >= K.final ? best.name + ' beats it by ' + fmt((best.value - K.final)) + ' EGP.' : 'No option beats it at these numbers.');
+    $('keepVal').textContent = money(K.final, v.years);
+    $('keepTxt').textContent = 'At ' + v.infl + '% inflation, this is what your money must reach to buy the same things. ' + (best.value >= K.final ? best.name + ' beats it by ' + money(best.value - K.final, v.years) + '.' : 'No option beats it at these numbers.');
 
     const max = Math.max(...opts.map(o => o.value), K.final) * 1.04;
     $('list').innerHTML = opts.map((o, i) => {
       const beats = o.value >= K.final;
       return '<div class="item"><div class="nm">' + o.name + '<small>' + o.sub + '</small><span class="tag' + (beats ? ' up' : '') + '">' + (beats ? 'Beats inflation' : 'Loses to inflation') + '</span></div>' +
         '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (o.value / max * 100) + '%"></div><div class="ref" style="left:' + (K.final / max * 100) + '%"></div></div>' +
-        '<div class="v">' + compact(o.value) + '<small>' + compact(o.real) + ' today</small></div></div>';
+        '<div class="v">' + moneyC(o.value, v.years) + '<small>' + moneyC(o.real, 0) + ' today</small></div></div>';
     }).join('');
 
     $('tbody').innerHTML = opts.map(o =>
-      '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(o.value) + '</td><td>' + fmt(o.real) + '</td>' +
-      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '">' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(o.beyond)) + '</td><td>' + WORST[o.key] + '</td></tr>').join('');
+      '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
+      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '">' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(M(o.beyond, 0))) + '</td><td>' + WORST[o.key] + '</td></tr>').join('');
 
+    const cu = usdMode() ? 'USD' : 'EGP';
+    $('chartLbl').textContent = 'Year by year, value in ' + cu;
+    $('thRate').textContent = 'Net yearly, EGP'; $('thVal').textContent = 'Value in ' + cu;
     drawChart(opts, K, v);
     renderPortfolio(opts, K, v);
     renderGoal(opts, v);
   }
 
   function renderGoal(opts, v) {
-    const G = num($('goal').value), yrs = v.years;
-    try { localStorage.setItem('emc-goal', String(G)); } catch (e) {}
+    const GU = num($('goal').value), G = usdMode() ? GU * CV.r0 : GU, yrs = v.years;
+    try { localStorage.setItem('emc-goal', String(GU)); } catch (e) {}
     const target = G * Math.pow(1 + v.infl / 100, yrs);
     const rows = opts.map(o => {
       const f0 = sim(o, Object.assign({}, v, { monthly: 0 })).final;
       const f1 = sim(o, Object.assign({}, v, { monthly: 1000 })).final;
       const need = (target - f0) / ((f1 - f0) / 1000);
-      return { o, need: Math.max(0, need), done: f0 >= target };
+      return { o, need: Math.max(0, need) / (usdMode() ? CV.r0 : 1), done: f0 >= target };
     }).sort((a, b) => a.need - b.need);
     const best = rows[0], cash = rows.find(r => r.o.key === 'cash');
     const yTxt = yrs + (yrs === 1 ? ' year' : ' years');
-    $('gToday').textContent = fmt(G) + ' EGP';
+    $('gToday').textContent = money(G, 0);
     $('gFutLbl').textContent = 'Price in ' + yTxt;
-    $('gFuture').textContent = fmt(target) + ' EGP';
+    $('gFuture').textContent = money(target, yrs);
     if (G <= 0) {
       $('gEyebrow').textContent = 'Your goal'; $('gMonthly').textContent = 'Type a goal';
       $('gWith').textContent = 'Enter what your goal costs today.'; $('gNote').textContent = ''; $('gList').innerHTML = ''; return;
@@ -568,11 +601,11 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
       $('gWith').textContent = 'What you have now already gets there with ' + best.o.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + '.';
     } else {
       $('gEyebrow').textContent = 'To reach your goal, save';
-      $('gMonthly').textContent = fmt(best.need) + ' EGP';
+      $('gMonthly').textContent = usdMode() ? '$' + fmt(best.need) : fmt(best.need) + ' EGP';
       $('gWith').textContent = 'a month, with ' + best.o.name.replace(/^[A-Z](?=[a-z])/, c => c.toLowerCase()) + ', for ' + yTxt + '.';
     }
     $('gNote').textContent = cash && !best.done && cash.need > best.need
-      ? 'Keeping it as cash at home would take ' + fmt(cash.need) + ' EGP a month, ' + fmt(cash.need - best.need) + ' more.'
+      ? 'Keeping it as ' + cash.o.name.toLowerCase() + ' would take ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' EGP') + ' a month, ' + (usdMode() ? '$' + fmt(cash.need - best.need) : fmt(cash.need - best.need)) + ' more.'
       : '';
     const max = Math.max(...rows.map(r => r.need)) * 1.04 || 1;
     $('gList').innerHTML = rows.map((r, i) =>
@@ -582,19 +615,23 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   }
 
   function drawChart(opts, K, v) {
+    const P = a => a.map((x, i) => M(x, i));
+    opts = opts.map(o => Object.assign({}, o, { path: P(o.path), value: M(o.value, v.years) }));
+    K = { path: P(K.path), final: M(K.final, v.years) };
+    const pre = usdMode() ? '$' : '';
     const W = 640, H = 300, L = 56, R = 130, T = 16, B = 34;
     const yMax = Math.max(...opts.map(o => Math.max(...o.path)), Math.max(...K.path)) * 1.05;
     const X = i => L + (W - L - R) * i / v.years, Y = val => T + (H - T - B) * (1 - val / yMax);
     const step = Math.pow(10, Math.floor(Math.log10(yMax / 4))), nice = [1, 2, 2.5, 5, 10].map(s => s * step).find(s => yMax / s <= 5) || step * 10;
     let g = '';
-    for (let t = 0; t <= yMax; t += nice) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="currentColor" stroke-opacity=".15"/><text x="' + (L - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end" font-size="11" fill="currentColor">' + compact(t) + '</text>';
+    for (let t = 0; t <= yMax; t += nice) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="currentColor" stroke-opacity=".15"/><text x="' + (L - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end" font-size="11" fill="currentColor">' + pre + compact(t) + '</text>';
     const xs = v.years <= 10 ? 1 : v.years <= 20 ? 2 : 5;
     for (let i = 0; i <= v.years; i += xs) g += '<text x="' + X(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="currentColor">' + (i === 0 ? 'Now' : 'Yr ' + i) + '</text>';
     const line = (p, attrs) => '<polyline fill="none" points="' + p.map((val, i) => X(i).toFixed(1) + ',' + Y(val).toFixed(1)).join(' ') + '" ' + attrs + '/>';
     g += line(K.path, 'stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"');
     opts.slice().reverse().forEach((o, idx) => { const best = o === opts[0]; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
     // end labels, spaced apart
-    const labels = opts.map((o, i) => ({ t: o.name + ' ' + compact(o.value), y: Y(o.value), best: i === 0 })).concat([{ t: 'Keep up ' + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
+    const labels = opts.map((o, i) => ({ t: o.name + ' ' + pre + compact(o.value), y: Y(o.value), best: i === 0 })).concat([{ t: 'Keep up ' + pre + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
     for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
     const over = labels.length ? labels[labels.length - 1].y - (H - B) : 0; if (over > 0) labels.forEach(l => l.y -= over);
     labels.forEach(l => g += '<text x="' + (W - R + 8) + '" y="' + (l.y + 4) + '" font-size="11" font-weight="' + (l.best ? 700 : 500) + '" fill="' + (l.best ? 'var(--blue)' : 'currentColor') + '">' + l.t + '</text>');
@@ -602,12 +639,35 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     $('chart').style.color = 'var(--ink)';
   }
 
-  document.querySelectorAll('.quick[data-for] button').forEach(b => b.addEventListener('click', () => { setVal(b.parentNode.dataset.for, num(b.dataset.v)); calc(); }));
+  const chipTxt = n => n >= 1e6 ? (n / 1e6) + 'M' : n >= 1e3 ? (n / 1e3) + 'K' : String(n);
+  function drawChips() {
+    document.querySelectorAll('.quick[data-egp]').forEach(q => {
+      const vals = q.dataset[usdMode() ? 'usd' : 'egp'].split(',').map(Number);
+      q.innerHTML = vals.map(n => '<button type="button" data-v="' + n + '">' + (usdMode() && n ? '$' : '') + chipTxt(n) + '</button>').join('');
+    });
+    document.querySelectorAll('.curunit').forEach(el => el.textContent = usdMode() ? 'USD' : 'EGP');
+    document.querySelectorAll('.seg.cur button').forEach(b => b.setAttribute('aria-pressed', b.dataset.cur === cur));
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.quick[data-egp] button'); if (!b) return;
+    const q = b.parentNode, id = q.dataset.for || 'goal';
+    $(id).value = fmt(num(b.dataset.v)); calc();
+  });
+  function setCur(c) {
+    if (c === cur) return;
+    const r = num($('rate0').value) || BASE.rate0;
+    const conv = x => c === 'USD' ? x / r : x * r;
+    const nice = x => { const a = Math.abs(x); const st = a >= 1e5 ? 1000 : a >= 1e4 ? 500 : a >= 1000 ? 50 : 10; return Math.round(x / st) * st; };
+    ['start', 'monthly', 'goal'].forEach(k => { $(k).value = fmt(nice(conv(num($(k).value)))); });
+    cur = c; try { localStorage.setItem('emc-cur', c); } catch (e) {}
+    drawChips(); calc();
+  }
+  document.querySelectorAll('.seg.cur button').forEach(b => b.addEventListener('click', () => setCur(b.dataset.cur)));
   document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); }));
   $('assume').addEventListener('toggle', () => { state.mode = $('assume').open ? 'adv' : 'easy'; calc(); });
   ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
   ALL.forEach(k => { const el = $(k); if (el) el.addEventListener('input', calc); });
-  $('reset').addEventListener('click', () => { try { localStorage.removeItem('emc-v2'); } catch (e) {} Object.keys(BASE).forEach(k => setVal(k, BASE[k])); applyPreset('balanced'); try { localStorage.removeItem('emc-pf'); } catch (e) {} pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; calc(); pfRender(); });
+  $('reset').addEventListener('click', () => { try { localStorage.removeItem('emc-v2'); } catch (e) {} cur = 'EGP'; try { localStorage.setItem('emc-cur', 'EGP'); } catch (e) {} drawChips(); $('goal').value = fmt(1000000); Object.keys(BASE).forEach(k => setVal(k, BASE[k])); applyPreset('balanced'); try { localStorage.removeItem('emc-pf'); } catch (e) {} pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; calc(); pfRender(); });
 
   // ---------- Portfolio builder ----------
   const PF_KEYS = ['egx', 'us', 'gold', 'cd', 're', 'cash'];
@@ -659,12 +719,12 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
       parts.push({ k, w, value: r });
     });
     const beyond = (total - K.final) / deflate, beats = total >= K.final;
-    $('pfVal').textContent = fmt(total) + ' EGP';
-    $('pfTxt').textContent = 'Worth ' + fmt(total / deflate) + ' EGP in today\'s money, after costs. ' + (beats ? 'Beats' : 'Loses to') + ' inflation by ' + fmt(Math.abs(beyond)) + ' EGP in today\'s money.';
+    $('pfVal').textContent = money(total, v.years);
+    $('pfTxt').textContent = 'Worth ' + money(total / deflate, 0) + ' in today\'s money, after costs. ' + (beats ? 'Beats' : 'Loses to') + ' inflation by ' + money(Math.abs(beyond), 0) + ' in today\'s money.';
     const best = opts[0];
-    const rows = parts.sort((a, b) => b.value - a.value).map(p => '<div class="pfrow"><span><i class="psw f-' + p.k + '"></i>' + PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%</span><b>' + fmt(p.value) + '</b></div>');
-    rows.push('<div class="pfrow"><span>Needed to keep up with prices</span><b>' + fmt(K.final) + '</b></div>');
-    rows.push('<div class="pfrow"><span>All in the top single option (' + best.name + ')</span><b>' + fmt(best.value) + '</b></div>');
+    const rows = parts.sort((a, b) => b.value - a.value).map(p => '<div class="pfrow"><span><i class="psw f-' + p.k + '"></i>' + PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%</span><b>' + money(p.value, v.years) + '</b></div>');
+    rows.push('<div class="pfrow"><span>Needed to keep up with prices</span><b>' + money(K.final, v.years) + '</b></div>');
+    rows.push('<div class="pfrow"><span>All in the top single option (' + best.name + ')</span><b>' + money(best.value, v.years) + '</b></div>');
     $('pfRows').innerHTML = rows.join('');
     const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
     const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
@@ -693,8 +753,8 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   (function () { let g = 1000000; try { const x = localStorage.getItem('emc-goal'); if (x) g = num(x); } catch (e) {} $('goal').value = fmt(g); })();
   $('goal').addEventListener('input', calc);
   $('goal').addEventListener('blur', () => { $('goal').value = fmt(num($('goal').value)); });
-  document.querySelectorAll('.quick[data-goal] button').forEach(b => b.addEventListener('click', () => { $('goal').value = fmt(num(b.dataset.v)); calc(); }));
   setTab(startTab);
+  drawChips();
   load(); calc(); pfRender();
 })();
 </script>
