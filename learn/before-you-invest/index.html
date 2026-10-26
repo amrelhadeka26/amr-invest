@@ -45,6 +45,20 @@
 .next b{font-size:22px;letter-spacing:-0.02em;line-height:1.2}
 .next:hover b{text-decoration:underline}
 .note{font-size:14px;color:var(--muted);margin-top:28px}
+.budget{background:var(--soft);border-radius:18px;padding:26px 26px 22px;margin:28px 0}
+.budget h3{margin:0 0 4px;font-size:21px;letter-spacing:-0.02em}
+.budget .sub{margin:0 0 18px;font-size:15px;color:var(--muted)}
+.budget ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.budget li{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 56px;gap:12px;align-items:center;margin:0;font-size:15px;line-height:1.3}
+.budget .track{height:14px}
+.budget .bar{display:block;height:100%;border-radius:3px;background:var(--line)}
+.budget .leak .bar{background:var(--ink)}
+.budget .save .bar{background:var(--white);box-shadow:inset 0 0 0 2px var(--ink)}
+.budget .leak span:first-child,.budget .save span:first-child{font-weight:600}
+.budget b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.budget .key{margin:16px 0 0;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px}
+.budget .key i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+@media (max-width:600px){.budget{padding:22px 18px}.budget li{grid-template-columns:minmax(0,118px) minmax(0,1fr) 50px;gap:10px;font-size:14px}}
 @media (max-width:600px){.article{padding-top:96px}.body{font-size:18px}.dek{font-size:19px}.cta .btn{flex:1 1 100%}}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
@@ -85,10 +99,25 @@
 
 <h2>Track it for one month</h2>
 <p>You can’t fix what you can’t see. Write down every pound you spend for a month. A notebook works. So does your phone’s notes app. I use Say, an Egyptian app where you speak an expense and it logs and categorises it for you. The tool matters less than doing it every day.</p>
-<p>Here’s a made-up example. Karim earns 30,000 pounds a month:</p>
+<p>Here’s a made-up example. Karim earns 30,000 pounds a month. This is where it goes:</p>
+<figure class="budget" aria-labelledby="budget-title">
+<h3 id="budget-title">Where does EGP 30,000 go?</h3>
+<p class="sub">Karim’s month, in EGP</p>
+<ul>
+<li><span>Rent</span><span class="track"><span class="bar" style="width:100%"></span></span><b>9,000</b></li>
+<li><span>Food and groceries</span><span class="track"><span class="bar" style="width:66.7%"></span></span><b>6,000</b></li>
+<li class="leak"><span>Eating out, delivery</span><span class="track"><span class="bar" style="width:38.9%"></span></span><b>3,500</b></li>
+<li><span>Transport</span><span class="track"><span class="bar" style="width:33.3%"></span></span><b>3,000</b></li>
+<li class="leak"><span>Shopping, other</span><span class="track"><span class="bar" style="width:33.3%"></span></span><b>3,000</b></li>
+<li><span>Bills, utilities</span><span class="track"><span class="bar" style="width:27.8%"></span></span><b>2,500</b></li>
+<li class="leak"><span>Phone, subscriptions</span><span class="track"><span class="bar" style="width:11.1%"></span></span><b>1,000</b></li>
+<li class="save"><span>Savings</span><span class="track"><span class="bar" style="width:22.2%"></span></span><b>2,000</b></li>
+</ul>
+<p class="key"><span><i style="background:var(--line)"></i>Needs</span><span><i style="background:var(--ink)"></i>Lifestyle, where leaks hide</span><span><i style="box-shadow:inset 0 0 0 2px var(--ink);background:var(--white)"></i>Savings</span></p>
+</figure>
 <div class="callout">
-<p class="big">EGP 4,500 a month</p>
-<p>on eating out, delivery, phone and subscriptions. Only 2,000 goes to savings.</p>
+<p class="big">EGP 7,500 a month</p>
+<p>on eating out, delivery, shopping, phone and subscriptions. That’s a quarter of his income, while only 2,000 goes to savings.</p>
 </div>
 <p>Nobody needs to tell Karim to stop eating. But once he sees that number, finding an extra 1,000 pounds a month to invest stops feeling impossible. Tracking isn’t about cutting everything. It’s about choosing what your money does.</p>
 
