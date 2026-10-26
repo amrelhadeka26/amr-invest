@@ -1,8 +1,8 @@
 {
-  "updated": "2026-10-25T08:00:00+03:00",
+  "updated": "2026-10-26T08:28:16+03:00",
   "usd_egp": {
-    "value": 55.29,
-    "as_of": "2026-10-24",
+    "value": 55.68,
+    "as_of": "2026-10-26",
     "source_name": "ExchangeRate-API",
     "source_url": "https://www.exchangerate-api.com/"
   },
