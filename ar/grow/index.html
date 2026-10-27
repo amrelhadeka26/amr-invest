@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>grow. · أدوات استثمار للمصريين | Amr El Hadeka</title>
+<link rel="canonical" href="https://invest.amrelhadeka.com/ar/grow/">
+<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/grow/">
+<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/grow/">
+<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/grow/">
+<meta property="og:title" content="grow. · صورة كاملة لاستثماراتك">
+<meta property="og:image" content="https://invest.amrelhadeka.com/assets/og.jpg">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://invest.amrelhadeka.com/ar/grow/">
+<meta property="og:locale" content="ar_EG">
+<meta property="og:description" content="قارن شهادة البنك وEGX30 والأسهم الأمريكية والدهب والعقار والكاش بالجنيه المصري وبعد التضخم، وابني محفظتك بنفسك.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"grow.","url":"https://invest.amrelhadeka.com/ar/grow/","description":"أدوات استثمار مجانية للمصريين: قارن شهادة البنك وEGX30 والأسهم الأمريكية والدهب والعقار والكاش بالجنيه المصري وبعد التضخم، وابني محفظتك بنفسك.","applicationCategory":"FinanceApplication","operatingSystem":"Any","inLanguage":"ar","offers":{"@type":"Offer","price":"0","priceCurrency":"EGP"},"author":{"@type":"Person","name":"Amr El Hadeka","url":"https://invest.amrelhadeka.com/ar/"}}</script>
+<meta name="description" content="قارن شهادة البنك وEGX30 والأسهم الأمريكية والدهب والعقار والكاش بالجنيه المصري وبعد التضخم، وابني محفظتك بنفسك.">
+<meta name="theme-color" content="#ffffff">
+<meta name="color-scheme" content="light">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/grow/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/grow/icons/apple-touch-icon.png?v=2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Grow">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: black and white only. */
+:root { --paper:#ffffff; --ink:#000000; --blue:#000000; --on-blue:#ffffff; --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; }
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 56px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+.brand { font-weight: 700; font-size: 17px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.blue { color: var(--blue); }
+h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; letter-spacing: -0.03em; margin: 8px 0 0; text-wrap: balance; }
+.lede { font-size: 18px; margin: 12px 0 0; max-width: 40em; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; margin-top: 28px; }
+.seg { display: inline-flex; border: 1px solid var(--ink); border-radius: 999px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 14px; white-space: nowrap; font-weight: 500; color: var(--ink); background: transparent; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; min-height: 40px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg.preset button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.presetnote { font-size: 13px; margin-top: 10px; max-width: 60em; }
+.grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 36px; margin-top: 24px; align-items: start; }
+@media (max-width: 420px) { .seg button { padding: 8px 12px; font-size: 13.5px; } }
+@media (max-width: 800px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.panel { border: 1px solid var(--ink); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label { font-size: 14px; font-weight: 600; }
+.inp { display: flex; align-items: center; border: 1px solid var(--ink); border-radius: 10px; background: var(--paper); }
+.inp input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 17px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
+.inp span { padding: 0 12px; font-size: 13px; font-weight: 600; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { font: inherit; font-size: 12.5px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.yearsrow { display: flex; align-items: center; gap: 12px; }
+.yearsrow input { flex: 1; accent-color: var(--blue); }
+.yearsrow output { font-weight: 700; font-size: 17px; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.adv-only { display: none; }
+body.adv .adv-only { display: block; }
+body.adv .easy-only { display: none; }
+details.sect { border-top: 1px solid var(--ink); padding-top: 14px; }
+details.sect summary { cursor: pointer; font-weight: 600; font-size: 14px; list-style: none; display: flex; justify-content: space-between; }
+details.sect summary::after { content: "+"; } details.sect[open] summary::after { content: "−"; }
+.atable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12.5px; }
+.atable th { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; text-align: right; padding: 0 0 6px 4px; }
+.atable th:first-child, .atable td:first-child { text-align: left; padding-left: 0; }
+.atable td { padding: 4px 0 4px 4px; vertical-align: middle; }
+.atable input { width: 100%; min-width: 0; border: 1px solid var(--ink); border-radius: 6px; background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; padding: 5px 4px; text-align: right; font-variant-numeric: tabular-nums; }
+.small { font-size: 12px; line-height: 1.45; }
+.results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.cards { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 520px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+.card { border-radius: 18px; padding: 20px; }
+.card.k { background: var(--ink); color: var(--paper); }
+.card.b { background: var(--blue); color: var(--on-blue); }
+.card .big { font-size: clamp(24px, 4.4vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.card p { margin: 6px 0 0; font-size: 13.5px; }
+.list { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+.item { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--ink); }
+@media (max-width: 520px) { .item { grid-template-columns: minmax(0, 1fr) auto; } .item .barwrap { grid-column: 1 / -1; grid-row: 2; } }
+.item .nm { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+.item .nm small { display: block; font-weight: 400; font-size: 12px; }
+.barwrap { position: relative; height: 22px; }
+.barwrap .bar { position: absolute; left: 0; top: 4px; height: 14px; border-radius: 4px; background: var(--ink); transition: width .35s ease; }
+.barwrap .bar.best { background: var(--blue); }
+.barwrap .ref { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--ink); }
+.item .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; white-space: nowrap; }
+.item .v small { display: block; font-weight: 400; font-size: 11.5px; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; margin-top: 4px; border: 1px solid var(--ink); }
+.tag.up { background: var(--blue); color: var(--on-blue); border-color: var(--blue); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px; }
+.legend .dash { display: inline-block; width: 18px; border-top: 2px dashed var(--ink); vertical-align: middle; margin-right: 6px; }
+.legend .sw { display: inline-block; width: 18px; height: 10px; border-radius: 3px; background: var(--blue); vertical-align: middle; margin-right: 6px; }
+.legend .swk { background: var(--ink); }
+.chartbox { border: 1px solid var(--ink); border-radius: 18px; padding: 16px 12px 8px; }
+.chartbox svg { width: 100%; height: auto; display: block; }
+.tablewrap { overflow-x: auto; border-top: 2px solid var(--ink); }
+.rt { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; min-width: 640px; }
+.rt th { text-align: right; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; padding: 10px 0 8px 10px; border-bottom: 1px solid var(--ink); }
+.rt th:first-child, .rt td:first-child { text-align: left; padding-left: 0; }
+.rt td { text-align: right; padding: 10px 0 10px 10px; border-bottom: 1px solid var(--ink); }
+.rt td.gain { color: var(--blue); font-weight: 700; }
+.notes { font-size: 13px; line-height: 1.6; margin-top: 28px; }
+.notes p { margin: 0 0 10px; max-width: 64em; }
+.notes a { color: var(--blue); }
+.foot { margin-top: 32px; padding-top: 14px; border-top: 2px solid var(--ink); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+
+
+[hidden] { display: none !important; }
+.apptabs { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.apptabs button { font: inherit; font-size: 16px; font-weight: 600; padding: 14px 10px; border: 0; background: var(--paper); color: var(--ink); cursor: pointer; min-height: 52px; }
+.apptabs button + button { border-left: 2px solid var(--ink); }
+.apptabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.pf { margin-top: 0; border-top: 0; padding-top: 0; min-width: 0; }
+.pf .pfgrid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.pf .pfgrid { grid-template-columns: minmax(0, 1fr) !important; }
+body.ptab .mode-only { display: none; }
+/* Portfolio builder */
+
+.pf h2 { font-size: clamp(24px, 4vw, 32px); line-height: 1.1; letter-spacing: -0.02em; margin: 6px 0 0; }
+.pf .sub { margin: 8px 0 0; font-size: 15px; max-width: 46em; }
+.pfgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; margin-top: 20px; align-items: start; }
+@media (max-width: 800px) { .pfgrid { grid-template-columns: minmax(0, 1fr); } }
+.mixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.mixes button { font: inherit; font-size: 13.5px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 7px 14px; cursor: pointer; min-height: 38px; }
+.mixes button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.stack { display: flex; height: 26px; border-radius: 6px; overflow: hidden; border: 1px solid var(--ink); margin-top: 18px; }
+.stack div { height: 100%; transition: width .3s ease; border-right: 2px solid var(--paper); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--paper); overflow: hidden; white-space: nowrap; }
+.stack div:last-child { border-right: 0; }
+.psw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--ink); vertical-align: -2px; margin-right: 8px; flex-shrink: 0; }
+.f-cd { background: var(--ink); }
+.f-egx { background: repeating-linear-gradient(90deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
+.f-us { background: repeating-linear-gradient(-45deg, var(--ink) 0 3px, var(--paper) 3px 6px); }
+.f-gold { background: repeating-linear-gradient(45deg, var(--ink) 0 3px, var(--paper) 3px 6px); }
+.f-re { background: repeating-linear-gradient(0deg, var(--ink) 0 2px, var(--paper) 2px 5px); }
+.f-cash { background: var(--paper); }
+.stack .f-egx, .stack .f-us, .stack .f-gold, .stack .f-re, .stack .f-cash { color: transparent; }
+.sliders { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 4px 12px; align-items: center; }
+.srow label { font-size: 14.5px; font-weight: 600; display: flex; align-items: center; }
+.srow output { text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.srow input { grid-column: 1 / -1; width: 100%; accent-color: var(--blue); }
+.total100 { margin-top: 14px; font-size: 13.5px; display: flex; justify-content: space-between; border-top: 1px solid var(--ink); padding-top: 10px; }
+.pfres { display: flex; flex-direction: column; gap: 12px; }
+.pfrows { border-top: 2px solid var(--ink); }
+.pfrow { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.pfrow b { font-weight: 700; }
+.pfrow .gain { color: var(--blue); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .stack div { transition: none; } }
+
+/* Friendly white theme: white background, blue for action and highlight, black only for text and thin lines. */
+html, body { background: #ffffff; }
+body { font-size: 17px; }
+.wrap { padding-block: 20px 64px; }
+.top { border-bottom: 1px solid var(--ink); padding-bottom: 12px; }
+.top a { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.top img { height: 36px; width: auto; display: block; }
+.top .homelink { font-size: 14px; font-weight: 600; color: var(--blue); text-decoration: none; }
+h1 { font-size: clamp(32px, 6.4vw, 46px); }
+.lede { font-size: 17px; }
+.apptabs { border: 1.5px solid var(--blue); border-radius: 999px; padding: 4px; gap: 4px; }
+.apptabs button { border-radius: 999px; min-height: 48px; font-size: 16px; }
+.apptabs button + button { border-left: 0; }
+.apptabs button[aria-selected="true"] { background: var(--blue); color: var(--on-blue); }
+.seg { border-color: var(--blue); }
+.seg button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.seg button { min-height: 42px; }
+.presetnote { font-size: 14px; }
+.panel { border: 1.5px solid var(--blue); border-radius: 24px; gap: 22px; }
+.field > label { font-size: 15px; }
+.inp { border: 1.5px solid var(--ink); border-radius: 14px; }
+.inp:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--blue); }
+.inp input { font-size: 20px; font-weight: 600; padding: 12px 14px; }
+.quick { gap: 8px; }
+.quick button { font-size: 14px; font-weight: 600; min-height: 36px; padding: 6px 14px; border-color: var(--blue); color: var(--blue); }
+.quick button:active { background: var(--blue); color: var(--on-blue); }
+.yearsrow output { font-size: 20px; color: var(--blue); }
+input[type=range] { height: 32px; }
+#reset { color: var(--blue) !important; border-color: var(--blue) !important; font-weight: 600 !important; }
+.card { border-radius: 24px; padding: 22px; }
+.card.k { background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); }
+.card .big { font-size: clamp(28px, 6vw, 36px); }
+.list { border-top: 0; gap: 10px; }
+.item { border: 1.5px solid var(--ink); border-radius: 18px; padding: 14px 16px; }
+.item:first-child { border-color: var(--blue); }
+.barwrap .bar { background: var(--paper); border: 1.5px solid var(--ink); border-radius: 999px; height: 12px; top: 5px; }
+.barwrap .bar.best { background: var(--blue); border-color: var(--blue); }
+.legend .sw { border-radius: 999px; }
+.legend .swk { background: var(--paper); border: 1.5px solid var(--ink); }
+.chartbox { border-radius: 24px; }
+.mixes button { border-color: var(--blue); color: var(--blue); font-weight: 600; }
+.mixes button[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); }
+.pfrows { border-top: 1px solid var(--ink); }
+.stack { border-radius: 999px; height: 28px; }
+details.notes { margin-top: 32px; border: 1.5px solid var(--ink); border-radius: 18px; padding: 16px 18px; }
+details.notes > summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; display: flex; justify-content: space-between; color: var(--blue); }
+details.notes > summary::-webkit-details-marker { display: none; }
+details.notes > summary::after { content: "+"; font-size: 20px; line-height: 1; }
+details.notes[open] > summary::after { content: "−"; }
+details.notes[open] > summary { margin-bottom: 12px; }
+.disc { font-size: 13px; margin: 16px 0 0; }
+.foot { border-top: 1px solid var(--ink); }
+.foot a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+/* Toggles: centered, equal-width options, even inset, bold brand font */
+.controls { flex-direction: column; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; }
+.apptabs { margin-top: 28px; }
+.apptabs button, .seg button { font-family: var(--font); font-weight: 700; letter-spacing: -0.01em; }
+.seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-width: 1.5px; flex-wrap: nowrap; }
+.seg button { padding: 8px 18px; }
+@media (max-width: 420px) { .seg button { padding: 8px 12px; font-size: 13.5px; } }
+
+.top .homelink { color: var(--ink); }
+
+/* simplified compare: assumptions fold + one big result */
+details.assume { border-top: 1px solid var(--blue); padding-top: 14px; }
+details.assume > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; }
+details.assume > summary::-webkit-details-marker { display: none; }
+details.assume > summary::after { content: ""; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); transition: transform .2s; }
+details.assume[open] > summary::after { transform: rotate(-135deg) translateY(-3px); }
+.assume-body { margin-top: 16px; display: flex; flex-direction: column; }
+.assume-body .seg.preset { align-self: center; margin-bottom: 8px; }
+.assume-body .presetnote { margin: 0 0 16px; font-size: 13px; text-align: center; }
+.hero { background: var(--blue); color: var(--on-blue); border-radius: 24px; padding: 24px 22px; }
+.hero .eyebrow { font-size: 12px; }
+.hero-big { font-size: clamp(36px, 9vw, 48px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.hero-today { font-size: 16px; margin-top: 6px; }
+.hero-today span { font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.35); }
+.hero-rows span { display: block; font-size: 13px; }
+.hero-rows b { font-size: 19px; font-variant-numeric: tabular-nums; }
+.hero-note { margin: 14px 0 0; font-size: 13px; }
+.keep { border: 1.5px solid var(--ink); border-radius: 20px; padding: 18px 20px; }
+.keep b { font-size: 24px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.keep p { margin: 6px 0 0; font-size: 13.5px; }
+details.detail { border-top: 1px solid var(--ink); }
+details.detail > summary { font-size: 15px; font-weight: 700; padding: 2px 0; }
+
+/* goal tab */
+.apptabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.goal-only { display: none !important; }
+body.gtab .goal-only { display: flex !important; }
+body.gtab .nogoal { display: none !important; }
+
+.sublabel { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
+.assume-body .seg.preset { align-self: stretch; }
+.assume-body .presetnote { text-align: left; margin: 10px 0 18px; }
+details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
+
+/* currency switch */
+.currow { flex-direction: row !important; align-items: center; justify-content: space-between; gap: 12px; }
+.currow .sublabel { margin: 0; }
+.seg.cur button { min-height: 36px; padding: 6px 16px; font-size: 14px; }
+
+.stamp { margin: 10px 0 0; font-size: 13px; font-weight: 600; color: var(--blue); display: flex; align-items: center; gap: 6px; }
+.stamp::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+
+/* four tabs */
+.apptabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 480px) { .apptabs button { font-size: 14px; padding-left: 2px; padding-right: 2px; } }
+/* analyze */
+.risklist { display: flex; flex-direction: column; gap: 12px; }
+.rcard { border: 1.5px solid var(--ink); border-radius: 20px; padding: 18px 20px; }
+.rtop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.rtop b { display: block; font-size: 17px; }
+.rlvl { font-size: 13px; }
+.rfit { font-size: 12px; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.rfit.ok { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+.rmeter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 12px 0 10px; }
+.rmeter i { height: 6px; border-radius: 3px; border: 1px solid var(--ink); }
+.rmeter i.on { background: var(--ink); }
+.rworst, .rdip, .rrisk { margin: 4px 0 0; font-size: 14px; }
+.rrisk { margin-top: 8px; }
+
+/* grow. card, same as the homepage */
+.grow-box { margin: 24px 0 0; border: 1px solid #D2D2D7; border-radius: 28px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.grow-head { background: var(--blue); color: var(--on-blue); border-radius: 20px; padding: 28px 20px; text-align: center; }
+.grow-name { margin: 0; color: var(--on-blue); font-size: clamp(40px, 7vw, 56px); letter-spacing: -0.04em; line-height: 1; }
+.grow-head p { margin: 10px 0 0; font-size: clamp(16px, 2.2vw, 19px); }
+.gtiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.gtile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border: 1px solid #D2D2D7; border-radius: 20px; padding: 18px; text-decoration: none; color: var(--ink); transition: border-color .2s; }
+.gtile:hover { border-color: var(--ink); }
+.gtile.on { border: 2px solid var(--blue); padding: 17px; }
+.gtile svg { width: 28px; height: 28px; margin-bottom: 10px; }
+.gtile b { font-size: clamp(20px, 3.4vw, 26px); letter-spacing: -0.02em; line-height: 1.1; }
+.gtile span { font-size: 14px; }
+.apptabs { scroll-margin-top: 12px; }
+@media (max-width: 600px) { .grow-box { border-radius: 24px; padding: 10px; gap: 10px; } .gtiles { gap: 10px; } .gtile { padding: 14px; } .gtile.on { padding: 13px; } }
+
+.rnums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 2px 0 8px; }
+.rnums span { display: block; font-size: 12px; }
+.rnums b { font-size: 18px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+
+/* site header, identical to the photography site */
+.site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid #E8E8ED; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Inter, Arial, sans-serif; font-size: 17px; line-height: 1.47; letter-spacing: -0.01em; }
+.site-header .hwrap { max-width: 1120px; margin: 0 auto; padding-left: max(22px, env(safe-area-inset-left, 0px)); padding-right: max(22px, env(safe-area-inset-right, 0px)); min-height: 56px; display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; justify-content: space-between; }
+.site-header .logo { display: flex; align-items: center; padding: 6px 0; }
+.site-header .logo img { height: 44px; width: auto; display: block; }
+.site-header .nav { display: flex; flex-wrap: wrap; gap: 6px 24px; align-items: center; font-size: 13px; }
+.site-header .nav a { text-decoration: none; color: #1D1D1F; }
+.site-header .nav a:hover { text-decoration: underline; }
+.site-header .nav a[aria-current] { font-weight: 600; }
+.site-header .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 14px; border-radius: 999px; font-size: 13px; border: 1px solid #1D1D1F; background: #1D1D1F; color: #fff !important; }
+.site-header .btn:hover { background: #000; text-decoration: none !important; }
+@media (max-width: 430px) { .site-header .hwrap { flex-wrap: nowrap; gap: 16px; } .site-header .nav { flex-wrap: nowrap; white-space: nowrap; gap: 16px; } }
+@media (max-width: 380px) { .site-header .nav { gap: 12px; } .site-header .btn { padding: 0 12px; } }
+
+/* Small print: same grey as the site footer */
+:root { --muted: #6e6e73; }
+.small, .disc, .presetnote, .assume-body .presetnote, .stamp, .foot, .hero-note { color: var(--muted); }
+.stamp { font-weight: 500; }
+.stamp::before { background: var(--muted); }
+.foot b { color: var(--ink); }
+.foot a { color: #424245; }
+/* Outlook choice: three options share the panel width, the longest gets the most room */
+.assume-body .seg.preset { display: flex; width: 100%; gap: 2px; padding: 3px; }
+.assume-body .seg.preset button { flex: 1 1 auto; min-width: 0; padding: 8px 6px; font-size: 13.5px; }
+
+/* language toggle (EN / Arabic) */
+.site-header .lang{display:inline-flex;direction:ltr;flex:none;border:1px solid #1D1D1F;border-radius:999px;padding:2px;gap:2px}
+.site-header .lang a{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;line-height:1;color:#1D1D1F;text-decoration:none}
+.site-header .lang a:hover{background:#F5F5F7;text-decoration:none}
+.site-header .lang a[aria-current]{background:#1D1D1F;color:#fff}
+.site-header .lang a[lang=ar]{font-size:13px;font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","IBM Plex Sans Arabic","Noto Sans Arabic",Tahoma,sans-serif}
+/* phones: show only the other language, and drop About (it's further down the page) to keep one row */
+@media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
+@media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
+
+/* Arabic: right-to-left */
+:root { --font: -apple-system, BlinkMacSystemFont, "SF Arabic", "Segoe UI", "IBM Plex Sans Arabic", "Noto Sans Arabic", Tahoma, Arial, sans-serif; }
+body, .site-header { letter-spacing: 0; font-family: var(--font); }
+h1, .pf h2, .hero-big, .card .big, .keep b, .gtile b, .apptabs button, .seg button { letter-spacing: 0; }
+.grow-name { letter-spacing: -0.04em; }
+h1, .pf h2 { line-height: 1.3; }
+.gtile b, .hero-big, .card .big { line-height: 1.3; }
+.eyebrow { text-transform: none; letter-spacing: 0; font-size: 13px; }
+.hero .eyebrow { font-size: 14px; }
+.atable th, .rt th { text-transform: none; letter-spacing: 0; font-size: 12px; text-align: left; padding: 0 4px 6px 0; }
+.atable th:first-child, .atable td:first-child { text-align: right; padding-right: 0; padding-left: 4px; }
+.atable td { padding: 4px 4px 4px 0; }
+.atable input, .inp input { direction: ltr; }
+.atable input { text-align: right; }
+.inp input { text-align: right; }
+.rt th { padding: 10px 10px 8px 0; }
+.rt th:first-child, .rt td:first-child { text-align: right; padding-right: 0; }
+.rt td { text-align: left; padding: 10px 10px 10px 0; }
+.yearsrow output, .srow output, .item .v { text-align: left; }
+.barwrap .bar { left: auto; right: 0; }
+.barwrap .ref { border-left: 0; border-right: 2px dashed var(--ink); }
+.legend .dash, .legend .sw, .psw { margin-right: 0; margin-left: 6px; }
+.psw { margin-left: 8px; }
+.stack div { border-right: 0; border-left: 2px solid var(--paper); }
+.stack div:last-child { border-left: 0; }
+.assume-body .presetnote { text-align: right; }
+.tag { font-size: 11.5px; }
+</style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+</head>
+<body>
+
+
+<header class="site-header">
+<div class="hwrap">
+<a class="logo" href="/ar/" aria-label="الصفحة الرئيسية"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a>
+<nav class="nav" aria-label="القائمة">
+<a href="/ar/#learn">اتعلّم</a>
+<a href="/ar/grow/" aria-current="page">Grow</a>
+<a href="/ar/#about">عنّي</a>
+<a class="btn btn-dark" href="/ar/#book">احجز جلسة</a>
+<span class="lang" role="group" aria-label="اللغة"><a href="/grow/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/ar/grow/" lang="ar" aria-label="العربية" aria-current="true">عربي</a></span>
+</nav>
+</div>
+</header>
+<div class="wrap">
+
+  <div class="grow-box">
+<div class="grow-head"><h1 class="grow-name" lang="en">grow.</h1><p>منصة واحدة. صورة كاملة لاستثماراتك.</p></div>
+<div class="gtiles">
+<a class="gtile" href="#calculate" data-tab="compare"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="3"/><path d="M8 7.5h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg><b>احسب</b><span>اعرف فلوسك هتوصل لفين</span></a>
+<a class="gtile" href="#portfolio" data-tab="portfolio"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></svg><b>المحفظة</b><span>نوّع استثماراتك</span></a>
+<a class="gtile" href="#analyze" data-tab="analyze"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="m7 14 3-3.5 3 3 4-5"/></svg><b>حلّل</b><span>افهم المخاطرة</span></a>
+<a class="gtile" href="#goals" data-tab="goal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>الأهداف</b><span>خطّط لمستقبلك</span></a>
+</div>
+</div>
+  <p class="stamp" id="dataStamp">البيانات بتتحدّث كذا مرة في اليوم</p>
+
+  <nav class="apptabs" role="tablist" aria-label="الأدوات">
+    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">احسب</button>
+    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">المحفظة</button>
+    <button type="button" role="tab" id="t-analyze" aria-selected="false" aria-controls="tab-analyze">حلّل</button>
+    <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">الأهداف</button>
+  </nav>
+
+
+  <div class="grid">
+    <form class="panel" onsubmit="return false" aria-label="أرقامك">
+      <div class="field currow">
+        <span class="sublabel" id="curLbl">فلوسي بالـ</span>
+        <div class="seg cur" role="group" aria-labelledby="curLbl">
+          <button type="button" data-cur="EGP" aria-pressed="true">جنيه</button>
+          <button type="button" data-cur="USD" aria-pressed="false">دولار</button>
+        </div>
+      </div>
+      <div class="field goal-only">
+        <label for="goal">هدفي تمنه النهارده</label>
+        <div class="inp"><input id="goal" inputmode="numeric"><span class="curunit">جنيه</span></div>
+        <div class="quick" data-goal data-egp="500000,1000000,3000000,5000000" data-usd="10000,25000,50000,100000"></div>
+        <span class="small">عربية، مقدّم شقة، جامعة ابنك. اكتب تمنه دلوقتي.</span>
+      </div>
+      <div class="field">
+        <label for="start">معايا دلوقتي</label>
+        <div class="inp"><input id="start" inputmode="numeric"><span class="curunit">جنيه</span></div>
+        <div class="quick" data-for="start" data-egp="0,50000,100000,500000,1000000" data-usd="0,1000,5000,10000,25000"></div>
+      </div>
+      <div class="field nogoal">
+        <label for="monthly">أقدر أزوّد كل شهر</label>
+        <div class="inp"><input id="monthly" inputmode="numeric"><span class="curunit">جنيه</span></div>
+        <div class="quick" data-for="monthly" data-egp="1000,3000,5000,10000" data-usd="50,100,250,500"></div>
+      </div>
+      <div class="field">
+        <label for="years" id="yearsLbl">لمدة قد إيه</label>
+        <div class="yearsrow"><input type="range" id="years" min="1" max="25" step="1"><output id="yearsOut" for="years"></output></div>
+      </div>
+
+      <details class="assume" id="assume">
+        <summary>عدّل الافتراضات</summary>
+        <div class="assume-body">
+        <p class="sublabel" id="outlookLbl">نظرتك للسوق</p>
+        <div class="seg preset" role="group" aria-labelledby="outlookLbl">
+          <button type="button" data-p="cautious" aria-pressed="false">حذِرة</button>
+          <button type="button" data-p="balanced" aria-pressed="true">متوازنة</button>
+          <button type="button" data-p="past" aria-pressed="false">آخر 10 سنين</button>
+        </div>
+        <p class="presetnote" id="presetNote"></p>
+        <div class="field" style="margin-bottom:14px">
+          <label for="infl">التضخم في السنة</label>
+          <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
+          <span class="small" id="infLatest">آخر رقم: 13.9% (سبتمبر 2026)</span>
+        </div>
+        <div class="field">
+          <label for="raise">أزوّد مبلغي الشهري كل سنة بـ</label>
+          <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
+        </div>
+
+        <details class="assume adv" id="advset">
+        <summary>إعدادات متقدّمة</summary>
+        <div>
+        <details class="sect" open style="margin-top:16px">
+          <summary>العوائد في السنة</summary>
+          <table class="atable">
+            <tbody>
+              <tr><td>الشهادة، أول 3 سنين</td><td><input id="cd1" inputmode="decimal" aria-label="فايدة الشهادة أول 3 سنين"></td><td>%</td></tr>
+              <tr><td>الشهادة، بعد التجديد</td><td><input id="cd2" inputmode="decimal" aria-label="فايدة الشهادة بعد التجديد"></td><td>%</td></tr>
+              <tr><td>EGX30، بالتوزيعات</td><td><input id="egx" inputmode="decimal" aria-label="عائد EGX30"></td><td>%</td></tr>
+              <tr><td>الأسهم الأمريكية، بالدولار</td><td><input id="us" inputmode="decimal" aria-label="عائد الأسهم الأمريكية بالدولار"></td><td>%</td></tr>
+              <tr><td>الدهب، بالدولار</td><td><input id="gold" inputmode="decimal" aria-label="عائد الدهب بالدولار"></td><td>%</td></tr>
+              <tr><td>نزول الجنيه قصاد الدولار</td><td><input id="fx" inputmode="decimal" aria-label="نزول الجنيه في السنة"></td><td>%</td></tr>
+              <tr><td>زيادة سعر العقار</td><td><input id="re" inputmode="decimal" aria-label="زيادة سعر العقار"></td><td>%</td></tr>
+              <tr><td>الإيجار، بعد المصاريف</td><td><input id="rent" inputmode="decimal" aria-label="صافي عائد الإيجار"></td><td>%</td></tr>
+              <tr><td>الدولار النهارده، بالجنيه</td><td><input id="rate0" inputmode="decimal" aria-label="سعر الدولار النهارده بالجنيه"></td><td>جنيه</td></tr>
+            </tbody>
+          </table>
+        </details>
+
+        <details class="sect" style="margin-top:14px">
+          <summary>المصاريف والضرايب</summary>
+          <table class="atable">
+            <thead><tr><th>الاختيار</th><th>شرا</th><th>بيع</th><th>سنوي</th></tr></thead>
+            <tbody>
+              <tr><td>الشهادة</td><td><input id="c_cd_b" aria-label="مصاريف شرا الشهادة"></td><td><input id="c_cd_s" aria-label="مصاريف كسر الشهادة"></td><td><input id="c_cd_y" aria-label="مصاريف الشهادة السنوية"></td></tr>
+              <tr><td>EGX30</td><td><input id="c_egx_b" aria-label="مصاريف شرا EGX30"></td><td><input id="c_egx_s" aria-label="مصاريف بيع EGX30"></td><td><input id="c_egx_y" aria-label="مصاريف EGX30 السنوية"></td></tr>
+              <tr><td>أسهم أمريكية</td><td><input id="c_us_b" aria-label="مصاريف شرا الأسهم الأمريكية"></td><td><input id="c_us_s" aria-label="مصاريف بيع الأسهم الأمريكية"></td><td><input id="c_us_y" aria-label="مصاريف الأسهم الأمريكية السنوية"></td></tr>
+              <tr><td>دهب</td><td><input id="c_gold_b" aria-label="مصاريف شرا الدهب"></td><td><input id="c_gold_s" aria-label="مصاريف بيع الدهب"></td><td><input id="c_gold_y" aria-label="مصاريف الدهب السنوية"></td></tr>
+              <tr><td>عقار</td><td><input id="c_re_b" aria-label="مصاريف شرا العقار"></td><td><input id="c_re_s" aria-label="مصاريف بيع العقار"></td><td><input id="c_re_y" aria-label="مصاريف العقار السنوية"></td></tr>
+            </tbody>
+          </table>
+          <p class="small" style="margin-top:10px">كله بالنسبة المئوية. شرا = بيتدفع على كل مبلغ بتحطه. بيع = بيتدفع مرة واحدة في الآخر. سنوي = بيتخصم من العائد كل سنة (ضرايب التوزيعات، والرسوم، والصيانة).</p>
+        </details>
+        </div>
+        </details>
+        </div>
+      </details>
+
+      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-end">ابدأ من الأول</button>
+    </form>
+
+    <section class="results" id="tab-compare" aria-live="polite">
+      <div class="hero">
+        <span class="eyebrow">فلوسك ممكن توصل لـ</span>
+        <div class="hero-big" id="bestVal">—</div>
+        <div class="hero-today"><span id="bestReal">—</span> بفلوس النهارده</div>
+        <div class="hero-rows">
+          <div><span>انت حطيت</span><b id="putVal">—</b></div>
+          <div><span>النمو</span><b class="up" id="growVal">—</b></div>
+        </div>
+        <p class="hero-note" id="bestTxt">—</p>
+      </div>
+      <div class="keep"><span class="eyebrow">المطلوب عشان تلحق الأسعار</span><div><b id="keepVal">—</b></div><p id="keepTxt">—</p></div>
+
+      <div class="legend" aria-hidden="true"><span><i class="sw"></i>الأكتر نموًا</span><span><i class="sw swk"></i>اختيارات تانية</span><span><i class="dash"></i>اللي يلحق الأسعار</span></div>
+      <div class="list" id="list"></div>
+
+      <details class="sect detail" id="detail">
+      <summary>سنة بسنة، والجدول كامل</summary>
+      <div>
+        <p class="eyebrow" style="margin:14px 0 8px" id="chartLbl">سنة بسنة، القيمة بالجنيه</p>
+        <div class="chartbox"><svg id="chart" viewBox="0 0 640 300" role="img" aria-label="قيمة كل اختيار مع الوقت"></svg></div>
+      </div>
+
+      <div class="tablewrap" style="margin-top:16px">
+        <table class="rt">
+          <caption class="sr">النتايج بالتفصيل</caption>
+          <thead><tr><th>الاختيار</th><th id="thRate">صافي في السنة، بالجنيه</th><th id="thVal">القيمة بالجنيه</th><th>بفلوس النهارده</th><th>فوق التضخم*</th><th>أوحش سنة اتسجّلت</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <p class="small" style="margin-top:8px">*أكتر (أو أقل) من اللي محتاجه عشان تلحق الأسعار، بفلوس النهارده، بعد المصاريف.</p>
+      </div>
+      </details>
+    </section>
+  <section class="results analyze" id="tab-analyze" aria-live="polite" hidden>
+      <div class="hero">
+        <span class="eyebrow">الأنسب لمدتك</span>
+        <div class="hero-big" id="aHead">—</div>
+        <div class="hero-today" id="aSub">—</div>
+        <p class="hero-note">أي اختيار ممكن تيجي عليه سنة وحشة. المهم تقدر تستنى لحد ما تعدّي ولا لأ.</p>
+      </div>
+      <div class="risklist" id="aList"></div>
+      <p class="small">أوحش سنة هي أكبر نزول في سنة واحدة اتسجّل لكل اختيار (EGX30 في 2011، وS&amp;P 500 في 2008، والدهب في 2013 بالدولار، وأسعار العقار في مصر في 2020). المستقبل ممكن يبقى أحسن أو أوحش.</p>
+    </section>
+  <section class="results goal" id="tab-goal" aria-live="polite" hidden>
+      <div class="hero">
+        <span class="eyebrow" id="gEyebrow">عشان توصل لهدفك، حوّش</span>
+        <div class="hero-big" id="gMonthly">—</div>
+        <div class="hero-today" id="gWith">—</div>
+        <div class="hero-rows">
+          <div><span>الهدف بفلوس النهارده</span><b id="gToday">—</b></div>
+          <div><span id="gFutLbl">السعر ساعتها</span><b id="gFuture">—</b></div>
+        </div>
+        <p class="hero-note" id="gNote">—</p>
+      </div>
+      <p class="eyebrow" style="margin:4px 0 -6px">المبلغ الشهري المطلوب مع كل اختيار</p>
+      <div class="list" id="gList"></div>
+      <p class="small">الأسعار بتزيد مع التضخم، فهدفك هيكلّف أكتر بعدين. بنكبّر تمنه بمعدل التضخم اللي في افتراضاتك، وبعدين بنحسب المبلغ الشهري اللي كل اختيار محتاجه عشان يوصل، بعد المصاريف.</p>
+    </section>
+  <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
+    <p class="eyebrow blue">ابني محفظتك</p>
+    <h2 id="pf-title">وزّع فلوسك.</h2>
+    <p class="sub">قسّم مبالغك على الست اختيارات. حرّك شريط واحد والباقي هيتظبط لوحده، عشان المجموع يفضل دايمًا 100%.</p>
+    <div class="mixes" role="group" aria-label="توزيعات كمثال">
+      <button type="button" data-mix="safe">أغلبها آمن</button>
+      <button type="button" data-mix="balanced" aria-pressed="true">متوازنة</button>
+      <button type="button" data-mix="growth">نمو</button>
+      <button type="button" data-mix="dollar">دولار أكتر</button>
+    </div>
+    <p class="small" style="margin-top:8px">توزيعات كمثال عشان تتعلّم، مش ترشيح ليك.</p>
+    <div class="pfgrid">
+      <div>
+        <div class="stack" id="pfStack" aria-hidden="true"></div>
+        <div class="sliders" id="pfSliders"></div>
+        <div class="total100"><span>المجموع</span><b id="pfTotal">100%</b></div>
+      </div>
+      <div class="pfres" aria-live="polite">
+        <div class="cards" style="grid-template-columns:minmax(0,1fr)">
+          <div class="card b"><span class="eyebrow">محفظتك ممكن توصل لـ</span><div class="big" id="pfVal">—</div><p id="pfTxt">—</p></div>
+        </div>
+        <div class="pfrows" id="pfRows"></div>
+        <p class="small" id="pfRisk"></p>
+      </div>
+    </div>
+  </section>
+  </div>
+
+
+
+
+  <details class="notes">
+    <summary>الأرقام دي جاية منين؟</summary>
+    <p><b>السيناريوهات جاية منين.</b> <b>آخر 10 سنين</b> بيستخدم اللي حصل فعلًا: EGX30 طلع 12.8% في السنة على السعر بس من آخر 2014 لآخر 2024، غير التوزيعات (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">عوائد EGX30 السنوية</a>). وS&amp;P 500 جاب 14.8% في السنة بالدولار، من 2016 لـ2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). ودهب عيار 21 طلع من 287.62 جنيه للجرام في أبريل 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">أموال الغد</a>) لحوالي <span id="srcGold">6,217</span> النهارده (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>، سعر عيار 24 مضروب في 21 على 24)، يعني حوالي 25.6% في السنة بالجنيه، واللي بتتقسم لحوالي 7.6% للدهب بالدولار و16.7% لنزول الجنيه. وأسعار العقار طلعت حوالي 12.2% في السنة في سنين مؤشر عقارماب من 2014 لـ2024 اللي بيعرضها <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>، بعائد إيجار إجمالي 6.7% على مستوى مصر. أما <b>متوازنة</b> و<b>حذِرة</b> فتخمينات أقل وبتبص لقدّام، عشان العشر سنين اللي فاتوا كان فيهم تعويمين كبار.</p>
+    <p><b>أرقام النهارده.</b> التضخم <span id="srcInfl">13.9% في سبتمبر 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS عن طريق Daily News Egypt</a>)</span>. شهادات الـ3 سنين الثابتة حوالي <span id="srcCd">17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise، أغسطس 2026</a>)</span>، وفايدة التجديد تخمين، عشان البنك المركزي بيخفّض الفايدة. تداولات البورصة المصرية عليها ضريبة دمغة 0.05% على البيع وعلى الشرا من أغسطس 2026، بدل ضريبة الأرباح الرأسمالية (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). الدولار النهارده: <span id="srcUsd">55.29 جنيه (<a href="https://www.exchangerate-api.com/" target="_blank" rel="noopener">ExchangeRate-API</a>، 24 أكتوبر 2026)</span>، وبيتحدّث كذا مرة في اليوم. المصاريف الافتراضية لمصنعية الدهب، وعمولات السمسرة، وفروق تحويل العملة، ورسوم العقار تقديرات، فعدّلها على حسب حالتك.</p>
+    <p><b>أوحش سنة اتسجّلت</b> بتوضّح كل اختيار وقع قد إيه في سنة واحدة: EGX30 <bdi>−49.3%</bdi> في 2011، والعقار <bdi>−9.6%</bdi> في 2020 (عقارماب)، والمعروف إن S&amp;P 500 نزل <bdi>−37%</bdi> في 2008 والدهب <bdi>−28%</bdi> في 2013 (بالدولار). العقار كمان محتاج مبلغ كبير في الأول، وممكن ياخد شهور عشان يتباع. والشهادات هي الاختيار الوحيد بسعر ثابت، ولحد ما مدتها تخلص بس.</p>
+    <p>اتراجعت يوم <span id="srcChecked">24 أكتوبر 2026</span>.</p>
+  </details>
+  <p class="disc">توضيح بس، مش توقّع ومش نصيحة مالية شخصية. العوائد الحقيقية بتتغيّر وممكن تبقى بالسالب.</p>
+
+  <footer class="foot"><span><b>Amr El Hadeka</b> · invest.amrelhadeka.com</span><span style="display:flex;gap:16px;flex-wrap:wrap"><a href="/ar/#join">نصايح عن الفلوس، مرة في الشهر ←</a><a href="https://photography.amrelhadeka.com/">التصوير</a></span></footer>
+</div>
+
+<script>
+(function () {
+  const PRESETS = {
+    cautious: { note: 'حذِرة: عوائد أقل، والجنيه بينزل أبطأ من السنين اللي فاتت.', cd1: 17.75, cd2: 12, egx: 12, us: 7, gold: 3, fx: 4, re: 9, rent: 4.5 },
+    balanced: { note: 'متوازنة: تخمين في النص للسنين الجاية.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
+    past: { note: 'آخر 10 سنين: اللي كل اختيار جابه فعلًا مؤخرًا، ومعاهم تعويمين كبار. المستقبل ممكن يبقى أهدى.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
+  };
+  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9, rate0: 55.29,
+    c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
+    c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
+  const WORST = { cd: '<bdi>0%</bdi> (ثابتة)', egx: '<bdi>−49.3%</bdi> (2011)', us: '<bdi>−37%</bdi> (2008، بالدولار)', gold: '<bdi>−28%</bdi> (2013، بالدولار)', re: '<bdi>−9.6%</bdi> (2020)', cash: 'عمره ما بيكبر' };
+  const RATE_KEYS = ['cd1','cd2','egx','us','gold','fx','re','rent'];
+  const ALL = Object.keys(BASE).concat(RATE_KEYS);
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2).replace(/\.?0+$/, '') + ' مليون' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + ' ألف' : fmt(n);
+  const yrsTxt = n => n === 1 ? 'سنة' : n === 2 ? 'سنتين' : n <= 10 ? n + ' سنين' : n + ' سنة';
+  const AR_MONTHS = { January: 'يناير', February: 'فبراير', March: 'مارس', April: 'أبريل', May: 'مايو', June: 'يونيو', July: 'يوليو', August: 'أغسطس', September: 'سبتمبر', October: 'أكتوبر', November: 'نوفمبر', December: 'ديسمبر' };
+  const arDate = t => String(t).replace(/January|February|March|April|May|June|July|August|September|October|November|December/g, m => AR_MONTHS[m]);
+  let cur = 'EGP'; try { if (localStorage.getItem('emc-cur') === 'USD') cur = 'USD'; } catch (e) {}
+  const CV = { r0: 55.31, fx: 7 };
+  const usdMode = () => cur === 'USD';
+  const fxAt = y => CV.r0 * Math.pow(1 + CV.fx / 100, y);
+  const M = (x, y) => usdMode() ? x / fxAt(y || 0) : x;
+  const money = (x, y) => usdMode() ? '$' + fmt(M(x, y)) : fmt(x) + ' جنيه';
+  const compactU = n => Math.abs(n) >= 1e3 && Math.abs(n) < 1e5 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + ' ألف' : compact(n);
+  const moneyC = (x, y) => usdMode() ? '$' + compactU(M(x, y)) : compact(x);
+  const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
+  let state = { mode: 'easy', preset: 'balanced' };
+
+  function setVal(k, v) { const el = $(k); if (!el) return; el.value = (k === 'start' || k === 'monthly') ? fmt(v) : v; }
+  function applyPreset(p) { state.preset = p; const P = PRESETS[p]; RATE_KEYS.forEach(k => setVal(k, P[k])); document.querySelectorAll('.preset button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === p ? 'true' : 'false')); $('presetNote').textContent = P.note; }
+  function setMode(m) { state.mode = m; }
+
+  function load() {
+    let s = null; try { s = JSON.parse(localStorage.getItem('emc-v2') || 'null'); } catch (e) {}
+    const FRESH = ['rate0', 'infl'];
+    Object.keys(BASE).forEach(k => setVal(k, s && s.v && s.v[k] != null && !FRESH.includes(k) ? s.v[k] : BASE[k]));
+    applyPreset(s && PRESETS[s.preset] ? s.preset : 'balanced');
+    if (s && s.v && s.custom) RATE_KEYS.forEach(k => { if (s.v[k] != null) setVal(k, s.v[k]); });
+    if (s && s.mode === 'adv') $('assume').open = true;
+    setMode('adv');
+  }
+  function save(v, custom) { try { localStorage.setItem('emc-v2', JSON.stringify({ v, preset: state.preset, mode: state.mode, custom })); } catch (e) {} }
+
+  // Monthly simulation. Returns yearly values (index 0 = start) and the final value after sell costs.
+  function sim(o, v) {
+    const months = v.years * 12, path = [];
+    let val = v.start * (1 - o.buy / 100), dep = v.monthly;
+    path.push(v.start);
+    for (let m = 1; m <= months; m++) {
+      if (v.fxm) dep *= v.fxm;
+      const yr = o.rate(m);
+      const r = Math.pow(1 + (yr - o.yearly) / 100, 1 / 12) - 1;
+      val = val * (1 + r) + dep * (1 - o.buy / 100);
+      if (m % 12 === 0) { path.push(val * (1 - o.sell / 100)); dep *= 1 + v.raise / 100; }
+    }
+    return { path, final: val * (1 - o.sell / 100) };
+  }
+  function keepUp(v) {
+    const months = v.years * 12, r = Math.pow(1 + v.infl / 100, 1 / 12) - 1, path = [v.start];
+    let val = v.start, dep = v.monthly, put = v.start;
+    for (let m = 1; m <= months; m++) { if (v.fxm) dep *= v.fxm; val = val * (1 + r) + dep; put += dep; if (m % 12 === 0) { path.push(val); dep *= 1 + v.raise / 100; } }
+    return { path, final: val, put };
+  }
+
+  function calc() {
+    const v = {}; ALL.forEach(k => v[k] = num($(k).value));
+    v.years = Math.max(1, Math.min(25, Math.round(v.years)));
+    $('yearsOut').textContent = yrsTxt(v.years);
+    const P = PRESETS[state.preset];
+    const custom = RATE_KEYS.some(k => Math.abs(v[k] - P[k]) > 1e-9);
+    save(v, custom);
+    CV.r0 = v.rate0 > 0 ? v.rate0 : BASE.rate0; CV.fx = v.fx;
+    const U = { start: v.start, monthly: v.monthly, raise: v.raise };
+    if (usdMode()) {
+      v.start *= CV.r0; v.monthly *= CV.r0;
+      v.fxm = Math.pow(1 + v.fx / 100, 1 / 12);
+    }
+    let putU = U.start, dep = U.monthly;
+    for (let y = 0; y < v.years; y++) { putU += dep * 12; dep *= 1 + U.raise / 100; }
+    const usd = r => ((1 + r / 100) * (1 + v.fx / 100) - 1) * 100;
+    const opts = [
+      { key: 'cd', name: 'شهادة بنكية', sub: 'ثابتة 3 سنين، وبعدين بتتجدّد', rate: m => m <= 36 ? v.cd1 : v.cd2, buy: v.c_cd_b, sell: v.c_cd_s, yearly: v.c_cd_y },
+      { key: 'egx', name: 'أسهم EGX30', sub: 'أكبر 30 شركة في مصر', rate: () => v.egx, buy: v.c_egx_b, sell: v.c_egx_s, yearly: v.c_egx_y },
+      { key: 'us', name: 'أسهم أمريكية', sub: usdMode() ? 'S&P 500' : 'S&P 500، محسوبة بالجنيه', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
+      { key: 'gold', name: 'دهب', sub: usdMode() ? 'متسعّر بالدولار' : 'محسوب بالجنيه', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
+      { key: 're', name: 'عقار', sub: 'زيادة السعر + الإيجار', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
+      { key: 'cash', name: usdMode() ? 'دولارات في البيت' : 'كاش في البيت', sub: 'تحت البلاطة', rate: () => usdMode() ? v.fx : 0, buy: 0, sell: 0, yearly: 0 }
+    ];
+    const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
+    opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
+    // effective net yearly rate (after costs) via bisection on a cost-free sim
+    opts.forEach(o => { let lo = -50, hi = 80; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
+    opts.sort((a, b) => b.value - a.value);
+    const best = opts[0];
+
+    $('bestVal').textContent = money(best.value, v.years);
+    $('bestReal').textContent = money(best.real, 0);
+    $('putVal').textContent = usdMode() ? '$' + fmt(putU) : fmt(K.put) + ' جنيه';
+    const grow = usdMode() ? M(best.value, v.years) - putU : best.value - K.put;
+    $('growVal').innerHTML = '<bdi>' + (grow >= 0 ? '+' : '−') + (usdMode() ? '$' + fmt(Math.abs(grow)) + '</bdi>' : fmt(Math.abs(grow)) + '</bdi> جنيه');
+    $('growVal').classList.toggle('up', grow >= 0);
+    $('bestTxt').textContent = 'مع أكتر اختيار بيكبّر فلوسك: ' + best.name + '، بعد المصاريف.';
+    $('keepVal').textContent = money(K.final, v.years);
+    $('keepTxt').textContent = 'بتضخم ' + v.infl + '%، ده المبلغ اللي فلوسك لازم توصله عشان تشتري نفس الحاجات. ' + (best.value >= K.final ? best.name + ' بتغلبه بـ' + money(best.value - K.final, v.years) + '.' : 'مفيش اختيار بيغلبه بالأرقام دي.');
+
+    const max = Math.max(...opts.map(o => o.value), K.final) * 1.04;
+    $('list').innerHTML = opts.map((o, i) => {
+      const beats = o.value >= K.final;
+      return '<div class="item"><div class="nm">' + o.name + '<small>' + o.sub + '</small><span class="tag' + (beats ? ' up' : '') + '">' + (beats ? 'بيغلب التضخم' : 'بيخسر قصاد التضخم') + '</span></div>' +
+        '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (o.value / max * 100) + '%"></div><div class="ref" style="right:' + (K.final / max * 100) + '%"></div></div>' +
+        '<div class="v">' + moneyC(o.value, v.years) + '<small>' + moneyC(o.real, 0) + ' بفلوس النهارده</small></div></div>';
+    }).join('');
+
+    $('tbody').innerHTML = opts.map(o =>
+      '<tr><td><b>' + o.name + '</b></td><td><bdi>' + o.netRate.toFixed(1) + '%</bdi></td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
+      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '"><bdi>' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(M(o.beyond, 0))) + '</bdi></td><td>' + WORST[o.key] + '</td></tr>').join('');
+
+    const cu = usdMode() ? 'الدولار' : 'الجنيه';
+    $('chartLbl').textContent = 'سنة بسنة، القيمة بـ' + cu;
+    $('thRate').textContent = 'صافي في السنة، بالجنيه'; $('thVal').textContent = 'القيمة بـ' + cu;
+    drawChart(opts, K, v);
+    renderPortfolio(opts, K, v);
+    renderGoal(opts, v);
+    renderAnalyze(opts, v);
+  }
+
+  const RISK = {
+    cd:   { lvl: 0, label: 'طلوع ونزول قليل', risk: 'مقفولة 3 سنين، وكسرها بدري بيكلّفك. ولو التضخم طلع فوق الفايدة، هتفضل ورا.', min: 3 },
+    re:   { lvl: 1, label: 'طلوع ونزول قليل', risk: 'صعب تبيعه بسرعة، ومحتاج مبلغ كبير عشان تبدأ.', min: 5 },
+    gold: { lvl: 2, label: 'طلوع ونزول متوسط', risk: 'مابيدّيش دخل، وممكن يفضل واقف سنين.', min: 3 },
+    us:   { lvl: 3, label: 'طلوع ونزول عالي', risk: 'بتتحرّك مع الأسواق الأمريكية ومع سعر الدولار.', min: 5 },
+    egx:  { lvl: 3, label: 'طلوع ونزول عالي', risk: 'تقلّبات كبيرة مع اقتصاد مصر والجنيه.', min: 5 },
+    cash: { lvl: 0, label: 'مفيش طلوع ونزول', risk: 'بيخسر من قيمته كل سنة قصاد الأسعار اللي بتزيد.', min: 0 }
+  };
+  function renderAnalyze(opts, v) {
+    const yrs = v.years, yTxt = yrsTxt(yrs);
+    const rows = opts.slice().sort((a, b) => (a.key === 'cash') - (b.key === 'cash') || RISK[a.key].lvl - RISK[b.key].lvl || PF_WORST[b.key] - PF_WORST[a.key]);
+    const fits = rows.filter(o => o.key !== 'cash' && yrs >= RISK[o.key].min);
+    const pick = fits.find(o => o.beyond >= 0);
+    const close = fits.slice().sort((a, b) => b.beyond - a.beyond)[0];
+    $('aHead').textContent = pick ? pick.name : fits.length ? 'مفيش حاجة بتغلب الأسعار' : 'المدة قصيرة على الاستثمار';
+    $('aSub').textContent = pick
+      ? 'أثبت اختيار يناسب ' + yTxt + ' وبرضه بيغلب الأسعار اللي بتزيد. ممكن يوصل لـ' + money(pick.value, yrs) + '.'
+      : (fits.length ? 'بالأرقام دي، مفيش اختيار يناسب ' + yTxt + ' بيغلب الأسعار. الأقرب ' + close.name + '، بـ' + money(close.value, yrs) + '.' : 'لمدة ' + yTxt + '، ولا اختيار من دول مناسب. خلّي الفلوس اللي هتحتاجها قريب في مكان تقدر تسحب منه في أي وقت.');
+    $('aList').innerHTML = rows.map(o => {
+      const R = RISK[o.key], w = PF_WORST[o.key];
+      const ok = o.key === 'cash' ? false : yrs >= R.min;
+      const fitTxt = o.key === 'cash' ? 'مش لتكبير الفلوس' : ok ? 'يناسب ' + yTxt : 'أحسن لـ' + yrsTxt(R.min) + ' أو أكتر';
+      const nums = o.key === 'cash'
+        ? '<div class="rnums"><div><span>بعد ' + yTxt + '</span><b>' + money(o.value, yrs) + '</b></div><div><span>بفلوس النهارده</span><b>' + money(o.real, 0) + '</b></div></div>'
+        : '<div class="rnums"><div><span>ممكن يوصل لـ</span><b>' + money(o.value, yrs) + '</b></div><div><span>لو أوحش سنة جت في الآخر</span><b>' + (w < 0 ? money(o.value * (1 + w / 100), yrs) : money(o.value, yrs)) + '</b></div></div>';
+      return '<div class="rcard"><div class="rtop"><div><b>' + o.name + '</b><span class="rlvl l' + R.lvl + '">' + R.label + '</span></div>' +
+        '<span class="rfit' + (ok ? ' ok' : '') + '">' + fitTxt + '</span></div>' +
+        '<div class="rmeter" aria-hidden="true">' + [0, 1, 2, 3].map(i => '<i' + (i <= R.lvl && o.key !== 'cash' ? ' class="on"' : '') + '></i>').join('') + '</div>' +
+        nums +
+        '<p class="rworst">أوحش سنة اتسجّلت: <b>' + WORST[o.key] + '</b> · ' + (o.beyond >= 0 ? 'بيغلب الأسعار' : 'بيخسر قصاد الأسعار') + '</p>' +
+        '<p class="rrisk">' + R.risk + '</p></div>';
+    }).join('');
+  }
+
+  function renderGoal(opts, v) {
+    const GU = num($('goal').value), G = usdMode() ? GU * CV.r0 : GU, yrs = v.years;
+    try { localStorage.setItem('emc-goal', String(GU)); } catch (e) {}
+    const target = G * Math.pow(1 + v.infl / 100, yrs);
+    const rows = opts.map(o => {
+      const f0 = sim(o, Object.assign({}, v, { monthly: 0 })).final;
+      const f1 = sim(o, Object.assign({}, v, { monthly: 1000 })).final;
+      const need = (target - f0) / ((f1 - f0) / 1000);
+      return { o, need: Math.max(0, need) / (usdMode() ? CV.r0 : 1), done: f0 >= target };
+    }).sort((a, b) => a.need - b.need);
+    const best = rows[0], cash = rows.find(r => r.o.key === 'cash');
+    const yTxt = yrsTxt(yrs);
+    $('gToday').textContent = money(G, 0);
+    $('gFutLbl').textContent = 'السعر بعد ' + yTxt;
+    $('gFuture').textContent = money(target, yrs);
+    if (G <= 0) {
+      $('gEyebrow').textContent = 'هدفك'; $('gMonthly').textContent = 'اكتب هدفك';
+      $('gWith').textContent = 'اكتب هدفك تمنه كام النهارده.'; $('gNote').textContent = ''; $('gList').innerHTML = ''; return;
+    }
+    if (best.done) {
+      $('gEyebrow').textContent = 'أخبار حلوة';
+      $('gMonthly').textContent = 'انت ماشي صح';
+      $('gWith').textContent = 'اللي معاك دلوقتي هيوصل لوحده مع ' + best.o.name + '.';
+    } else {
+      $('gEyebrow').textContent = 'عشان توصل لهدفك، حوّش';
+      $('gMonthly').textContent = usdMode() ? '$' + fmt(best.need) : fmt(best.need) + ' جنيه';
+      $('gWith').textContent = 'في الشهر، مع ' + best.o.name + '، لمدة ' + yTxt + '.';
+    }
+    $('gNote').textContent = cash && !best.done && cash.need > best.need
+      ? 'لو خلّيتها ' + cash.o.name + ' هتحتاج ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر، يعني ' + (usdMode() ? '$' + fmt(cash.need - best.need) : fmt(cash.need - best.need) + ' جنيه') + ' زيادة.'
+      : '';
+    const max = Math.max(...rows.map(r => r.need)) * 1.04 || 1;
+    $('gList').innerHTML = rows.map((r, i) =>
+      '<div class="item"><div class="nm">' + r.o.name + '<small>' + r.o.sub + '</small></div>' +
+      '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (r.need / max * 100) + '%"></div></div>' +
+      '<div class="v">' + (r.done ? 'ماشي صح' : fmt(r.need)) + '<small>' + (r.done ? 'مش محتاج مبلغ شهري' : 'في الشهر') + '</small></div></div>').join('');
+  }
+
+  function drawChart(opts, K, v) {
+    const P = a => a.map((x, i) => M(x, i));
+    opts = opts.map(o => Object.assign({}, o, { path: P(o.path), value: M(o.value, v.years) }));
+    K = { path: P(K.path), final: M(K.final, v.years) };
+    const pre = usdMode() ? '$' : '';
+    const W = 640, H = 300, L = 78, R = 150, T = 16, B = 34;
+    const yMax = Math.max(...opts.map(o => Math.max(...o.path)), Math.max(...K.path)) * 1.05;
+    const X = i => L + (W - L - R) * i / v.years, Y = val => T + (H - T - B) * (1 - val / yMax);
+    const step = Math.pow(10, Math.floor(Math.log10(yMax / 4))), nice = [1, 2, 2.5, 5, 10].map(s => s * step).find(s => yMax / s <= 5) || step * 10;
+    let g = '';
+    for (let t = 0; t <= yMax; t += nice) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="currentColor" stroke-opacity=".15"/><text x="' + (L - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="start" font-size="11" fill="currentColor">' + pre + compact(t) + '</text>';
+    const xs = v.years <= 10 ? 1 : v.years <= 20 ? 2 : 5;
+    for (let i = 0; i <= v.years; i += xs) g += '<text x="' + X(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="currentColor">' + (i === 0 ? 'دلوقتي' : 'سنة ' + i) + '</text>';
+    const line = (p, attrs) => '<polyline fill="none" points="' + p.map((val, i) => X(i).toFixed(1) + ',' + Y(val).toFixed(1)).join(' ') + '" ' + attrs + '/>';
+    g += line(K.path, 'stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"');
+    opts.slice().reverse().forEach((o, idx) => { const best = o === opts[0]; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
+    // end labels, spaced apart
+    const labels = opts.map((o, i) => ({ t: o.name + ' ' + pre + compact(o.value), y: Y(o.value), best: i === 0 })).concat([{ t: 'يلحق الأسعار ' + pre + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
+    for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
+    const over = labels.length ? labels[labels.length - 1].y - (H - B) : 0; if (over > 0) labels.forEach(l => l.y -= over);
+    labels.forEach(l => g += '<text x="' + (W - R + 8) + '" y="' + (l.y + 4) + '" text-anchor="end" font-size="11" font-weight="' + (l.best ? 700 : 500) + '" fill="' + (l.best ? 'var(--blue)' : 'currentColor') + '">' + l.t + '</text>');
+    $('chart').innerHTML = g;
+    $('chart').style.color = 'var(--ink)';
+  }
+
+  const chipTxt = n => n >= 1e6 ? (n / 1e6) + ' مليون' : n >= 1e3 ? (n / 1e3) + ' ألف' : String(n);
+  function drawChips() {
+    document.querySelectorAll('.quick[data-egp]').forEach(q => {
+      const vals = q.dataset[usdMode() ? 'usd' : 'egp'].split(',').map(Number);
+      q.innerHTML = vals.map(n => '<button type="button" data-v="' + n + '">' + (usdMode() ? (n ? '$' + fmt(n) : '0') : chipTxt(n)) + '</button>').join('');
+    });
+    document.querySelectorAll('.curunit').forEach(el => el.textContent = usdMode() ? 'دولار' : 'جنيه');
+    document.querySelectorAll('.seg.cur button').forEach(b => b.setAttribute('aria-pressed', b.dataset.cur === cur));
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.quick[data-egp] button'); if (!b) return;
+    const q = b.parentNode, id = q.dataset.for || 'goal';
+    $(id).value = fmt(num(b.dataset.v)); calc();
+  });
+  function setCur(c) {
+    if (c === cur) return;
+    const r = num($('rate0').value) || BASE.rate0;
+    const conv = x => c === 'USD' ? x / r : x * r;
+    const nice = x => { const a = Math.abs(x); const st = a >= 1e5 ? 1000 : a >= 1e4 ? 500 : a >= 1000 ? 50 : 10; return Math.round(x / st) * st; };
+    ['start', 'monthly', 'goal'].forEach(k => { $(k).value = fmt(nice(conv(num($(k).value)))); });
+    cur = c; try { localStorage.setItem('emc-cur', c); } catch (e) {}
+    if (window.track) track('currency', c, 1);
+    drawChips(); calc();
+  }
+  document.querySelectorAll('.seg.cur button').forEach(b => b.addEventListener('click', () => setCur(b.dataset.cur)));
+  document.querySelectorAll('.preset button').forEach(b => b.addEventListener('click', () => { applyPreset(b.dataset.p); calc(); if (window.track) track('outlook', b.dataset.p, 1); }));
+  $('assume').addEventListener('toggle', () => { state.mode = $('assume').open ? 'adv' : 'easy'; calc(); });
+  ['start', 'monthly'].forEach(k => $(k).addEventListener('blur', () => { $(k).value = fmt(num($(k).value)); }));
+  ALL.forEach(k => { const el = $(k); if (el) el.addEventListener('input', calc); });
+  $('reset').addEventListener('click', () => { try { localStorage.removeItem('emc-v2'); } catch (e) {} cur = 'EGP'; try { localStorage.setItem('emc-cur', 'EGP'); } catch (e) {} drawChips(); $('goal').value = fmt(1000000); Object.keys(BASE).forEach(k => setVal(k, BASE[k])); applyPreset('balanced'); try { localStorage.removeItem('emc-pf'); } catch (e) {} pf = Object.assign({}, MIXES.balanced); pfMix = 'balanced'; calc(); pfRender(); });
+
+  // ---------- Portfolio builder ----------
+  const PF_KEYS = ['egx', 'us', 'gold', 'cd', 're', 'cash'];
+  const PF_NAMES = { egx: 'أسهم EGX30', us: 'أسهم أمريكية', gold: 'دهب', cd: 'شهادة بنكية', re: 'عقار', cash: 'كاش' };
+  const PF_WORST = { egx: -49.3, us: -37, gold: -28, cd: 0, re: -9.6, cash: 0 };
+  const MIXES = {
+    safe: { cd: 50, egx: 15, us: 10, gold: 15, re: 0, cash: 10 },
+    balanced: { cd: 20, egx: 30, us: 25, gold: 15, re: 10, cash: 0 },
+    growth: { cd: 5, egx: 40, us: 40, gold: 10, re: 5, cash: 0 },
+    dollar: { cd: 10, egx: 15, us: 50, gold: 25, re: 0, cash: 0 }
+  };
+  let pf = Object.assign({}, MIXES.balanced), pfMix = 'balanced';
+  try { const sv = JSON.parse(localStorage.getItem('emc-pf') || 'null'); if (sv && sv.w) { pf = sv.w; pfMix = sv.mix || ''; } } catch (e) {}
+  let lastOpts = null, lastK = null, lastV = null;
+
+  function pfBuild() {
+    $('pfSliders').innerHTML = PF_KEYS.map(k => '<div class="srow"><label for="pf_' + k + '"><i class="psw f-' + k + '"></i>' + PF_NAMES[k] + '</label><output id="pfo_' + k + '" for="pf_' + k + '"></output><input type="range" id="pf_' + k + '" min="0" max="100" step="1"></div>').join('');
+    PF_KEYS.forEach(k => $('pf_' + k).addEventListener('input', e => pfSet(k, +e.target.value)));
+  }
+  function pfSet(k, val) {
+    val = Math.max(0, Math.min(100, Math.round(val)));
+    const others = PF_KEYS.filter(x => x !== k), rest = 100 - val, sum = others.reduce((a, x) => a + pf[x], 0);
+    pf[k] = val;
+    if (sum > 0) others.forEach(x => pf[x] = Math.floor(pf[x] * rest / sum));
+    else others.forEach((x, i) => pf[x] = i === 0 ? rest : 0);
+    let diff = 100 - PF_KEYS.reduce((a, x) => a + pf[x], 0);
+    const order = others.slice().sort((a, b) => pf[b] - pf[a]);
+    for (let i = 0; diff > 0; i = (i + 1) % order.length) { pf[order[i]]++; diff--; }
+    pfMix = '';
+    pfRender();
+  }
+  function pfRender() {
+    document.querySelectorAll('.mixes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mix === pfMix ? 'true' : 'false'));
+    PF_KEYS.forEach(k => { $('pf_' + k).value = pf[k]; $('pfo_' + k).textContent = pf[k] + '%'; });
+    $('pfStack').innerHTML = PF_KEYS.filter(k => pf[k] > 0).map(k => '<div class="f-' + k + '" style="width:' + pf[k] + '%">' + (pf[k] >= 10 ? pf[k] + '%' : '') + '</div>').join('');
+    $('pfTotal').textContent = PF_KEYS.reduce((a, x) => a + pf[x], 0) + '%';
+    try { localStorage.setItem('emc-pf', JSON.stringify({ w: pf, mix: pfMix })); } catch (e) {}
+    if (lastOpts) renderPortfolio(lastOpts, lastK, lastV);
+  }
+  function renderPortfolio(opts, K, v) {
+    lastOpts = opts; lastK = K; lastV = v;
+    const byKey = {}; opts.forEach(o => byKey[o.key] = o);
+    const deflate = Math.pow(1 + v.infl / 100, v.years);
+    let total = 0, put = 0; const parts = [];
+    PF_KEYS.forEach(k => {
+      const w = pf[k] / 100; if (w <= 0) return;
+      const vv = Object.assign({}, v, { start: v.start * w, monthly: v.monthly * w });
+      const r = sim(byKey[k], vv).final; total += r;
+      parts.push({ k, w, value: r });
+    });
+    const beyond = (total - K.final) / deflate, beats = total >= K.final;
+    $('pfVal').textContent = money(total, v.years);
+    $('pfTxt').textContent = 'تساوي ' + money(total / deflate, 0) + ' بفلوس النهارده، بعد المصاريف. ' + (beats ? 'بتغلب التضخم بـ' : 'بتخسر قصاد التضخم بـ') + money(Math.abs(beyond), 0) + ' بفلوس النهارده.';
+    const best = opts[0];
+    const rows = parts.sort((a, b) => b.value - a.value).map(p => '<div class="pfrow"><span><i class="psw f-' + p.k + '"></i>' + PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%</span><b>' + money(p.value, v.years) + '</b></div>');
+    rows.push('<div class="pfrow"><span>المطلوب عشان تلحق الأسعار</span><b>' + money(K.final, v.years) + '</b></div>');
+    rows.push('<div class="pfrow"><span>كله في أحسن اختيار لوحده (' + best.name + ')</span><b>' + money(best.value, v.years) + '</b></div>');
+    $('pfRows').innerHTML = rows.join('');
+    const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
+    const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
+    $('pfRisk').textContent = 'التوزيع: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' من 6 اختيارات، وأكبر حصة ' + pf[big] + '% في ' + PF_NAMES[big] + '. لو كل جزء جاتله أوحش سنة اتسجّلت في نفس الوقت (حسبة تقريبية ومش محتملة)، التوزيعة هتنزل حوالي ' + Math.abs(worst).toFixed(0) + '% السنة دي. إنك تحط كله في اختيار واحد أبسط، بس بتشيل مخاطرته كلها.';
+  }
+  document.querySelectorAll('.mixes button').forEach(b => b.addEventListener('click', () => { pf = Object.assign({}, MIXES[b.dataset.mix]); pfMix = b.dataset.mix; pfRender(); }));
+  pfBuild();
+
+  // ---------- Tabs ----------
+  function setTab(t) {
+    if (t === 'calculate') t = 'compare';
+    if (t === 'goals') t = 'goal';
+    if (!['compare', 'portfolio', 'analyze', 'goal'].includes(t)) t = 'compare';
+    ['compare', 'portfolio', 'analyze', 'goal'].forEach(k => { $('tab-' + k).hidden = k !== t; $('t-' + k).setAttribute('aria-selected', k === t); });
+    document.body.classList.toggle('ptab', t === 'portfolio');
+    document.body.classList.toggle('gtab', t === 'goal');
+    document.body.classList.toggle('atab', t === 'analyze');
+    $('yearsLbl').textContent = t === 'goal' ? 'عايزه بعد' : 'لمدة قد إيه';
+    document.querySelectorAll('.gtile').forEach(el => el.classList.toggle('on', el.dataset.tab === t));
+    window.__tab = t; if (window.track) track('tab', t, 1);
+    try { localStorage.setItem('emc-tab', t); } catch (e) {}
+  }
+  $('t-compare').addEventListener('click', () => setTab('compare'));
+  $('t-portfolio').addEventListener('click', () => setTab('portfolio'));
+  $('t-goal').addEventListener('click', () => setTab('goal'));
+  $('t-analyze').addEventListener('click', () => setTab('analyze'));
+  let startTab = 'compare';
+  try { startTab = localStorage.getItem('emc-tab') || 'compare'; } catch (e) {}
+  if (location.hash === '#portfolio') startTab = 'portfolio';
+  if (location.hash === '#compare') startTab = 'compare';
+  if (location.hash) { const h = location.hash.slice(1); if (['compare', 'calculate', 'portfolio', 'analyze', 'goal', 'goals'].includes(h)) startTab = h; }
+  (function () { let g = 1000000; try { const x = localStorage.getItem('emc-goal'); if (x) g = num(x); } catch (e) {} $('goal').value = fmt(g); })();
+  $('goal').addEventListener('input', () => { calc(); if (window.track) track('goal', 'set', 1); });
+  $('goal').addEventListener('blur', () => { $('goal').value = fmt(num($('goal').value)); });
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const link = (name, url) => /^https:\/\//.test(url || '') ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
+  const longDate = iso => { const d = new Date(iso + (iso.length === 10 ? 'T12:00:00Z' : '')); return isNaN(d) ? iso : d.toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }); };
+  function applyData(d) {
+    if (!d) return;
+    const ok = x => typeof x === 'number' && isFinite(x) && x > 0;
+    if (d.usd_egp && ok(d.usd_egp.value)) {
+      BASE.rate0 = d.usd_egp.value;
+      $('srcUsd').innerHTML = d.usd_egp.value.toFixed(2) + ' جنيه (' + link(d.usd_egp.source_name, d.usd_egp.source_url) + '، ' + esc(longDate(d.usd_egp.as_of)) + ')';
+    }
+    if (d.inflation && ok(d.inflation.value)) {
+      BASE.infl = d.inflation.value;
+      $('infLatest').textContent = 'آخر رقم: ' + d.inflation.value + '% (' + arDate(d.inflation.period) + ')';
+      $('srcInfl').innerHTML = d.inflation.value + '% في ' + esc(arDate(d.inflation.period)) + ' (' + link(d.inflation.source_name, d.inflation.source_url) + ')';
+    }
+    if (d.cd3 && ok(d.cd3.value)) {
+      Object.keys(PRESETS).forEach(k => PRESETS[k].cd1 = d.cd3.value);
+      $('srcCd').innerHTML = d.cd3.value + '% (' + link(d.cd3.source_name + '، ' + arDate(d.cd3.as_of), d.cd3.source_url) + ')';
+    }
+    if (d.gold21 && ok(d.gold21.value)) $('srcGold').textContent = Math.round(d.gold21.value).toLocaleString('en-US');
+    if (typeof d.checked === 'string' && d.checked) $('srcChecked').textContent = arDate(d.checked);
+    if (d.updated) {
+      const t = new Date(d.updated);
+      if (!isNaN(t)) $('dataStamp').textContent = 'اتحدّثت ' + t.toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', timeZone: 'Africa/Cairo' }) + '، الساعة ' + t.toLocaleTimeString('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }) + ' · بتتحدّث كذا مرة في اليوم';
+    }
+  }
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h) { setTab(h); calc(); } });
+  document.querySelectorAll('.gtile[data-tab]').forEach(el => el.addEventListener('click', e => {
+    e.preventDefault(); setTab(el.dataset.tab); calc();
+    try { history.replaceState(null, '', el.getAttribute('href')); } catch (x) {}
+    document.querySelector('.apptabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+  const used = () => { if (window.track) track('use', window.__tab || 'compare', 1); };
+  document.querySelector('form.panel').addEventListener('input', used);
+  document.querySelector('form.panel').addEventListener('click', e => { if (e.target.closest('.quick button, .seg button')) used(); });
+  document.addEventListener('input', e => { if (e.target.closest('#tab-portfolio')) used(); });
+  if (window.track) track('view', 'grow-ar', 1);
+  function start() { setTab(startTab); drawChips(); load(); calc(); pfRender(); }
+  const getJson = url => fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  getJson('https://grow-data.amrelhadeka.workers.dev/site.json').catch(() => getJson('/grow/data.json')).then(applyData).catch(() => {}).finally(start);
+})();
+</script>
+<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>
+<script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
+</body>
+</html>

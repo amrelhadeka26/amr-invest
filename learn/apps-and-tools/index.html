@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('lang')==='ar')location.replace('/ar'+location.pathname+location.search+location.hash)}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Five questions before any investing app | Amr El Hadeka</title>
 <meta name="description" content="How to judge any investing app in Egypt, the three fund types, Thndr and Thndr Alpha, fractional property platforms, and the red flags that mean walk away.">
 <link rel="canonical" href="https://invest.amrelhadeka.com/learn/apps-and-tools/">
+<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/learn/apps-and-tools/">
+<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/learn/apps-and-tools/">
+<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/learn/apps-and-tools/">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://invest.amrelhadeka.com/learn/apps-and-tools/">
 <meta property="og:title" content="Five questions before any investing app">
@@ -60,6 +64,7 @@
 <a href="/grow/">Grow</a>
 <a href="/#about">About</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
+<span class="lang" role="group" aria-label="Language"><a href="/learn/apps-and-tools/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/learn/apps-and-tools/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
 </div>
 </header>
@@ -145,5 +150,6 @@
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
 <script>track('view','lesson-apps-and-tools',1);</script>
+<script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
 </body>
 </html>

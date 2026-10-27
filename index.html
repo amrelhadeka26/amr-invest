@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('lang')==='ar')location.replace('/ar'+location.pathname+location.search+location.hash)}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Let Your Money Make Money – Investing for Beginners in Egypt | Amr El Hadeka</title>
 <meta name="description" content="Simple, plain-language investing lessons for Egyptians. Start with what you have, learn as you go, and see what your money could become. Join the free newsletter.">
 <link rel="canonical" href="https://invest.amrelhadeka.com/">
+<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/">
+<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/">
+<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://invest.amrelhadeka.com/">
 <meta property="og:title" content="Let your money make money – Amr El Hadeka">
@@ -110,7 +114,7 @@ footer .wrap{padding-top:20px;padding-bottom:28px;display:flex;flex-direction:co
 footer p{margin:0}
 .foot-row{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
 footer a{color:var(--ink-2)}
-.socials{display:flex;gap:20px}
+.socials{display:flex;flex-wrap:wrap;gap:12px 20px}
 .notice{margin:16px auto 0;max-width:520px;font-size:15px;color:var(--ink-2)}
 
 @media (max-width:600px){
@@ -140,6 +144,16 @@ section[id]{scroll-margin-top:60px}
 
 @media (max-width:430px){.site-header .wrap{flex-wrap:nowrap;gap:16px}.nav{flex-wrap:nowrap;white-space:nowrap;gap:16px}}
 @media (max-width:380px){.nav{gap:12px}.nav .btn{padding:0 12px}}
+
+/* language toggle (EN / Arabic) */
+.site-header .lang{display:inline-flex;direction:ltr;flex:none;border:1px solid #1D1D1F;border-radius:999px;padding:2px;gap:2px}
+.site-header .lang a{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;line-height:1;color:#1D1D1F;text-decoration:none}
+.site-header .lang a:hover{background:#F5F5F7;text-decoration:none}
+.site-header .lang a[aria-current]{background:#1D1D1F;color:#fff}
+.site-header .lang a[lang=ar]{font-size:13px;font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","IBM Plex Sans Arabic","Noto Sans Arabic",Tahoma,sans-serif}
+/* phones: show only the other language, and drop About (it's further down the page) to keep one row */
+@media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
+@media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
@@ -155,6 +169,7 @@ section[id]{scroll-margin-top:60px}
 <a href="/grow/">Grow</a>
 <a href="#about">About</a>
 <a class="btn btn-dark" href="#book">Book a session</a>
+<span class="lang" role="group" aria-label="Language"><a href="/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
 </div>
 </header>
@@ -299,5 +314,6 @@ section[id]{scroll-margin-top:60px}
 })();
 </script>
 <script>track('view','home',1);document.querySelectorAll('.gtile').forEach(function(a){a.addEventListener('click',function(){track('tile',(a.getAttribute('href')||'').split('#')[1])})});var g=document.querySelector('.grow-go');if(g)g.addEventListener('click',function(){track('explore','home')});document.querySelectorAll('.myth .more').forEach(function(a){a.addEventListener('click',function(){track('lesson',(a.getAttribute('href')||'').split('/')[2])})});</script>
+<script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
 </body>
 </html>

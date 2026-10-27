@@ -159,3 +159,13 @@ section[id]{scroll-margin-top:60px}
 .socials{flex-wrap:wrap}
 .viz .hb small{font-size:12px;font-weight:400;color:var(--muted)}
 @media (max-width:600px){.viz{padding:22px 18px}.viz .hb li{grid-template-columns:minmax(0,112px) minmax(0,1fr) 56px;gap:10px;font-size:14px}.viz .steps li{font-size:15px}.viz .range li{grid-template-columns:minmax(0,84px) minmax(0,1fr) 96px}.viz .range b{font-size:12px}.viz svg text{font-size:20px}}
+
+/* language toggle (EN / Arabic) */
+.site-header .lang{display:inline-flex;direction:ltr;flex:none;border:1px solid #1D1D1F;border-radius:999px;padding:2px;gap:2px}
+.site-header .lang a{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;line-height:1;color:#1D1D1F;text-decoration:none}
+.site-header .lang a:hover{background:#F5F5F7;text-decoration:none}
+.site-header .lang a[aria-current]{background:#1D1D1F;color:#fff}
+.site-header .lang a[lang=ar]{font-size:13px;font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","IBM Plex Sans Arabic","Noto Sans Arabic",Tahoma,sans-serif}
+/* phones: show only the other language, and drop About (it's further down the page) to keep one row */
+@media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
+@media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}

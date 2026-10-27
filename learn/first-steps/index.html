@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('lang')==='ar')location.replace('/ar'+location.pathname+location.search+location.hash)}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your first week as an investor | Amr El Hadeka</title>
 <meta name="description" content="A 10-step roadmap for Egyptian beginners, four things to do this week, and a quick check of what you’ve learned across the course.">
 <link rel="canonical" href="https://invest.amrelhadeka.com/learn/first-steps/">
+<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/learn/first-steps/">
+<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/learn/first-steps/">
+<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/learn/first-steps/">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://invest.amrelhadeka.com/learn/first-steps/">
 <meta property="og:title" content="Your first week as an investor">
@@ -64,6 +68,7 @@
 <a href="/grow/">Grow</a>
 <a href="/#about">About</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
+<span class="lang" role="group" aria-label="Language"><a href="/learn/first-steps/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/learn/first-steps/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
 </div>
 </header>
@@ -167,5 +172,6 @@
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
 <script>track('view','lesson-first-steps',1);</script>
+<script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
 </body>
 </html>

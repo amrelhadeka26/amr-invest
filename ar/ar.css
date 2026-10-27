@@ -1,0 +1,42 @@
+/* Arabic pages: right-to-left overrides, loaded after each page's own styles */
+html[dir=rtl] body{font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","IBM Plex Sans Arabic","Noto Sans Arabic",Tahoma,Arial,sans-serif;letter-spacing:0;line-height:1.7}
+[dir=rtl] h1,[dir=rtl] h2,[dir=rtl] h3,[dir=rtl] b,[dir=rtl] .btn,[dir=rtl] .gtile b,[dir=rtl] .myth h3,[dir=rtl] .book-facts b{letter-spacing:0}
+[dir=rtl] .grow-name{letter-spacing:-0.04em}
+[dir=rtl] h1,[dir=rtl] h2{line-height:1.3}
+[dir=rtl] .hero h1{line-height:1.3}
+[dir=rtl] .hero .lead{line-height:1.5}
+[dir=rtl] .statement h2{line-height:1.35}
+[dir=rtl] .myth h3{line-height:1.45}
+[dir=rtl] .about p,[dir=rtl] .book .sub,[dir=rtl] .join .sub{line-height:1.7}
+[dir=rtl] .gtile{text-align:right}
+[dir=rtl] .gtile b{line-height:1.3}
+[dir=rtl] .join label,[dir=rtl] .pre{text-align:right}
+[dir=rtl] .hp{left:auto;right:-9999px}
+[dir=rtl] input[type=email]{direction:ltr;text-align:right}
+
+/* lessons */
+[dir=rtl] .article h1{line-height:1.35}
+[dir=rtl] .dek{line-height:1.7}
+[dir=rtl] .body{line-height:1.9}
+[dir=rtl] .body h2{line-height:1.45}
+[dir=rtl] .body ul,[dir=rtl] .body ol{padding-left:0;padding-right:22px}
+[dir=rtl] .takeaway{border-left:0;border-right:3px solid var(--ink);padding:4px 18px 4px 0;line-height:1.7}
+[dir=rtl] .callout .big{line-height:1.35}
+[dir=rtl] .next b{line-height:1.45}
+[dir=rtl] .viz h3,[dir=rtl] .budget h3{line-height:1.45}
+[dir=rtl] .viz .hb li{grid-template-columns:minmax(0,170px) minmax(0,1fr) 84px}
+[dir=rtl] .viz .hb b,[dir=rtl] .budget b{text-align:left}
+[dir=rtl] .viz .key i,[dir=rtl] .budget .key i{margin-right:0;margin-left:6px}
+[dir=rtl] .viz th,[dir=rtl] .viz td{text-align:right;padding:10px 0 10px 12px}
+[dir=rtl] .viz th,[dir=rtl] .viz .tile .n,[dir=rtl] .viz .phase{text-transform:none;letter-spacing:0}
+[dir=rtl] .viz td.r,[dir=rtl] .viz th.r{text-align:left}
+[dir=rtl] .viz td.r{direction:ltr}
+[dir=rtl] .viz .tile b{line-height:1.35}
+[dir=rtl] .viz .range .track{direction:ltr}
+[dir=rtl] .viz .range li{grid-template-columns:minmax(0,120px) minmax(0,1fr) 150px}
+[dir=rtl] .viz .steps li{line-height:1.6}
+@media (max-width:600px){
+  [dir=rtl] .viz .hb li{grid-template-columns:minmax(0,118px) minmax(0,1fr) 72px}
+  [dir=rtl] .viz .range li{grid-template-columns:minmax(0,84px) minmax(0,1fr);row-gap:4px}
+  [dir=rtl] .viz .range li b{grid-column:2;text-align:right;font-size:13px}
+}

@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('lang')==='ar')location.replace('/ar'+location.pathname+location.search+location.hash)}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>grow. · Investment tools for Egyptians | Amr El Hadeka</title>
 <link rel="canonical" href="https://invest.amrelhadeka.com/grow/">
+<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/grow/">
+<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/grow/">
+<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/grow/">
 <meta property="og:title" content="grow. · Your complete investment picture">
 <meta property="og:image" content="https://invest.amrelhadeka.com/assets/og.jpg">
 <meta property="og:type" content="website">
@@ -320,6 +324,16 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 /* Outlook choice: three options share the panel width, the longest gets the most room */
 .assume-body .seg.preset { display: flex; width: 100%; gap: 2px; padding: 3px; }
 .assume-body .seg.preset button { flex: 1 1 auto; min-width: 0; padding: 8px 6px; font-size: 13.5px; }
+
+/* language toggle (EN / Arabic) */
+.site-header .lang{display:inline-flex;direction:ltr;flex:none;border:1px solid #1D1D1F;border-radius:999px;padding:2px;gap:2px}
+.site-header .lang a{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;line-height:1;color:#1D1D1F;text-decoration:none}
+.site-header .lang a:hover{background:#F5F5F7;text-decoration:none}
+.site-header .lang a[aria-current]{background:#1D1D1F;color:#fff}
+.site-header .lang a[lang=ar]{font-size:13px;font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","IBM Plex Sans Arabic","Noto Sans Arabic",Tahoma,sans-serif}
+/* phones: show only the other language, and drop About (it's further down the page) to keep one row */
+@media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
+@media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
@@ -336,6 +350,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 <a href="/grow/" aria-current="page">Grow</a>
 <a href="/#about">About</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
+<span class="lang" role="group" aria-label="Language"><a href="/grow/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/grow/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
 </div>
 </header>
@@ -939,5 +954,6 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 })();
 </script>
 <script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>
+<script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
 </body>
 </html>
