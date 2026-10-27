@@ -169,3 +169,7 @@ section[id]{scroll-margin-top:60px}
 /* phones: show only the other language, and drop About (it's further down the page) to keep one row */
 @media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
 @media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
+.tldr{background:var(--soft);border-radius:18px;padding:20px 24px;margin:0 0 8px}
+.tldr .tldr-h{margin:0 0 8px;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tldr ul{margin:0;padding-inline-start:20px}
+.tldr li{margin:4px 0}
