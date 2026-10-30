@@ -1,2 +1,6 @@
 /calculator /grow/ 301
 /calculator/* /grow/:splat 301
+/zd /grow/ 301
+/zd/* /grow/:splat 301
+/ar/zd /ar/grow/ 301
+/ar/zd/* /ar/grow/:splat 301
