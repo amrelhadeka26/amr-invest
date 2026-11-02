@@ -115,6 +115,27 @@ details.sect summary::after { content: "+"; } details.sect[open] summary::after 
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
 
+/* Today's-money views (design A: beat inflation? · design D: simple table). Fixed order, never ranked. */
+.tm { border: 1.5px solid var(--ink); border-radius: 18px; padding: 16px; margin-top: 12px; }
+.tm-h { margin: 4px 0 6px; font-size: 22px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; }
+.tm-p { margin: 0 0 10px; font-size: 14px; line-height: 1.45; }
+.tm-ends { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.tm-list { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.tm-list::before { content: ""; position: absolute; inset-inline-start: 50%; top: -6px; bottom: -6px; width: 2px; margin-inline-start: -1px; background: var(--ink); }
+.tm-row .tm-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.tm-row .tm-top b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tm-track { position: relative; height: 18px; }
+.tm-bar { position: absolute; top: 0; height: 18px; box-sizing: border-box; border-radius: 3px; transition: width .35s ease; }
+.tm-bar.up { inset-inline-start: 50%; background: var(--ink); }
+.tm-bar.down { inset-inline-end: 50%; background: var(--paper); border: 2px solid var(--ink); }
+.tmt { width: 100%; border-collapse: collapse; font-size: 14px; border: 1.5px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.tmt th { background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700; padding: 10px 12px; text-align: end; }
+.tmt th:first-child, .tmt td:first-child { text-align: start; }
+.tmt td { padding: 12px; border-top: 1px solid var(--ink); text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tmt td:first-child { font-weight: 600; white-space: normal; }
+.tmt td.tdy { font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .tm-bar { transition: none; } }
+
 
 [hidden] { display: none !important; }
 .apptabs { display: grid; grid-template-columns: 1fr 1fr; margin-top: 24px; border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
@@ -489,8 +510,22 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
       </div>
       <div class="keep"><span class="eyebrow">Needed to keep up with prices</span><div><b id="keepVal">—</b></div><p id="keepTxt">—</p></div>
 
-      <div class="legend" aria-hidden="true"><span><i class="sw"></i>Highest at these assumptions</span><span><i class="sw swk"></i>Other options</span><span><i class="dash"></i>Keep up with prices</span></div>
-      <div class="list" id="list"></div>
+      <div class="tm" id="tmA">
+        <span class="eyebrow">In today's money</span>
+        <h3 class="tm-h">Would it beat inflation?</h3>
+        <p class="tm-p" id="tmIntro">—</p>
+        <div class="tm-ends" aria-hidden="true"><span>‹ Behind</span><span>Ahead ›</span></div>
+        <div class="tm-list" id="tmList"></div>
+        <p class="small" style="margin:12px 0 0">Filled bar: beats inflation. Outline: falls behind. Same order every time, never ranked.</p>
+      </div>
+      <div class="tm" id="tmD">
+        <span class="eyebrow">Side by side</span>
+        <h3 class="tm-h">The numbers, plainly</h3>
+        <table class="tmt"><caption class="sr">Each option before and after inflation</caption>
+          <thead><tr><th scope="col">Option</th><th scope="col" id="tmThen">After 5 years</th><th scope="col" id="tmNow" data-t="Today's money">Today's money</th></tr></thead>
+          <tbody id="tmBody"></tbody></table>
+        <p class="small" style="margin:10px 0 0" id="tmFoot">—</p>
+      </div>
 
       <details class="sect detail" id="detail">
       <summary>Year by year and full table</summary>
@@ -685,13 +720,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     $('keepVal').textContent = money(K.final, v.years);
     $('keepTxt').textContent = 'At ' + v.infl + '% inflation, this is what your money would need to reach to buy the same things. ' + (best.value >= K.final ? best.name + ' beats it by ' + money(best.value - K.final, v.years) + '.' : 'No option beats it at these numbers.');
 
-    const max = Math.max(...opts.map(o => o.value), K.final) * 1.04;
-    $('list').innerHTML = opts.map((o, i) => {
-      const beats = o.value >= K.final;
-      return '<div class="item"><div class="nm">' + o.name + '<small>' + o.sub + '</small><span class="tag' + (beats ? ' up' : '') + '">' + (beats ? 'Beats inflation' : 'Loses to inflation') + '</span></div>' +
-        '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (o.value / max * 100) + '%"></div><div class="ref" style="left:' + (K.final / max * 100) + '%"></div></div>' +
-        '<div class="v">' + moneyC(o.value, v.years) + '<small>' + moneyC(o.real, 0) + ' today</small></div></div>';
-    }).join('');
+    renderToday(opts, K, v, deflate);
 
     $('tbody').innerHTML = opts.map(o =>
       '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
@@ -705,6 +734,28 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     renderGoal(opts, v);
     renderAnalyze(opts, v);
     updateAskZd();
+  }
+
+  // Today's-money views (designs A + D): fixed order, never ranked.
+  const TM_ORDER = ['cd', 'egx', 'gold', 're', 'us', 'cash'];
+  function renderToday(opts, K, v, deflate) {
+    const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean);
+    const sgn = x => (x >= 0 ? '+' : '−') + moneyC(Math.abs(x), 0);
+    const maxAbs = Math.max(1, ...rows.map(o => Math.abs(o.beyond)));
+    $('tmIntro').innerHTML = 'The middle line is what you would need just to keep up with rising prices: <b>' + money(K.final / deflate, 0) + '</b> in today\'s money. Right of it: ahead. Left of it: behind.';
+    $('tmList').innerHTML = rows.map(o => {
+      const up = o.beyond >= 0, w = Math.max(1.5, Math.abs(o.beyond) / maxAbs * 50);
+      return '<div class="tm-row"><div class="tm-top"><span>' + o.name + '</span><b><bdi>' + sgn(o.beyond) + '</bdi><span class="sr"> ' + (up ? 'beats inflation' : 'falls behind inflation') + '</span></b></div>' +
+        '<div class="tm-track" aria-hidden="true"><div class="tm-bar ' + (up ? 'up' : 'down') + '" style="width:' + w.toFixed(2) + '%"></div></div></div>';
+    }).join('');
+    const thenTxt = 'After ' + v.years + (v.years === 1 ? ' year' : ' years');
+    $('tmThen').textContent = thenTxt + (usdMode() ? '' : ' (EGP)');
+    $('tmNow').textContent = $('tmNow').dataset.t + (usdMode() ? '' : ' (EGP)');
+    $('tmBody').innerHTML = rows.map(o => {
+      const up = o.beyond >= 0;
+      return '<tr><td>' + o.name + '</td><td><bdi>' + moneyC(o.value, v.years) + '</bdi></td><td class="tdy"><bdi>' + moneyC(o.real, 0) + '</bdi> <span aria-hidden="true">' + (up ? '↑' : '↓') + '</span><span class="sr">' + (up ? 'beats inflation' : 'falls behind inflation') + '</span></td></tr>';
+    }).join('');
+    $('tmFoot').textContent = '↑ beats inflation: worth more than the ' + money(K.final / deflate, 0) + ' you would need to keep up, in today\'s money. ↓ falls behind. "' + thenTxt + '" is the amount before adjusting for inflation. Assumptions, not predictions.';
   }
 
   const RISK = {
