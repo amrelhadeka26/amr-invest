@@ -1,6 +1,6 @@
 {
-  "name": "ZD · Investment tools",
-  "short_name": "ZD",
+  "name": "ZD Calculator",
+  "short_name": "ZD Calculator",
   "description": "Calculate, build a portfolio, understand risk and plan goals, in EGP or USD, after inflation.",
   "id": "/grow/",
   "start_url": "./",
