@@ -155,11 +155,23 @@ section[id]{scroll-margin-top:60px}
 /* phones: show only the other language, and drop About (it's further down the page) to keep one row */
 @media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
 @media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
+
+/* ZD entrances (hidden until the public launch switch is on) */
+[data-zd-entry][hidden]{display:none!important}
+.site-header .nav .btn-zd{background:transparent;color:#1D1D1F!important;border:1.5px solid #1D1D1F}
+@media (max-width:480px){body.zd-on .nav>a[href$="#learn"],body.zd-on .nav>a[href$="/grow/"]:not(.btn){display:none}}
+.zd-beta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;border:1.5px solid var(--ink);border-radius:18px;padding:16px 18px;margin-top:16px;text-align:start}
+.zd-beta p{margin:0;font-size:15px;line-height:1.45}
+.zd-beta a{font-weight:600;white-space:nowrap}
+.zd-line{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ink);color:var(--paper,#fff)!important;border-radius:14px;padding:14px 16px;margin-top:12px;text-decoration:none;font-size:15px;line-height:1.35}
+.zd-line b{white-space:nowrap}
 </style>
 <link rel="stylesheet" href="/ar/ar.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
 <script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<meta name="zd-app" content="https://zd.amrelhadeka.com">
+<meta name="zd-public" content="0">
 </head>
 <body>
 
@@ -168,8 +180,9 @@ section[id]{scroll-margin-top:60px}
 <a class="logo" href="/ar/" aria-label="الصفحة الرئيسية"><img src="/assets/logo.png" alt="عمرو الحادقة" width="240" height="218"></a>
 <nav class="nav" aria-label="القائمة">
 <a href="/ar/#learn">اتعلّم</a>
-<a href="/ar/grow/">ZD</a>
+<a href="/ar/grow/">الحاسبة</a>
 <a href="/ar/#about">عنّي</a>
+<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://zd.amrelhadeka.com/">اسأل <span lang="en">ZD</span></a>
 <a class="btn btn-dark" href="/ar/#book">احجز جلسة</a>
 <span class="lang" role="group" aria-label="اللغة"><a href="/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/ar/" lang="ar" aria-label="العربية" aria-current="true">عربي</a></span>
 </nav>
@@ -216,14 +229,15 @@ section[id]{scroll-margin-top:60px}
 
 <section class="grow" id="grow">
 <div class="grow-box">
-<a class="grow-head" href="/ar/grow/"><h2 class="grow-name" lang="en">ZD</h2><p>منصة واحدة. صورة كاملة لاستثماراتك.</p></a>
+<a class="grow-head" href="/ar/grow/"><h2 class="grow-name">حاسبة <span lang="en">ZD</span></h2><p>ست طرق في مصر تكبّر بيها فلوسك، جنب بعض.</p></a>
 <div class="gtiles">
 <a class="gtile" href="/ar/grow/#calculate"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="3"/><path d="M8 7.5h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg><b>احسب</b><span>اعرف فلوسك هتوصل لفين</span></a>
 <a class="gtile" href="/ar/grow/#portfolio"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></svg><b>المحفظة</b><span>نوّع استثماراتك</span></a>
 <a class="gtile" href="/ar/grow/#analyze"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="m7 14 3-3.5 3 3 4-5"/></svg><b>حلّل</b><span>افهم المخاطرة</span></a>
 <a class="gtile" href="/ar/grow/#goals"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>الأهداف</b><span>خطّط لمستقبلك</span></a>
 </div>
-<a class="btn btn-dark grow-go" href="/ar/grow/">جرّب ZD ←</a>
+<a class="btn btn-dark grow-go" href="/ar/grow/">افتح الحاسبة ←</a>
+<div class="zd-beta" data-zd-entry="home" hidden><p><b>جديد: <span lang="en">ZD</span>، رفيقك المالي الذكي.</b> أرقامك، متشرحة بكلام بسيط.</p><a data-zd-entry="home" data-zd-href="root" href="https://zd.amrelhadeka.com/">جرّب النسخة التجريبية ←</a></div>
 <p class="grow-fresh">سعر الدولار بيتحدّث كذا مرة في اليوم. وشغّال بالجنيه أو بالدولار.</p>
 </div>
 </section>
@@ -317,5 +331,20 @@ section[id]{scroll-margin-top:60px}
 </script>
 <script>track('view','home-ar',1);document.querySelectorAll('.gtile').forEach(function(a){a.addEventListener('click',function(){track('tile',(a.getAttribute('href')||'').split('#')[1])})});var g=document.querySelector('.grow-go');if(g)g.addEventListener('click',function(){track('explore','home')});document.querySelectorAll('.myth .more').forEach(function(a){a.addEventListener('click',function(){track('lesson',(a.getAttribute('href')||'').split('/')[3])})});</script>
 <script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
+<script>
+(function () {
+  var meta = function (n) { var e = document.querySelector('meta[name="' + n + '"]'); return e ? e.content : ''; };
+  var app = meta('zd-app') || 'https://zd.amrelhadeka.com';
+  var q = location.search, preview = /[?&]zd=preview\b/.test(q), pub = meta('zd-public') === '1' || /[?&]zd=1\b/.test(q);
+  var lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  document.querySelectorAll('[data-zd-href="root"]').forEach(function (a) { a.href = app + '/#/home?lang=' + lang + '&from=site'; });
+  var show = function () { document.body.classList.add('zd-on'); document.querySelectorAll('[data-zd-entry]').forEach(function (el) { el.hidden = false; }); if (window.updateAskZd) window.updateAskZd(); };
+  document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-zd-entry]'); if (a && a.tagName !== 'SECTION' && window.track) track('askzd', a.getAttribute('data-zd-entry')); var b = e.target.closest && e.target.closest('#askZdBtn'); if (b && window.track) track('askzd', 'bottom'); });
+  if (preview) return show();
+  if (!pub) return;
+  var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, t = setTimeout(function () { ctl && ctl.abort(); }, 4000);
+  fetch(app + '/api/status', { mode: 'cors', signal: ctl ? ctl.signal : undefined }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.ok) show(); }).catch(function () {}).then(function () { clearTimeout(t); });
+})();
+</script>
 </body>
 </html>
