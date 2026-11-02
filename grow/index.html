@@ -18,7 +18,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ZD Calculator","url":"https://invest.amrelhadeka.com/grow/","description":"Free investment tools for Egyptians: compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.","applicationCategory":"FinanceApplication","operatingSystem":"Any","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"EGP"},"author":{"@type":"Person","name":"Amr El Hadeka","url":"https://invest.amrelhadeka.com/"}}</script>
 <meta name="description" content="Compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.">
 <meta name="theme-color" content="#ffffff">
-<meta name="zd-app" content="https://zd.amrelhadeka.com">
+<meta name="zd-app" content="https://zd-app.amrelhadeka.workers.dev">
 <meta name="zd-public" content="0">
 <meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.webmanifest">
@@ -413,7 +413,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 <a href="/#learn">Learn</a>
 <a href="/grow/" aria-current="page">Calculator</a>
 <a href="/#about">About</a>
-<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://zd.amrelhadeka.com/">Ask ZD</a>
+<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://zd-app.amrelhadeka.workers.dev/">Ask ZD</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
 <span class="lang" role="group" aria-label="Language"><a href="/grow/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/grow/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
@@ -552,7 +552,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
         <div class="tm-list" id="tmList"></div>
         <p class="small" style="margin:12px 0 0"><b class="gain">Green ▲</b>: beats inflation. <b class="loss">Red ▼</b>: falls behind. Same order every time, never ranked.</p>
       </div>
-      <a class="zd-line" id="askZdLine" data-zd-entry="underchart" hidden href="https://zd.amrelhadeka.com/"><span>Want this explained for your own money?</span><b>Ask ZD ›</b></a>
+      <a class="zd-line" id="askZdLine" data-zd-entry="underchart" hidden href="https://zd-app.amrelhadeka.workers.dev/"><span>Want this explained for your own money?</span><b>Ask ZD ›</b></a>
       <details class="tm-more" id="tmMore"><summary>See the amounts before inflation</summary>
       <div class="tm" id="tmD">
         <span class="eyebrow">Side by side</span>
@@ -674,7 +674,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   </details>
   <section class="askzd" id="askZd" data-zd-entry="bottom" hidden aria-label="ZD">
     <div><b>Ask ZD what this means for you</b><p>ZD, your AI financial companion, can walk you through these numbers with your own income, spending and goals. Educational only, it does not tell you what to buy.</p></div>
-    <a id="askZdBtn" href="https://zd.amrelhadeka.com/" rel="noopener">Ask ZD ›</a>
+    <a id="askZdBtn" href="https://zd-app.amrelhadeka.workers.dev/" rel="noopener">Ask ZD ›</a>
   </section>
   <p class="disc zd-disc" role="note"><b>Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</b> Every figure here is an illustration based on assumptions you can change, not a prediction. Real returns change and can be negative.</p>
 
@@ -1047,7 +1047,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 
   // ---------- Ask ZD (hand-off to the ZD app) ----------
   // The card only appears once the ZD app answers, so visitors never see a broken link.
-  const ZD_APP = (document.querySelector('meta[name="zd-app"]') || {}).content || 'https://zd.amrelhadeka.com';
+  const ZD_APP = (document.querySelector('meta[name="zd-app"]') || {}).content || 'https://zd-app.amrelhadeka.workers.dev';
   const ZDT = {"qcompare": "I have {start} now and can add {monthly} a month for {years} years. Help me understand what this could mean for me.", "qgoal": "My goal costs {goal} today and I want it in {years} years. I have {start} now. Help me understand what it would take.", "unit": " EGP", "usd": "$"};
   function zdAmount(x) { return usdMode() ? ZDT.usd + fmt(x) : fmt(x) + ZDT.unit; }
   window.updateAskZd = updateAskZd;
@@ -1071,7 +1071,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 <script>
 (function () {
   var meta = function (n) { var e = document.querySelector('meta[name="' + n + '"]'); return e ? e.content : ''; };
-  var app = meta('zd-app') || 'https://zd.amrelhadeka.com';
+  var app = meta('zd-app') || 'https://zd-app.amrelhadeka.workers.dev';
   var q = location.search, preview = /[?&]zd=preview\b/.test(q), pub = meta('zd-public') === '1' || /[?&]zd=1\b/.test(q);
   var lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
   document.querySelectorAll('[data-zd-href="root"]').forEach(function (a) { a.href = app + '/#/home?lang=' + lang + '&from=site'; });

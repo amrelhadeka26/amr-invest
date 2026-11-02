@@ -170,7 +170,7 @@ section[id]{scroll-margin-top:60px}
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
 <script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
-<meta name="zd-app" content="https://zd.amrelhadeka.com">
+<meta name="zd-app" content="https://zd-app.amrelhadeka.workers.dev">
 <meta name="zd-public" content="0">
 </head>
 <body>
@@ -182,7 +182,7 @@ section[id]{scroll-margin-top:60px}
 <a href="/ar/#learn">اتعلّم</a>
 <a href="/ar/grow/">الحاسبة</a>
 <a href="/ar/#about">عنّي</a>
-<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://zd.amrelhadeka.com/">اسأل <span lang="en">ZD</span></a>
+<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://zd-app.amrelhadeka.workers.dev/">اسأل <span lang="en">ZD</span></a>
 <a class="btn btn-dark" href="/ar/#book">احجز جلسة</a>
 <span class="lang" role="group" aria-label="اللغة"><a href="/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/ar/" lang="ar" aria-label="العربية" aria-current="true">عربي</a></span>
 </nav>
@@ -237,7 +237,7 @@ section[id]{scroll-margin-top:60px}
 <a class="gtile" href="/ar/grow/#goals"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>الأهداف</b><span>خطّط لمستقبلك</span></a>
 </div>
 <a class="btn btn-dark grow-go" href="/ar/grow/">افتح الحاسبة ←</a>
-<div class="zd-beta" data-zd-entry="home" hidden><p><b>جديد: <span lang="en">ZD</span>، رفيقك المالي الذكي.</b> أرقامك، متشرحة بكلام بسيط.</p><a data-zd-entry="home" data-zd-href="root" href="https://zd.amrelhadeka.com/">جرّب النسخة التجريبية ←</a></div>
+<div class="zd-beta" data-zd-entry="home" hidden><p><b>جديد: <span lang="en">ZD</span>، رفيقك المالي الذكي.</b> أرقامك، متشرحة بكلام بسيط.</p><a data-zd-entry="home" data-zd-href="root" href="https://zd-app.amrelhadeka.workers.dev/">جرّب النسخة التجريبية ←</a></div>
 <p class="grow-fresh">سعر الدولار بيتحدّث كذا مرة في اليوم. وشغّال بالجنيه أو بالدولار.</p>
 </div>
 </section>
@@ -334,7 +334,7 @@ section[id]{scroll-margin-top:60px}
 <script>
 (function () {
   var meta = function (n) { var e = document.querySelector('meta[name="' + n + '"]'); return e ? e.content : ''; };
-  var app = meta('zd-app') || 'https://zd.amrelhadeka.com';
+  var app = meta('zd-app') || 'https://zd-app.amrelhadeka.workers.dev';
   var q = location.search, preview = /[?&]zd=preview\b/.test(q), pub = meta('zd-public') === '1' || /[?&]zd=1\b/.test(q);
   var lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
   document.querySelectorAll('[data-zd-href="root"]').forEach(function (a) { a.href = app + '/#/home?lang=' + lang + '&from=site'; });
