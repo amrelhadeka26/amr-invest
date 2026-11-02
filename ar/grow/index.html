@@ -136,6 +136,16 @@ details.sect summary::after { content: "+"; } details.sect[open] summary::after 
 .tmt td:first-child { font-weight: 600; white-space: normal; }
 .tmt td.tdy { font-weight: 800; }
 @media (prefers-reduced-motion: reduce) { .tm-bar { transition: none; } }
+/* A + D style across all tabs: zero line at the end (falls), fixed order, details behind a button. */
+.tm-list::before { z-index: 0; }
+.tm-top > * { position: relative; z-index: 1; background: var(--paper); }
+.tm-top > span { padding-inline-end: 4px; }
+.tm-top > b { padding-inline-start: 4px; }
+.tm-list.end .tm-top { padding-inline-end: 10px; }
+.tm-list.end::before { inset-inline-start: auto; inset-inline-end: 0; margin-inline-start: 0; }
+.tm-bar.loss { inset-inline-end: 0; background: var(--paper); border: 2px solid var(--ink); }
+.tm-note { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; }
+.tm-hero-n { font-size: clamp(36px, 9vw, 48px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; margin-top: 6px; }
 .tm-more { margin-top: 12px; }
 .tm-more > summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--ink); border-radius: 999px; font-size: 15px; font-weight: 600; }
 .tm-more > summary::-webkit-details-marker { display: none; }
@@ -532,16 +542,15 @@ h1, .pf h2 { line-height: 1.3; }
 
     <section class="results" id="tab-compare" aria-live="polite">
       <div class="hero">
-        <span class="eyebrow">فلوسك ممكن توصل لـ</span>
+        <span class="eyebrow" id="hEyebrow">بعد 5 سنين</span>
         <div class="hero-big" id="bestVal">—</div>
-        <div class="hero-today"><span id="bestReal">—</span> بفلوس النهارده</div>
+        <div class="hero-today" id="heroSub">—</div>
         <div class="hero-rows">
-          <div><span>انت حطيت</span><b id="putVal">—</b></div>
-          <div><span>النمو</span><b class="up" id="growVal">—</b></div>
+          <div><span>إنت حطيت</span><b id="putVal">—</b></div>
+          <div><span>المطلوب عشان تلحق الأسعار</span><b id="growVal">—</b></div>
         </div>
         <p class="hero-note" id="bestTxt">—</p>
       </div>
-      <div class="keep"><span class="eyebrow">المطلوب عشان تلحق الأسعار</span><div><b id="keepVal">—</b></div><p id="keepTxt">—</p></div>
 
       <div class="tm" id="tmA">
         <span class="eyebrow">بفلوس النهارده</span>
@@ -580,18 +589,27 @@ h1, .pf h2 { line-height: 1.3; }
       </details>
     </section>
   <section class="results analyze" id="tab-analyze" aria-live="polite" hidden>
-      <div class="hero">
-        <span class="eyebrow">الاختيارات بتتصرّف إزاي</span>
-        <div class="hero-big" id="aHead">—</div>
-        <div class="hero-today" id="aSub">—</div>
-        <p class="hero-note">أي اختيار ممكن تيجي عليه سنة وحشة. المهم تقدر تستنى لحد ما تعدّي ولا لأ.</p>
+      <div class="tm">
+        <span class="eyebrow" id="aHead">بفلوس النهارده</span>
+        <h3 class="tm-h">كل واحد ممكن يقع قد إيه؟</h3>
+        <p class="tm-p" id="aSub">—</p>
+        <div class="tm-ends" aria-hidden="true"><span>وقعة أكبر ›</span><span>مفيش وقعة</span></div>
+        <div class="tm-list end" id="aList"></div>
+        <p class="small" style="margin:12px 0 0">أي اختيار ممكن تيجيله سنة وحشة. المهم تقدر تستنى لحد ما تعدّي. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
       </div>
-      <div class="risklist" id="aList"></div>
-      <p class="small">أوحش سنة هي أكبر نزول في سنة واحدة اتسجّل لكل اختيار (EGX30 في 2011، وS&amp;P 500 في 2008، والدهب في 2013 بالدولار، وأسعار العقار في مصر في 2020). المستقبل ممكن يبقى أحسن أو أوحش.</p>
+      <details class="tm-more"><summary>شوف كل واحد بيتصرّف إزاي</summary>
+      <div class="tm">
+        <table class="tmt"><caption class="sr">كل اختيار بيتصرّف إزاي</caption>
+          <thead><tr><th scope="col">الاختيار</th><th scope="col">الطلوع والنزول</th><th scope="col">أوحش سنة</th></tr></thead>
+          <tbody id="aBody"></tbody></table>
+        <div id="aRisks"></div>
+        <p class="small" style="margin:10px 0 0">أوحش سنة هي أكبر وقعة في سنة واحدة اتسجّلت لكل اختيار (EGX30 في 2011، و S&amp;P 500 في 2008، والدهب في 2013 بالدولار، وأسعار العقار في مصر في 2020). المستقبل ممكن يبقى أحسن أو أوحش.</p>
+      </div>
+      </details>
     </section>
   <section class="results goal" id="tab-goal" aria-live="polite" hidden>
       <div class="hero">
-        <span class="eyebrow" id="gEyebrow">أقل مبلغ شهري بالافتراضات دي</span>
+        <span class="eyebrow" id="gEyebrow">هدفك</span>
         <div class="hero-big" id="gMonthly">—</div>
         <div class="hero-today" id="gWith">—</div>
         <div class="hero-rows">
@@ -600,9 +618,22 @@ h1, .pf h2 { line-height: 1.3; }
         </div>
         <p class="hero-note" id="gNote">—</p>
       </div>
-      <p class="eyebrow" style="margin:4px 0 -6px">المبلغ الشهري المطلوب مع كل اختيار</p>
-      <div class="list" id="gList"></div>
-      <p class="small">الأسعار بتزيد مع التضخم، فهدفك هيكلّف أكتر بعدين. بنكبّر تمنه بمعدل التضخم اللي في افتراضاتك، وبعدين بنحسب المبلغ الشهري اللي كل اختيار محتاجه عشان يوصل، بعد المصاريف.</p>
+      <div class="tm">
+        <span class="eyebrow">كل شهر</span>
+        <h3 class="tm-h">أقل قد إيه من إنك تحوّشها في البيت؟</h3>
+        <p class="tm-p" id="gIntro">—</p>
+        <div class="tm-ends" aria-hidden="true"><span>› محتاج أكتر</span><span>محتاج أقل ‹</span></div>
+        <div class="tm-list" id="gList"></div>
+        <p class="small" style="margin:12px 0 0">العمود المليان: محتاج كل شهر أقل من إنك تحوّشها في البيت. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+      </div>
+      <details class="tm-more"><summary>شوف المبالغ الشهرية</summary>
+      <div class="tm">
+        <table class="tmt"><caption class="sr">المبلغ الشهري اللي كل اختيار محتاجه</caption>
+          <thead><tr><th scope="col">الاختيار</th><th scope="col">المطلوب كل شهر</th></tr></thead>
+          <tbody id="gBody"></tbody></table>
+        <p class="small" style="margin:10px 0 0">الأسعار بتزيد مع التضخم، فهدفك هيتكلّف أكتر بعدين. بنكبّره بنسبة التضخم اللي في افتراضاتك، وبعدين نحسب المبلغ الشهري اللي كل اختيار محتاجه عشان يوصل، بعد المصاريف.</p>
+      </div>
+      </details>
     </section>
   <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
     <p class="eyebrow blue">ابني محفظتك</p>
@@ -622,10 +653,21 @@ h1, .pf h2 { line-height: 1.3; }
         <div class="total100"><span>المجموع</span><b id="pfTotal">100%</b></div>
       </div>
       <div class="pfres" aria-live="polite">
-        <div class="cards" style="grid-template-columns:minmax(0,1fr)">
-          <div class="card b"><span class="eyebrow">محفظتك ممكن توصل لـ</span><div class="big" id="pfVal">—</div><p id="pfTxt">—</p></div>
+        <div class="tm" style="margin-top:0">
+          <span class="eyebrow">بفلوس النهارده</span>
+          <h3 class="tm-h">توزيعتك هتغلب التضخم؟</h3>
+          <p class="tm-p" id="pfTxt">—</p>
+          <div class="tm-ends" aria-hidden="true"><span>› ورا</span><span>قدّام ‹</span></div>
+          <div class="tm-list" id="pfRows"></div>
+          <p class="small" style="margin:12px 0 0">كل جزء متقارن بإنه يلحق الأسعار على نصيبه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
         </div>
-        <div class="pfrows" id="pfRows"></div>
+        <details class="tm-more"><summary>شوف المبالغ</summary>
+        <div class="tm">
+          <table class="tmt"><caption class="sr">توزيعتك قبل وبعد التضخم</caption>
+            <thead><tr><th scope="col">الجزء</th><th scope="col" id="pfThen">بعد 5 سنين</th><th scope="col">بفلوس النهارده</th></tr></thead>
+            <tbody id="pfBody"></tbody></table>
+        </div>
+        </details>
         <p class="small" id="pfRisk"></p>
       </div>
     </div>
@@ -745,19 +787,16 @@ h1, .pf h2 { line-height: 1.3; }
     opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
     // effective net yearly rate (after costs) via bisection on a cost-free sim
     opts.forEach(o => { let lo = -50, hi = 80; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
-    opts.sort((a, b) => b.value - a.value);
-    const best = opts[0];
+    opts.sort((a, b) => TM_ORDER.indexOf(a.key) - TM_ORDER.indexOf(b.key)); // fixed order everywhere, never ranked
 
-    $('bestVal').textContent = money(best.value, v.years);
-    $('bestReal').textContent = money(best.real, 0);
-    $('putVal').textContent = usdMode() ? '$' + fmt(putU) : fmt(K.put) + ' جنيه';
-    const grow = usdMode() ? M(best.value, v.years) - putU : best.value - K.put;
-    $('growVal').innerHTML = '<bdi>' + (grow >= 0 ? '+' : '−') + (usdMode() ? '$' + fmt(Math.abs(grow)) + '</bdi>' : fmt(Math.abs(grow)) + '</bdi> جنيه');
-    $('growVal').classList.toggle('up', grow >= 0);
-    $('bestTxt').textContent = 'أعلى نتيجة بالافتراضات دي: ' + best.name + '، بعد المصاريف. دي افتراضات مش توقعات، ومش توصية.';
-    $('keepVal').textContent = money(K.final, v.years);
-    $('keepTxt').textContent = 'بتضخم ' + v.infl + '%، ده المبلغ اللي فلوسك محتاجة توصله عشان تشتري نفس الحاجات. ' + (best.value >= K.final ? best.name + ' بتغلبه بـ' + money(best.value - K.final, v.years) + '.' : 'مفيش اختيار بيغلبه بالأرقام دي.');
-
+    const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
+    const beatN = opts.filter(o => o.key !== 'cash' && o.beyond >= 0).length;
+    $('hEyebrow').textContent = 'بعد ' + yTxt;
+    $('bestVal').textContent = beatN + ' من 5';
+    $('heroSub').textContent = 'اختيارات هتغلب زيادة الأسعار بالافتراضات دي، بعد المصاريف.';
+    $('putVal').textContent = usdMode() ? '$' + fmt(putU) : money(K.put, 0);
+    $('growVal').textContent = money(K.final, v.years);
+    $('bestTxt').textContent = 'كل اختيار تحت، بنفس الترتيب كل مرة. دي افتراضات مش توقعات، ومش توصية.';
     renderToday(opts, K, v, deflate);
 
     $('tbody').innerHTML = opts.map(o =>
@@ -774,11 +813,19 @@ h1, .pf h2 { line-height: 1.3; }
     updateAskZd();
   }
 
+  // One row of the A-style chart: name, one signed number, a bar from the line (filled = ahead, outline = behind).
+  const sgnTxt = x => { const t = moneyC(Math.abs(x), 0), m = t.match(/^(\$?[\d.,]+)(.*)$/); return m ? '<bdi dir="ltr">' + (x >= 0 ? '+' : '−') + m[1] + '</bdi>' + m[2] : (x >= 0 ? '+' : '−') + t; };
+  function tmRow(name, x, maxAbs, label, mode) {
+    const up = x >= 0, w = Math.max(1.5, Math.abs(x) / maxAbs * (mode === 'end' ? 100 : 50));
+    const cls = mode === 'end' ? 'loss' : (up ? 'up' : 'down');
+    return '<div class="tm-row"><div class="tm-top"><span>' + name + '</span><b><bdi>' + label + '</bdi>' + (mode !== 'infl' ? '' : '<span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span>') + '</b></div>' +
+      '<div class="tm-track" aria-hidden="true">' + (x === 0 && mode === 'end' ? '' : '<div class="tm-bar ' + cls + '" style="width:' + w.toFixed(2) + '%"></div>') + '</div></div>';
+  }
   // Today's-money views (designs A + D): fixed order, never ranked.
   const TM_ORDER = ['cd', 'egx', 'gold', 're', 'us', 'cash'];
   function renderToday(opts, K, v, deflate) {
     const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean);
-    const sgn = x => { const t = moneyC(Math.abs(x), 0), m = t.match(/^(\$?[\d.,]+)(.*)$/); return m ? '<bdi dir="ltr">' + (x >= 0 ? '+' : '−') + m[1] + '</bdi>' + m[2] : (x >= 0 ? '+' : '−') + t; }; // sign stays before the number in RTL
+    const sgn = sgnTxt;
     const maxAbs = Math.max(1, ...rows.map(o => Math.abs(o.beyond)));
     $('tmIntro').innerHTML = 'الخط اللي في النص هو اللي محتاجه بس عشان تلحق زيادة الأسعار: <b><bdi>' + money(K.final / deflate, 0) + '</bdi></b> بفلوس النهارده. ناحية الشمال: قدّام. ناحية اليمين: ورا.';
     $('tmList').innerHTML = rows.map(o => {
@@ -805,67 +852,51 @@ h1, .pf h2 { line-height: 1.3; }
     cash: { lvl: 0, label: 'مفيش طلوع ونزول', risk: 'بيخسر من قيمته كل سنة قصاد الأسعار اللي بتزيد.', min: 0 }
   };
   function renderAnalyze(opts, v) {
-    const yrs = v.years, yTxt = yrsTxt(yrs);
-    const rows = opts.slice().sort((a, b) => (a.key === 'cash') - (b.key === 'cash') || RISK[a.key].lvl - RISK[b.key].lvl || PF_WORST[b.key] - PF_WORST[a.key]);
-    const fits = rows.filter(o => o.key !== 'cash' && yrs >= RISK[o.key].min);
-    const pick = fits.find(o => o.beyond >= 0);
-    const close = fits.slice().sort((a, b) => b.beyond - a.beyond)[0];
-    void pick; void close;
+    const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
+    const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean);
     const beatCount = rows.filter(o => o.key !== 'cash' && o.beyond >= 0).length;
-    $('aHead').textContent = 'على مدى ' + yTxt;
-    $('aSub').textContent = 'مترتبين من الأثبت للأكتر طلوع ونزول. بالافتراضات دي، ' + beatCount + ' من 5 اختيارات بيغلبوا الأسعار. إيه اللي يناسبك بيعتمد على ظروفك ومدتك وقد إيه تستحمل المخاطرة. ده مش توصية.';
+    $('aSub').textContent = 'لو كل اختيار جاتله أوحش سنة اتسجّلت في الآخر خالص، ده قد إيه من قيمته هيروح، بفلوس النهارده. ' + beatCount + ' من 5 اختيارات بتغلب زيادة الأسعار على ' + yTxt + '. أنهي يناسبك بيعتمد على ظروفك ووقتك وقد إيه تستحمل المخاطرة. مش توصية.';
+    const loss = o => o.real * Math.abs(Math.min(0, PF_WORST[o.key])) / 100;
+    const maxL = Math.max(1, ...rows.map(loss));
     $('aList').innerHTML = rows.map(o => {
-      const R = RISK[o.key], w = PF_WORST[o.key];
-      const ok = o.key === 'cash' ? false : yrs >= R.min;
-      const fitTxt = o.key === 'cash' ? 'مش بيكبر' : 'غالبًا بيتشال ' + yrsTxt(R.min) + ' أو أكتر';
-      const nums = o.key === 'cash'
-        ? '<div class="rnums"><div><span>بعد ' + yTxt + '</span><b>' + money(o.value, yrs) + '</b></div><div><span>بفلوس النهارده</span><b>' + money(o.real, 0) + '</b></div></div>'
-        : '<div class="rnums"><div><span>ممكن يوصل لـ</span><b>' + money(o.value, yrs) + '</b></div><div><span>لو أوحش سنة جت في الآخر</span><b>' + (w < 0 ? money(o.value * (1 + w / 100), yrs) : money(o.value, yrs)) + '</b></div></div>';
-      return '<div class="rcard"><div class="rtop"><div><b>' + o.name + '</b><span class="rlvl l' + R.lvl + '">' + R.label + '</span></div>' +
-        '<span class="rfit' + (ok ? ' ok' : '') + '">' + fitTxt + '</span></div>' +
-        '<div class="rmeter" aria-hidden="true">' + [0, 1, 2, 3].map(i => '<i' + (i <= R.lvl && o.key !== 'cash' ? ' class="on"' : '') + '></i>').join('') + '</div>' +
-        nums +
-        '<p class="rworst">أوحش سنة اتسجّلت: <b>' + WORST[o.key] + '</b> · ' + (o.beyond >= 0 ? 'بيغلب الأسعار' : 'بيخسر قصاد الأسعار') + '</p>' +
-        '<p class="rrisk">' + R.risk + '</p></div>';
+      const l = loss(o), lbl = o.key === 'cash' ? 'بيخسر قيمته كل سنة' : l > 0 ? sgnTxt(-l) + ' <bdi dir="ltr">(−' + Math.abs(PF_WORST[o.key]) + '%)</bdi>' : 'مفيش وقعة';
+      return tmRow(o.name, l > 0 ? -l : 0, maxL, lbl, 'end');
     }).join('');
+    $('aBody').innerHTML = rows.map(o => '<tr><td>' + o.name + '</td><td>' + RISK[o.key].label + '</td><td><bdi>' + WORST[o.key] + '</bdi></td></tr>').join('');
+    $('aRisks').innerHTML = '<ul class="tm-note" style="padding-inline-start:18px">' + rows.map(o => '<li><b>' + o.name + ':</b> ' + RISK[o.key].risk + '</li>').join('') + '</ul>';
   }
 
   function renderGoal(opts, v) {
     const GU = num($('goal').value), G = usdMode() ? GU * CV.r0 : GU, yrs = v.years;
     try { localStorage.setItem('emc-goal', String(GU)); } catch (e) {}
     const target = G * Math.pow(1 + v.infl / 100, yrs);
-    const rows = opts.map(o => {
+    const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean).map(o => {
       const f0 = sim(o, Object.assign({}, v, { monthly: 0 })).final;
       const f1 = sim(o, Object.assign({}, v, { monthly: 1000 })).final;
       const need = (target - f0) / ((f1 - f0) / 1000);
       return { o, need: Math.max(0, need) / (usdMode() ? CV.r0 : 1), done: f0 >= target };
-    }).sort((a, b) => a.need - b.need);
-    const best = rows[0], cash = rows.find(r => r.o.key === 'cash');
-    const yTxt = yrsTxt(yrs);
+    });
+    const cash = rows.find(r => r.o.key === 'cash');
+    const yTxt = yrs + (yrs === 1 ? ' سنة' : ' سنين');
+    const amt = n => usdMode() ? '$' + fmt(n) : fmt(n) + ' جنيه';
     $('gToday').textContent = money(G, 0);
     $('gFutLbl').textContent = 'السعر بعد ' + yTxt;
     $('gFuture').textContent = money(target, yrs);
     if (G <= 0) {
-      $('gEyebrow').textContent = 'هدفك'; $('gMonthly').textContent = 'اكتب هدفك';
-      $('gWith').textContent = 'اكتب هدفك تمنه كام النهارده.'; $('gNote').textContent = ''; $('gList').innerHTML = ''; return;
+      $('gMonthly').textContent = 'اكتب هدفك'; $('gWith').textContent = 'اكتب هدفك بيتكلّف كام النهارده.'; $('gNote').textContent = ''; $('gIntro').textContent = ''; $('gList').innerHTML = ''; $('gBody').innerHTML = ''; return;
     }
-    if (best.done) {
-      $('gEyebrow').textContent = 'بالافتراضات دي';
-      $('gMonthly').textContent = 'متغطّي';
-      $('gWith').textContent = 'اللي معاك دلوقتي هيوصل لو كبر زي ' + best.o.name + '.';
-    } else {
-      $('gEyebrow').textContent = 'أقل مبلغ شهري بالافتراضات دي';
-      $('gMonthly').textContent = usdMode() ? '$' + fmt(best.need) : fmt(best.need) + ' جنيه';
-      $('gWith').textContent = 'في الشهر لمدة ' + yTxt + '، لو الفلوس كبرت زي ' + best.o.name + '. ده مش توصية.';
-    }
-    $('gNote').textContent = cash && !best.done && cash.need > best.need
-      ? 'لو خلّيتها ' + cash.o.name + ' هتحتاج ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر، يعني ' + (usdMode() ? '$' + fmt(cash.need - best.need) : fmt(cash.need - best.need) + ' جنيه') + ' زيادة.'
-      : '';
-    const max = Math.max(...rows.map(r => r.need)) * 1.04 || 1;
-    $('gList').innerHTML = rows.map((r, i) =>
-      '<div class="item"><div class="nm">' + r.o.name + '<small>' + r.o.sub + '</small></div>' +
-      '<div class="barwrap"><div class="bar' + (i === 0 ? ' best' : '') + '" style="width:' + (r.need / max * 100) + '%"></div></div>' +
-      '<div class="v">' + (r.done ? 'متغطّي' : fmt(r.need)) + '<small>' + (r.done ? 'مش محتاج مبلغ شهري' : 'في الشهر') + '</small></div></div>').join('');
+    $('gEyebrow').textContent = 'هدفك';
+    $('gMonthly').textContent = money(G, 0);
+    $('gWith').textContent = 'بفلوس النهارده، يعني حوالي ' + money(target, yrs) + ' بعد ' + yTxt + ' مع زيادة الأسعار.';
+    $('gNote').textContent = 'لو حوّشتها في البيت هتحتاج ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. مش توصية.';
+    $('gIntro').textContent = 'الخط اللي في النص هو إنك تحوّشها ' + cash.o.name + ': ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. ناحية الشمال: محتاج أقل كل شهر. ناحية اليمين: محتاج أكتر.';
+    const diffs = rows.map(r => cash.need - r.need);
+    const maxD = Math.max(1, ...diffs.map(Math.abs));
+    $('gList').innerHTML = rows.filter(r => r.o.key !== 'cash').map(r => {
+      const d = cash.need - r.need;
+      return tmRow(r.o.name, d, maxD, amt(Math.abs(d)) + (d >= 0 ? ' أقل في الشهر' : ' أكتر في الشهر'), 'center');
+    }).join('');
+    $('gBody').innerHTML = rows.map(r => '<tr><td>' + r.o.name + '</td><td class="tdy"><bdi>' + (r.done ? 'متغطّي' : amt(r.need) + ' في الشهر') + '</bdi></td></tr>').join('');
   }
 
   function drawChart(opts, K, v) {
@@ -883,9 +914,9 @@ h1, .pf h2 { line-height: 1.3; }
     for (let i = 0; i <= v.years; i += xs) g += '<text x="' + X(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="currentColor">' + (i === 0 ? 'دلوقتي' : 'سنة ' + i) + '</text>';
     const line = (p, attrs) => '<polyline fill="none" points="' + p.map((val, i) => X(i).toFixed(1) + ',' + Y(val).toFixed(1)).join(' ') + '" ' + attrs + '/>';
     g += line(K.path, 'stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"');
-    opts.slice().reverse().forEach((o, idx) => { const best = o === opts[0]; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
+    opts.slice().reverse().forEach((o, idx) => { const best = false; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
     // end labels, spaced apart
-    const labels = opts.map((o, i) => ({ t: o.name + ' ' + pre + compact(o.value), y: Y(o.value), best: i === 0 })).concat([{ t: 'يلحق الأسعار ' + pre + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
+    const labels = opts.map((o, i) => ({ t: o.name + ' ' + pre + compact(o.value), y: Y(o.value), best: false })).concat([{ t: 'يلحق الأسعار ' + pre + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
     for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
     const over = labels.length ? labels[labels.length - 1].y - (H - B) : 0; if (over > 0) labels.forEach(l => l.y -= over);
     labels.forEach(l => g += '<text x="' + (W - R + 8) + '" y="' + (l.y + 4) + '" text-anchor="end" font-size="11" font-weight="' + (l.best ? 700 : 500) + '" fill="' + (l.best ? 'var(--blue)' : 'currentColor') + '">' + l.t + '</text>');
@@ -974,16 +1005,17 @@ h1, .pf h2 { line-height: 1.3; }
       parts.push({ k, w, value: r });
     });
     const beyond = (total - K.final) / deflate, beats = total >= K.final;
-    $('pfVal').textContent = money(total, v.years);
-    $('pfTxt').textContent = 'تساوي ' + money(total / deflate, 0) + ' بفلوس النهارده، بعد المصاريف. ' + (beats ? 'بتغلب التضخم بـ' : 'بتخسر قصاد التضخم بـ') + money(Math.abs(beyond), 0) + ' بفلوس النهارده.';
-    const best = opts[0];
-    const rows = parts.sort((a, b) => b.value - a.value).map(p => '<div class="pfrow"><span><i class="psw f-' + p.k + '"></i>' + PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%</span><b>' + money(p.value, v.years) + '</b></div>');
-    rows.push('<div class="pfrow"><span>المطلوب عشان تلحق الأسعار</span><b>' + money(K.final, v.years) + '</b></div>');
-    rows.push('<div class="pfrow"><span>كله في أحسن اختيار لوحده (' + best.name + ')</span><b>' + money(best.value, v.years) + '</b></div>');
-    $('pfRows').innerHTML = rows.join('');
+    const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
+    $('pfTxt').textContent = 'توزيعتك: ' + money(total / deflate, 0) + ' بفلوس النهارده، ' + (beats ? 'قدّام' : 'ورا') + ' زيادة الأسعار بـ' + money(Math.abs(beyond), 0) + '. الخط اللي في النص هو إنك تلحق الأسعار.';
+    const items = TM_ORDER.map(k => parts.find(p => p.k === k)).filter(Boolean).map(p => ({ name: PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%', value: p.value, b: (p.value - K.final * p.w) / deflate }));
+    const all = [{ name: 'التوزيعة كلها', value: total, b: beyond }].concat(items);
+    const maxB = Math.max(1, ...all.map(x => Math.abs(x.b)));
+    $('pfRows').innerHTML = all.map(x => tmRow(x.name, x.b, maxB, sgnTxt(x.b), 'infl')).join('');
+    $('pfThen').textContent = 'بعد ' + yTxt;
+    $('pfBody').innerHTML = all.map(x => '<tr><td>' + x.name + '</td><td><bdi>' + moneyC(x.value, v.years) + '</bdi></td><td class="tdy"><bdi>' + moneyC(x.value / deflate, 0) + '</bdi> <span aria-hidden="true">' + (x.b >= 0 ? '↑' : '↓') + '</span></td></tr>').join('');
     const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
     const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
-    $('pfRisk').textContent = 'التوزيع: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' من 6 اختيارات، وأكبر حصة ' + pf[big] + '% في ' + PF_NAMES[big] + '. لو كل جزء جاتله أوحش سنة اتسجّلت في نفس الوقت (حسبة تقريبية ومش محتملة)، التوزيعة هتنزل حوالي ' + Math.abs(worst).toFixed(0) + '% السنة دي. إنك تحط كله في اختيار واحد أبسط، بس بتشيل مخاطرته كلها.';
+    $('pfRisk').textContent = 'التنويع: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' من 6 اختيارات، وأكبر نصيب ' + pf[big] + '% في ' + PF_NAMES[big] + '. لو كل جزء جاتله أوحش سنة اتسجّلت في نفس الوقت (حساب تقريبي ومش متوقّع)، التوزيعة هتقع حوالي ' + Math.abs(worst).toFixed(0) + '% السنة دي.';
   }
   document.querySelectorAll('.mixes button').forEach(b => b.addEventListener('click', () => { pf = Object.assign({}, MIXES[b.dataset.mix]); pfMix = b.dataset.mix; pfRender(); }));
   pfBuild();
