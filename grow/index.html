@@ -135,6 +135,10 @@ details.sect summary::after { content: "+"; } details.sect[open] summary::after 
 .tmt td:first-child { font-weight: 600; white-space: normal; }
 .tmt td.tdy { font-weight: 800; }
 @media (prefers-reduced-motion: reduce) { .tm-bar { transition: none; } }
+.tm-more { margin-top: 12px; }
+.tm-more > summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--ink); border-radius: 999px; font-size: 15px; font-weight: 600; }
+.tm-more > summary::-webkit-details-marker { display: none; }
+.tm-more[open] > summary { margin-bottom: 0; }
 
 
 [hidden] { display: none !important; }
@@ -518,6 +522,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
         <div class="tm-list" id="tmList"></div>
         <p class="small" style="margin:12px 0 0">Filled bar: beats inflation. Outline: falls behind. Same order every time, never ranked.</p>
       </div>
+      <details class="tm-more" id="tmMore"><summary>See the amounts before inflation</summary>
       <div class="tm" id="tmD">
         <span class="eyebrow">Side by side</span>
         <h3 class="tm-h">The numbers, plainly</h3>
@@ -526,6 +531,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
           <tbody id="tmBody"></tbody></table>
         <p class="small" style="margin:10px 0 0" id="tmFoot">—</p>
       </div>
+      </details>
 
       <details class="sect detail" id="detail">
       <summary>Year by year and full table</summary>
