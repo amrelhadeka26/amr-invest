@@ -146,6 +146,15 @@ details.sect summary::after { content: "+"; } details.sect[open] summary::after 
 .tm-bar.loss { inset-inline-end: 0; background: var(--paper); border: 2px solid var(--ink); }
 .tm-note { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; }
 .tm-hero-n { font-size: clamp(36px, 9vw, 48px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; margin-top: 6px; }
+/* Chart colours (Nov 2): green = gain/ahead, red = loss/behind, always with ▲/▼. Analyze bars stay neutral. */
+:root { --gain: #15803D; --loss: #B91C1C; }
+.tm-bar.up { background: var(--gain) !important; border: 0 !important; }
+.tm-bar.down { background: var(--loss) !important; border: 0 !important; }
+.tm-bar.neutral { inset-inline-end: 0; background: var(--ink); }
+.tm-top b.gain, .tmt td.tdy.gain, .small b.gain { color: var(--gain); }
+.tm-top b.loss, .tmt td.tdy.loss, .small b.loss { color: var(--loss); }
+.tm-ends span:first-child { color: var(--loss); }
+.tm-ends span:last-child { color: var(--gain); }
 .tm-more { margin-top: 12px; }
 .tm-more > summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--ink); border-radius: 999px; font-size: 15px; font-weight: 600; }
 .tm-more > summary::-webkit-details-marker { display: none; }
@@ -558,7 +567,7 @@ h1, .pf h2 { line-height: 1.3; }
         <p class="tm-p" id="tmIntro">—</p>
         <div class="tm-ends" aria-hidden="true"><span>› ورا</span><span>قدّام ‹</span></div>
         <div class="tm-list" id="tmList"></div>
-        <p class="small" style="margin:12px 0 0">العمود المليان: بيغلب التضخم. الفاضي: بيتأخر عنه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+        <p class="small" style="margin:12px 0 0"><b class="gain">الأخضر ▲</b>: بيغلب التضخم. <b class="loss">الأحمر ▼</b>: بيتأخر عنه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
       </div>
       <details class="tm-more" id="tmMore"><summary>شوف المبالغ قبل التضخم</summary>
       <div class="tm" id="tmD">
@@ -572,13 +581,8 @@ h1, .pf h2 { line-height: 1.3; }
       </details>
 
       <details class="sect detail" id="detail">
-      <summary>سنة بسنة، والجدول كامل</summary>
-      <div>
-        <p class="eyebrow" style="margin:14px 0 8px" id="chartLbl">سنة بسنة، القيمة بالجنيه</p>
-        <div class="chartbox"><svg id="chart" viewBox="0 0 640 300" role="img" aria-label="قيمة كل اختيار مع الوقت"></svg></div>
-      </div>
-
-      <div class="tablewrap" style="margin-top:16px">
+      <summary>الجدول كامل</summary>
+      <div class="tablewrap" style="margin-top:12px">
         <table class="rt">
           <caption class="sr">النتايج بالتفصيل</caption>
           <thead><tr><th>الاختيار</th><th id="thRate">صافي في السنة، بالجنيه</th><th id="thVal">القيمة بالجنيه</th><th>بفلوس النهارده</th><th>فوق التضخم*</th><th>أوحش سنة اتسجّلت</th></tr></thead>
@@ -624,7 +628,7 @@ h1, .pf h2 { line-height: 1.3; }
         <p class="tm-p" id="gIntro">—</p>
         <div class="tm-ends" aria-hidden="true"><span>› محتاج أكتر</span><span>محتاج أقل ‹</span></div>
         <div class="tm-list" id="gList"></div>
-        <p class="small" style="margin:12px 0 0">العمود المليان: محتاج كل شهر أقل من إنك تحوّشها في البيت. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+        <p class="small" style="margin:12px 0 0"><b class="gain">الأخضر ▲</b>: محتاج أقل كل شهر. <b class="loss">الأحمر ▼</b>: محتاج أكتر. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
       </div>
       <details class="tm-more"><summary>شوف المبالغ الشهرية</summary>
       <div class="tm">
@@ -659,7 +663,7 @@ h1, .pf h2 { line-height: 1.3; }
           <p class="tm-p" id="pfTxt">—</p>
           <div class="tm-ends" aria-hidden="true"><span>› ورا</span><span>قدّام ‹</span></div>
           <div class="tm-list" id="pfRows"></div>
-          <p class="small" style="margin:12px 0 0">كل جزء متقارن بإنه يلحق الأسعار على نصيبه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+          <p class="small" style="margin:12px 0 0"><b class="gain">الأخضر ▲</b>: بيغلب التضخم. <b class="loss">الأحمر ▼</b>: بيتأخر عنه. كل جزء متقارن بإنه يلحق الأسعار على نصيبه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
         </div>
         <details class="tm-more"><summary>شوف المبالغ</summary>
         <div class="tm">
@@ -804,9 +808,7 @@ h1, .pf h2 { line-height: 1.3; }
       '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '"><bdi>' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(M(o.beyond, 0))) + '</bdi></td><td>' + WORST[o.key] + '</td></tr>').join('');
 
     const cu = usdMode() ? 'الدولار' : 'الجنيه';
-    $('chartLbl').textContent = 'سنة بسنة، القيمة بـ' + cu;
     $('thRate').textContent = 'صافي في السنة، بالجنيه'; $('thVal').textContent = 'القيمة بـ' + cu;
-    drawChart(opts, K, v);
     renderPortfolio(opts, K, v);
     renderGoal(opts, v);
     renderAnalyze(opts, v);
@@ -815,10 +817,11 @@ h1, .pf h2 { line-height: 1.3; }
 
   // One row of the A-style chart: name, one signed number, a bar from the line (filled = ahead, outline = behind).
   const sgnTxt = x => { const t = moneyC(Math.abs(x), 0), m = t.match(/^(\$?[\d.,]+)(.*)$/); return m ? '<bdi dir="ltr">' + (x >= 0 ? '+' : '−') + m[1] + '</bdi>' + m[2] : (x >= 0 ? '+' : '−') + t; };
-  function tmRow(name, x, maxAbs, label, mode) {
+  function tmRow(name, x, maxAbs, label, mode, tone, arrow) {
     const up = x >= 0, w = Math.max(1.5, Math.abs(x) / maxAbs * (mode === 'end' ? 100 : 50));
-    const cls = mode === 'end' ? 'loss' : (up ? 'up' : 'down');
-    return '<div class="tm-row"><div class="tm-top"><span>' + name + '</span><b><bdi>' + label + '</bdi>' + (mode !== 'infl' ? '' : '<span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span>') + '</b></div>' +
+    const cls = mode === 'end' ? 'neutral' : (up ? 'up' : 'down');
+    tone = tone || (up ? 'gain' : 'loss'); arrow = arrow != null ? arrow : (up ? '▲ ' : '▼ ');
+    return '<div class="tm-row"><div class="tm-top"><span>' + name + '</span><b class="' + tone + '"><bdi>' + arrow + label + '</bdi>' + (mode !== 'infl' ? '' : '<span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span>') + '</b></div>' +
       '<div class="tm-track" aria-hidden="true">' + (x === 0 && mode === 'end' ? '' : '<div class="tm-bar ' + cls + '" style="width:' + w.toFixed(2) + '%"></div>') + '</div></div>';
   }
   // Today's-money views (designs A + D): fixed order, never ranked.
@@ -830,7 +833,7 @@ h1, .pf h2 { line-height: 1.3; }
     $('tmIntro').innerHTML = 'الخط اللي في النص هو اللي محتاجه بس عشان تلحق زيادة الأسعار: <b><bdi>' + money(K.final / deflate, 0) + '</bdi></b> بفلوس النهارده. ناحية الشمال: قدّام. ناحية اليمين: ورا.';
     $('tmList').innerHTML = rows.map(o => {
       const up = o.beyond >= 0, w = Math.max(1.5, Math.abs(o.beyond) / maxAbs * 50);
-      return '<div class="tm-row"><div class="tm-top"><span>' + o.name + '</span><b><bdi>' + sgn(o.beyond) + '</bdi><span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span></b></div>' +
+      return '<div class="tm-row"><div class="tm-top"><span>' + o.name + '</span><b class="' + (up ? 'gain' : 'loss') + '"><bdi>' + (up ? '▲ ' : '▼ ') + sgn(o.beyond) + '</bdi><span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span></b></div>' +
         '<div class="tm-track" aria-hidden="true"><div class="tm-bar ' + (up ? 'up' : 'down') + '" style="width:' + w.toFixed(2) + '%"></div></div></div>';
     }).join('');
     const thenTxt = 'بعد ' + v.years + (v.years === 1 ? ' سنة' : ' سنين');
@@ -838,7 +841,7 @@ h1, .pf h2 { line-height: 1.3; }
     $('tmNow').textContent = $('tmNow').dataset.t + (usdMode() ? '' : ' (جنيه)');
     $('tmBody').innerHTML = rows.map(o => {
       const up = o.beyond >= 0;
-      return '<tr><td>' + o.name + '</td><td><bdi>' + moneyC(o.value, v.years) + '</bdi></td><td class="tdy"><bdi>' + moneyC(o.real, 0) + '</bdi> <span aria-hidden="true">' + (up ? '↑' : '↓') + '</span><span class="sr">' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span></td></tr>';
+      return '<tr><td>' + o.name + '</td><td><bdi>' + moneyC(o.value, v.years) + '</bdi></td><td class="tdy ' + (up ? 'gain' : 'loss') + '"><bdi>' + moneyC(o.real, 0) + '</bdi> <span aria-hidden="true">' + (up ? '↑' : '↓') + '</span><span class="sr">' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span></td></tr>';
     }).join('');
     $('tmFoot').textContent = '↑ بيغلب التضخم: قيمته أكتر من ' + money(K.final / deflate, 0) + ' اللي محتاجهم عشان تلحق الأسعار، بفلوس النهارده. ↓ بيتأخر عنه. «' + thenTxt + '» هو المبلغ قبل حساب التضخم. دي افتراضات مش توقعات.';
   }
@@ -860,7 +863,8 @@ h1, .pf h2 { line-height: 1.3; }
     const maxL = Math.max(1, ...rows.map(loss));
     $('aList').innerHTML = rows.map(o => {
       const l = loss(o), lbl = o.key === 'cash' ? 'بيخسر قيمته كل سنة' : l > 0 ? sgnTxt(-l) + ' <bdi dir="ltr">(−' + Math.abs(PF_WORST[o.key]) + '%)</bdi>' : 'مفيش وقعة';
-      return tmRow(o.name, l > 0 ? -l : 0, maxL, lbl, 'end');
+      const fall = o.key === 'cash' || l > 0;
+      return tmRow(o.name, l > 0 ? -l : 0, maxL, lbl, 'end', fall ? 'loss' : 'gain', fall ? '▼ ' : '');
     }).join('');
     $('aBody').innerHTML = rows.map(o => '<tr><td>' + o.name + '</td><td>' + RISK[o.key].label + '</td><td><bdi>' + WORST[o.key] + '</bdi></td></tr>').join('');
     $('aRisks').innerHTML = '<ul class="tm-note" style="padding-inline-start:18px">' + rows.map(o => '<li><b>' + o.name + ':</b> ' + RISK[o.key].risk + '</li>').join('') + '</ul>';
@@ -899,30 +903,6 @@ h1, .pf h2 { line-height: 1.3; }
     $('gBody').innerHTML = rows.map(r => '<tr><td>' + r.o.name + '</td><td class="tdy"><bdi>' + (r.done ? 'متغطّي' : amt(r.need) + ' في الشهر') + '</bdi></td></tr>').join('');
   }
 
-  function drawChart(opts, K, v) {
-    const P = a => a.map((x, i) => M(x, i));
-    opts = opts.map(o => Object.assign({}, o, { path: P(o.path), value: M(o.value, v.years) }));
-    K = { path: P(K.path), final: M(K.final, v.years) };
-    const pre = usdMode() ? '$' : '';
-    const W = 640, H = 300, L = 78, R = 150, T = 16, B = 34;
-    const yMax = Math.max(...opts.map(o => Math.max(...o.path)), Math.max(...K.path)) * 1.05;
-    const X = i => L + (W - L - R) * i / v.years, Y = val => T + (H - T - B) * (1 - val / yMax);
-    const step = Math.pow(10, Math.floor(Math.log10(yMax / 4))), nice = [1, 2, 2.5, 5, 10].map(s => s * step).find(s => yMax / s <= 5) || step * 10;
-    let g = '';
-    for (let t = 0; t <= yMax; t += nice) g += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="currentColor" stroke-opacity=".15"/><text x="' + (L - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="start" font-size="11" fill="currentColor">' + pre + compact(t) + '</text>';
-    const xs = v.years <= 10 ? 1 : v.years <= 20 ? 2 : 5;
-    for (let i = 0; i <= v.years; i += xs) g += '<text x="' + X(i) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" fill="currentColor">' + (i === 0 ? 'دلوقتي' : 'سنة ' + i) + '</text>';
-    const line = (p, attrs) => '<polyline fill="none" points="' + p.map((val, i) => X(i).toFixed(1) + ',' + Y(val).toFixed(1)).join(' ') + '" ' + attrs + '/>';
-    g += line(K.path, 'stroke="currentColor" stroke-width="1.75" stroke-dasharray="5 4"');
-    opts.slice().reverse().forEach((o, idx) => { const best = false; g += line(o.path, 'stroke="' + (best ? 'var(--blue)' : 'currentColor') + '" stroke-width="' + (best ? 3 : 1.25) + '"' + (best ? '' : ' stroke-opacity=".75"')); });
-    // end labels, spaced apart
-    const labels = opts.map((o, i) => ({ t: o.name + ' ' + pre + compact(o.value), y: Y(o.value), best: false })).concat([{ t: 'يلحق الأسعار ' + pre + compact(K.final), y: Y(K.final), best: false, k: true }]).sort((a, b) => a.y - b.y);
-    for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 14) labels[i].y = labels[i - 1].y + 14;
-    const over = labels.length ? labels[labels.length - 1].y - (H - B) : 0; if (over > 0) labels.forEach(l => l.y -= over);
-    labels.forEach(l => g += '<text x="' + (W - R + 8) + '" y="' + (l.y + 4) + '" text-anchor="end" font-size="11" font-weight="' + (l.best ? 700 : 500) + '" fill="' + (l.best ? 'var(--blue)' : 'currentColor') + '">' + l.t + '</text>');
-    $('chart').innerHTML = g;
-    $('chart').style.color = 'var(--ink)';
-  }
 
   const chipTxt = n => n >= 1e6 ? (n / 1e6) + ' مليون' : n >= 1e3 ? (n / 1e3) + ' ألف' : String(n);
   function drawChips() {
@@ -1012,7 +992,7 @@ h1, .pf h2 { line-height: 1.3; }
     const maxB = Math.max(1, ...all.map(x => Math.abs(x.b)));
     $('pfRows').innerHTML = all.map(x => tmRow(x.name, x.b, maxB, sgnTxt(x.b), 'infl')).join('');
     $('pfThen').textContent = 'بعد ' + yTxt;
-    $('pfBody').innerHTML = all.map(x => '<tr><td>' + x.name + '</td><td><bdi>' + moneyC(x.value, v.years) + '</bdi></td><td class="tdy"><bdi>' + moneyC(x.value / deflate, 0) + '</bdi> <span aria-hidden="true">' + (x.b >= 0 ? '↑' : '↓') + '</span></td></tr>').join('');
+    $('pfBody').innerHTML = all.map(x => '<tr><td>' + x.name + '</td><td><bdi>' + moneyC(x.value, v.years) + '</bdi></td><td class="tdy ' + (x.b >= 0 ? 'gain' : 'loss') + '"><bdi>' + moneyC(x.value / deflate, 0) + '</bdi> <span aria-hidden="true">' + (x.b >= 0 ? '↑' : '↓') + '</span></td></tr>').join('');
     const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
     const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
     $('pfRisk').textContent = 'التنويع: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' من 6 اختيارات، وأكبر نصيب ' + pf[big] + '% في ' + PF_NAMES[big] + '. لو كل جزء جاتله أوحش سنة اتسجّلت في نفس الوقت (حساب تقريبي ومش متوقّع)، التوزيعة هتقع حوالي ' + Math.abs(worst).toFixed(0) + '% السنة دي.';
