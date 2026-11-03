@@ -195,7 +195,7 @@ section[id]{scroll-margin-top:60px}
 <h1>Let your money make money.</h1>
 <p class="lead">Simple lessons for Egyptians who want their money to grow.</p>
 <div class="cta-row">
-<a class="btn btn-dark" href="#join">Get the free money check</a>
+<a class="btn btn-dark" href="#join">Join the newsletter</a>
 <a class="btn btn-light" href="#learn">Start learning ›</a>
 </div>
 </div>
@@ -267,17 +267,16 @@ section[id]{scroll-margin-top:60px}
 </section>
 
 <section class="join" id="join">
-<p class="eyebrow">FREE ONE-PAGE PDF</p>
-<h2 class="h2">The 5-minute money check.</h2>
-<p class="sub">Five questions to see where your money stands before you invest a single pound. Free in your inbox, plus one short money note a month. Unsubscribe anytime.</p>
+<h2 class="h2">Money tips in your inbox.</h2>
+<p class="sub">Subscribe to my newsletter for simple investing lessons and market insights. Free, and you can unsubscribe anytime.</p>
 <form id="guideForm" name="newsletter" method="POST" action="https://d32e8937.sibforms.com/serve/MUIFAF7kAgHgaTfaNtej_y3CkPRr82BKbjjHUMpzoKeE529cj5l6DnFr6qdanUDbRBFcFXhy2qGyejMkUZNr3_fnlaRB3h0WGDr6swPm5PI9N09oq7-X1NWd6e6NT_T6Pd43saskKRGJPy2DZt9EUQehmeY3IA9e6MPBERpEf1sOSYQXtbxmE0008i4K8jLH7LXm0FtaP_xBMizOwg==" target="bv-frame">
 <input type="text" name="email_address_check" value="" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 <input type="hidden" name="locale" value="en">
 <label>Email<input type="email" name="EMAIL" required autocomplete="email" inputmode="email"></label>
-<button class="btn btn-dark" type="submit">Send me the free check</button>
+<button class="btn btn-dark" type="submit">Subscribe</button>
 </form>
 <iframe name="bv-frame" title="Newsletter signup" hidden></iframe>
-<p class="notice" id="formNote" hidden>Almost done! Check your inbox and click the confirmation link. Your free money check comes right after. Can't find it? Look in Spam or Promotions. Meanwhile, follow <a href="https://www.instagram.com/amrelhadeka.invest/" target="_blank" rel="noopener">@amrelhadeka.invest</a> to get it first.</p>
+<p class="notice" id="formNote" hidden>Almost done! Check your inbox and click the confirmation link to join. Can't find it? Look in Spam or Promotions. Meanwhile, follow <a href="https://www.instagram.com/amrelhadeka.invest/" target="_blank" rel="noopener">@amrelhadeka.invest</a> to get it first.</p>
 </section>
 </main>
 
@@ -296,7 +295,7 @@ section[id]{scroll-margin-top:60px}
   var $ = function(id){return document.getElementById(id);};
   var gf=$('guideForm');
   // Until a form service is connected, keep visitors on the page instead of a server error
-  gf.addEventListener('submit',function(){if(window.track)track('leadmagnet','en');var btn=gf.querySelector('button');btn.disabled=true;btn.textContent='Subscribing…';setTimeout(function(){gf.hidden=true;$('formNote').hidden=false;},1200);});
+  gf.addEventListener('submit',function(){if(window.track)track('newsletter','en');var btn=gf.querySelector('button');btn.disabled=true;btn.textContent='Subscribing…';setTimeout(function(){gf.hidden=true;$('formNote').hidden=false;},1200);});
   $('yr').textContent=new Date().getFullYear();
 })();
 </script>
