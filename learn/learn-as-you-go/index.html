@@ -116,10 +116,10 @@
 <p>You don’t learn to swim by reading about water. Start small, choose something simple that fits your timeline, and pay attention. In a year you’ll understand more than any reading could teach you.</p>
 <p class="takeaway">You don’t need to predict the market. You need a few sound ideas, a plan that fits your life, and the patience to stick with it.</p>
 </div>
+<div class="book-box"><div><b>Want to talk it through with me?</b><p>A one-hour session, online. Your money, your questions, plain words.</p></div><a class="btn btn-dark" href="/#book" data-book="lesson">Book a session</a></div>
 <div class="cta">
-<a class="btn btn-dark" href="/#join">Join the newsletter</a>
-<a class="btn btn-light" href="/grow/">Explore grow</a>
-<a class="btn btn-light" href="/#book">Book a session</a>
+<a class="btn btn-light" href="/#join">Get the free money check</a>
+<a class="btn btn-light" href="/grow/">Open the ZD Calculator</a>
 </div>
 <a class="next" href="/learn/not-gambling/"><span>Next lesson · Myth 3</span><b>“Investing is basically gambling.” ›</b></a>
 <p class="note">Figures in this lesson are illustrations, not predictions. Educational content only, not personal financial advice.</p>
@@ -138,5 +138,6 @@
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
 <script>track('view','lesson-learn-as-you-go',1);</script>
 <script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
+<script>document.querySelectorAll('[data-book]').forEach(function(a){a.addEventListener('click',function(){if(window.track)track('book',a.getAttribute('data-book'))})});</script>
 </body>
 </html>

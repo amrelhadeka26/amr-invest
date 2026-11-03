@@ -427,6 +427,13 @@ h1, .pf h2 { line-height: 1.3; }
 .zd-beta a{font-weight:600;white-space:nowrap}
 .zd-line{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ink);color:var(--paper,#fff)!important;border-radius:14px;padding:14px 16px;margin-top:12px;text-decoration:none;font-size:15px;line-height:1.35}
 .zd-line b{white-space:nowrap}
+
+.tab-desc { margin: 12px 2px 0; font-size: 15px; text-align: center; }
+.book-box { display: flex; gap: 14px; align-items: center; justify-content: space-between; border: 1.5px solid var(--ink); border-radius: 18px; padding: 16px 18px; margin-top: 14px; }
+.book-box b { font-size: 17px; }
+.book-box p { margin: 4px 0 0; font-size: 15px; }
+.book-btn { background: var(--ink); color: var(--paper, #fff) !important; border-radius: 999px; padding: 0 20px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; text-decoration: none; font-weight: 600; }
+@media (max-width: 520px) { .book-box { flex-direction: column; align-items: stretch; } }
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
@@ -452,12 +459,6 @@ h1, .pf h2 { line-height: 1.3; }
 
   <div class="grow-box">
 <div class="grow-head"><h1 class="grow-name">حاسبة <span lang="en">ZD</span></h1><p>ست طرق في مصر تكبّر بيها فلوسك، جنب بعض.</p></div>
-<div class="gtiles">
-<a class="gtile" href="#calculate" data-tab="compare"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="3"/><path d="M8 7.5h8"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01" stroke-width="2.6"/></svg><b>احسب</b><span>اعرف فلوسك هتوصل لفين</span></a>
-<a class="gtile" href="#portfolio" data-tab="portfolio"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></svg><b>المحفظة</b><span>نوّع استثماراتك</span></a>
-<a class="gtile" href="#analyze" data-tab="analyze"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="m7 14 3-3.5 3 3 4-5"/></svg><b>حلّل</b><span>افهم المخاطرة</span></a>
-<a class="gtile" href="#goals" data-tab="goal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><b>الأهداف</b><span>خطّط لمستقبلك</span></a>
-</div>
 </div>
   <p class="stamp" id="dataStamp">البيانات بتتحدّث كذا مرة في اليوم</p>
 
@@ -467,6 +468,7 @@ h1, .pf h2 { line-height: 1.3; }
     <button type="button" role="tab" id="t-analyze" aria-selected="false" aria-controls="tab-analyze">حلّل</button>
     <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">الأهداف</button>
   </nav>
+  <p class="tab-desc" id="tabDesc" aria-live="polite"><b>احسب</b> · توقّع فلوسك: شوف كل اختيار ممكن يكبر إزاي.</p>
 
 
   <div class="grid">
@@ -592,6 +594,7 @@ h1, .pf h2 { line-height: 1.3; }
         <p class="small" style="margin:10px 0 0" id="tmFoot">—</p>
       </div>
       </details>
+      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
 
       <details class="sect detail" id="detail">
       <summary>الجدول كامل</summary>
@@ -623,6 +626,7 @@ h1, .pf h2 { line-height: 1.3; }
         <p class="small" style="margin:10px 0 0">أوحش سنة هي أكبر وقعة في سنة واحدة اتسجّلت لكل اختيار (EGX30 في 2011، و S&amp;P 500 في 2008، والدهب في 2013 بالدولار، وأسعار العقار في مصر في 2020). المستقبل ممكن يبقى أحسن أو أوحش.</p>
       </div>
       </details>
+      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
     </section>
   <section class="results goal" id="tab-goal" aria-live="polite" hidden>
       <div class="hero">
@@ -651,6 +655,7 @@ h1, .pf h2 { line-height: 1.3; }
         <p class="small" style="margin:10px 0 0">الأسعار بتزيد مع التضخم، فهدفك هيتكلّف أكتر بعدين. بنكبّره بنسبة التضخم اللي في افتراضاتك، وبعدين نحسب المبلغ الشهري اللي كل اختيار محتاجه عشان يوصل، بعد المصاريف.</p>
       </div>
       </details>
+      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
     </section>
   <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
     <p class="eyebrow blue">ابني محفظتك</p>
@@ -685,6 +690,7 @@ h1, .pf h2 { line-height: 1.3; }
             <tbody id="pfBody"></tbody></table>
         </div>
         </details>
+      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
         <p class="small" id="pfRisk"></p>
       </div>
     </div>
@@ -1024,6 +1030,7 @@ h1, .pf h2 { line-height: 1.3; }
     document.body.classList.toggle('atab', t === 'analyze');
     $('yearsLbl').textContent = t === 'goal' ? 'عايزه بعد' : 'لمدة قد إيه';
     document.querySelectorAll('.gtile').forEach(el => el.classList.toggle('on', el.dataset.tab === t));
+    var TD = {compare:'<b>احسب</b> · توقّع فلوسك: شوف كل اختيار ممكن يكبر إزاي.',portfolio:'<b>المحفظة</b> · نوّع: قسّم فلوسك على الست اختيارات.',analyze:'<b>حلّل</b> · افهم المخاطرة: كل واحد ممكن ينزل قد إيه.',goal:'<b>الأهداف</b> · خطط لمستقبلك: كل اختيار محتاج كام في الشهر.'}; if ($('tabDesc')) $('tabDesc').innerHTML = TD[t];
     window.__tab = t; if (window.track) track('tab', t, 1);
     try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
@@ -1115,5 +1122,6 @@ h1, .pf h2 { line-height: 1.3; }
   fetch(app + '/api/status', { mode: 'cors', signal: ctl ? ctl.signal : undefined }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.ok) show(); }).catch(function () {}).then(function () { clearTimeout(t); });
 })();
 </script>
+<script>document.querySelectorAll('[data-book]').forEach(function(a){a.addEventListener('click',function(){if(window.track)track('book',a.getAttribute('data-book'))})});</script>
 </body>
 </html>
