@@ -2,7 +2,7 @@
   "name": "حاسبة ZD",
   "short_name": "حاسبة ZD",
   "description": "احسب، وابني محفظة، وافهم المخاطرة، وخطّط لأهدافك، بالجنيه أو بالدولار وبعد التضخم.",
-  "id": "/ar/grow/",
+  "id": "/ar/calculator/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -16,17 +16,17 @@
   ],
   "icons": [
     {
-      "src": "/grow/icons/icon-192.png",
+      "src": "/calculator/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/grow/icons/icon-512.png",
+      "src": "/calculator/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/grow/icons/maskable-512.png",
+      "src": "/calculator/icons/maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

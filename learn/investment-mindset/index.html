@@ -53,7 +53,7 @@
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
-<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 <header class="site-header">
@@ -61,7 +61,7 @@
 <a class="logo" href="/" aria-label="Amr El Hadeka, home"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a>
 <nav class="nav" aria-label="Main">
 <a href="/#learn">Learn</a>
-<a href="/grow/">Calculator</a>
+<a href="/calculator/">Calculator</a>
 <a href="/#about">About</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
 <span class="lang" role="group" aria-label="Language"><a href="/learn/investment-mindset/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/learn/investment-mindset/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
@@ -118,7 +118,7 @@
 <div class="book-box"><div><b>Want to talk it through with me?</b><p>A one-hour session, online. Your money, your questions, plain words.</p></div><a class="btn btn-dark" href="/#book" data-book="lesson">Book a session</a></div>
 <div class="cta">
 <a class="btn btn-light" href="/#join">Get the free money check</a>
-<a class="btn btn-light" href="/grow/">Open the ZD Calculator</a>
+<a class="btn btn-light" href="/calculator/">Open the ZD Calculator</a>
 </div>
 <a class="next" href="/learn/apps-and-tools/"><span>Next lesson · Apps and tools</span><b>Five questions before any investing app. ›</b></a>
 <p class="note">Scenario figures are hypothetical illustrations, before fees; not forecasts, history or recommended allocations. Educational content only, not personal financial advice.</p>

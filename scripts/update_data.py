@@ -1,6 +1,6 @@
-"""Daily data refresh for the Grow page.
+"""Daily data refresh for the ZD Calculator page.
 
-Runs from GitHub Actions. Updates the US dollar rate in grow/data.json once a day,
+Runs from GitHub Actions. Updates the US dollar rate in calculator/data.json once a day,
 at 8:00 Cairo time. Inflation and certificate rates change monthly and are updated
 separately, with a source link, when new figures are published.
 """
@@ -13,7 +13,7 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-DATA = Path(__file__).resolve().parent.parent / "grow" / "data.json"
+DATA = Path(__file__).resolve().parent.parent / "calculator" / "data.json"
 CAIRO = ZoneInfo("Africa/Cairo")
 RATE_URL = "https://open.er-api.com/v6/latest/USD"
 

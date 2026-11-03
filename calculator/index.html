@@ -1,35 +1,34 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('lang')==='ar')location.replace('/ar'+location.pathname+location.search+location.hash)}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>حاسبة ZD · حاسبة الاستثمار في مصر: الشهادات والبورصة والدهب والأسهم الأمريكية | عمرو الحادقة</title>
-<link rel="canonical" href="https://invest.amrelhadeka.com/ar/grow/">
-<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/grow/">
-<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/grow/">
-<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/grow/">
-<meta property="og:title" content="حاسبة ZD · ست طرق في مصر تكبّر بيها فلوسك، جنب بعض">
+<title>ZD Calculator · Investment Calculator for Egypt: Certificates, EGX30, Gold, US Stocks | Amr El Hadeka</title>
+<link rel="canonical" href="https://invest.amrelhadeka.com/calculator/">
+<link rel="alternate" hreflang="en" href="https://invest.amrelhadeka.com/calculator/">
+<link rel="alternate" hreflang="ar" href="https://invest.amrelhadeka.com/ar/calculator/">
+<link rel="alternate" hreflang="x-default" href="https://invest.amrelhadeka.com/calculator/">
+<meta property="og:title" content="ZD Calculator · Egypt's six ways to grow your money, side by side">
 <meta property="og:image" content="https://invest.amrelhadeka.com/assets/og.jpg">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://invest.amrelhadeka.com/ar/grow/">
-<meta property="og:locale" content="ar_EG">
-<meta property="og:description" content="قارن شهادة البنك وEGX30 والأسهم الأمريكية والدهب والعقار والكاش بالجنيه المصري وبعد التضخم، وابني محفظتك بنفسك.">
+<meta property="og:url" content="https://invest.amrelhadeka.com/calculator/">
+<meta property="og:description" content="Compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"حاسبة ZD","url":"https://invest.amrelhadeka.com/ar/grow/","description":"أدوات استثمار مجانية للمصريين: قارن شهادة البنك وEGX30 والأسهم الأمريكية والدهب والعقار والكاش بالجنيه المصري وبعد التضخم، وابني محفظتك بنفسك.","applicationCategory":"FinanceApplication","operatingSystem":"Any","inLanguage":"ar","offers":{"@type":"Offer","price":"0","priceCurrency":"EGP"},"author":{"@type":"Person","name":"عمرو الحادقة","url":"https://invest.amrelhadeka.com/ar/"}}</script>
-<meta name="description" content="قارن شهادة البنك وEGX30 والأسهم الأمريكية والدهب والعقار والكاش بالجنيه المصري وبعد التضخم، وابني محفظتك بنفسك.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ZD Calculator","url":"https://invest.amrelhadeka.com/calculator/","description":"Free investment tools for Egyptians: compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.","applicationCategory":"FinanceApplication","operatingSystem":"Any","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"EGP"},"author":{"@type":"Person","name":"Amr El Hadeka","url":"https://invest.amrelhadeka.com/"}}</script>
+<meta name="description" content="Compare a bank certificate, EGX30, US stocks, gold, property and cash in Egyptian pounds and after inflation, and build your own portfolio.">
 <meta name="theme-color" content="#ffffff">
 <meta name="zd-app" content="https://invest.amrelhadeka.com/zd">
 <meta name="zd-public" content="1">
 <meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="/grow/icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/grow/icons/apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="/calculator/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/calculator/icons/apple-touch-icon.png?v=2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ZD">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 body { margin: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 /* Layout: 980px column. Easy and Advanced share one set of numbers; Advanced adds costs, taxes and a year-by-year chart. Brand: black and white only. */
@@ -328,11 +327,11 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 .rworst, .rdip, .rrisk { margin: 4px 0 0; font-size: 14px; }
 .rrisk { margin-top: 8px; }
 
-/* grow. card, same as the homepage */
-.grow-box { margin: 24px 0 0; border: 1px solid #D2D2D7; border-radius: 28px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-.grow-head { background: var(--blue); color: var(--on-blue); border-radius: 20px; padding: 28px 20px; text-align: center; }
-.grow-name { margin: 0; color: var(--on-blue); font-size: clamp(40px, 7vw, 56px); letter-spacing: -0.04em; line-height: 1; }
-.grow-head p { margin: 10px 0 0; font-size: clamp(16px, 2.2vw, 19px); }
+/* calculator card, same as the homepage */
+.calc-box { margin: 24px 0 0; border: 1px solid #D2D2D7; border-radius: 28px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.calc-head { background: var(--blue); color: var(--on-blue); border-radius: 20px; padding: 28px 20px; text-align: center; }
+.calc-name { margin: 0; color: var(--on-blue); font-size: clamp(40px, 7vw, 56px); letter-spacing: -0.04em; line-height: 1; }
+.calc-head p { margin: 10px 0 0; font-size: clamp(16px, 2.2vw, 19px); }
 .gtiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .gtile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border: 1px solid #D2D2D7; border-radius: 20px; padding: 18px; text-decoration: none; color: var(--ink); transition: border-color .2s; }
 .gtile:hover { border-color: var(--ink); }
@@ -341,7 +340,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 .gtile b { font-size: clamp(20px, 3.4vw, 26px); letter-spacing: -0.02em; line-height: 1.1; }
 .gtile span { font-size: 14px; }
 .apptabs { scroll-margin-top: 12px; }
-@media (max-width: 600px) { .grow-box { border-radius: 24px; padding: 10px; gap: 10px; } .gtiles { gap: 10px; } .gtile { padding: 14px; } .gtile.on { padding: 13px; } }
+@media (max-width: 600px) { .calc-box { border-radius: 24px; padding: 10px; gap: 10px; } .gtiles { gap: 10px; } .gtile { padding: 14px; } .gtile.on { padding: 13px; } }
 
 .rnums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 2px 0 8px; }
 .rnums span { display: block; font-size: 12px; }
@@ -382,34 +381,6 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 @media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
 @media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
 
-/* Arabic: right-to-left */
-:root { --font: -apple-system, BlinkMacSystemFont, "SF Arabic", "Segoe UI", "IBM Plex Sans Arabic", "Noto Sans Arabic", Tahoma, Arial, sans-serif; }
-body, .site-header { letter-spacing: 0; font-family: var(--font); }
-h1, .pf h2, .hero-big, .card .big, .keep b, .gtile b, .apptabs button, .seg button { letter-spacing: 0; }
-.grow-name { letter-spacing: -0.04em; }
-h1, .pf h2 { line-height: 1.3; }
-.gtile b, .hero-big, .card .big { line-height: 1.3; }
-.eyebrow { text-transform: none; letter-spacing: 0; font-size: 13px; }
-.hero .eyebrow { font-size: 14px; }
-.atable th, .rt th { text-transform: none; letter-spacing: 0; font-size: 12px; text-align: left; padding: 0 4px 6px 0; }
-.atable th:first-child, .atable td:first-child { text-align: right; padding-right: 0; padding-left: 4px; }
-.atable td { padding: 4px 4px 4px 0; }
-.atable input, .inp input { direction: ltr; }
-.atable input { text-align: right; }
-.inp input { text-align: right; }
-.rt th { padding: 10px 10px 8px 0; }
-.rt th:first-child, .rt td:first-child { text-align: right; padding-right: 0; }
-.rt td { text-align: left; padding: 10px 10px 10px 0; }
-.yearsrow output, .srow output, .item .v { text-align: left; }
-.barwrap .bar { left: auto; right: 0; }
-.barwrap .ref { border-left: 0; border-right: 2px dashed var(--ink); }
-.legend .dash, .legend .sw, .psw { margin-right: 0; margin-left: 6px; }
-.psw { margin-left: 8px; }
-.stack div { border-right: 0; border-left: 2px solid var(--paper); }
-.stack div:last-child { border-left: 0; }
-.assume-body .presetnote { text-align: right; }
-.tag { font-size: 11.5px; }
-
 /* ZD: mandatory disclaimer + Ask ZD */
 .zd-disc { color: var(--ink) !important; border: 1px solid var(--ink); border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.5; }
 .askzd { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1px solid var(--ink); border-radius: 20px; padding: 18px 20px; margin: 24px 0 0; }
@@ -421,7 +392,7 @@ h1, .pf h2 { line-height: 1.3; }
 /* ZD entrances (hidden until the public launch switch is on) */
 [data-zd-entry][hidden]{display:none!important}
 .site-header .nav .btn-zd{background:transparent;color:#1D1D1F!important;border:1.5px solid #1D1D1F}
-@media (max-width:480px){body.zd-on .nav>a[href$="#learn"],body.zd-on .nav>a[href$="/grow/"]:not(.btn){display:none}}
+@media (max-width:480px){body.zd-on .nav>a[href$="#learn"],body.zd-on .nav>a[href$="/calculator/"]:not(.btn){display:none}}
 .zd-beta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;border:1.5px solid var(--ink);border-radius:18px;padding:16px 18px;margin-top:16px;text-align:start}
 .zd-beta p{margin:0;font-size:15px;line-height:1.45}
 .zd-beta a{font-weight:600;white-space:nowrap}
@@ -437,260 +408,260 @@ h1, .pf h2 { line-height: 1.3; }
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
-<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 
 
 <header class="site-header">
 <div class="hwrap">
-<a class="logo" href="/ar/" aria-label="الصفحة الرئيسية"><img src="/assets/logo.png" alt="عمرو الحادقة" width="240" height="218"></a>
-<nav class="nav" aria-label="القائمة">
-<a href="/ar/#learn">اتعلّم</a>
-<a href="/ar/grow/" aria-current="page">الحاسبة</a>
-<a href="/ar/#about">عنّي</a>
-<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://invest.amrelhadeka.com/zd/">اسأل <span lang="en">ZD</span></a>
-<a class="btn btn-dark" href="/ar/#book">احجز جلسة</a>
-<span class="lang" role="group" aria-label="اللغة"><a href="/grow/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/ar/grow/" lang="ar" aria-label="العربية" aria-current="true">عربي</a></span>
+<a class="logo" href="/" aria-label="Amr El Hadeka, home"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a>
+<nav class="nav" aria-label="Main">
+<a href="/#learn">Learn</a>
+<a href="/calculator/" aria-current="page">Calculator</a>
+<a href="/#about">About</a>
+<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://invest.amrelhadeka.com/zd/">Ask ZD</a>
+<a class="btn btn-dark" href="/#book">Book a session</a>
+<span class="lang" role="group" aria-label="Language"><a href="/calculator/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/calculator/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
 </div>
 </header>
 <div class="wrap">
 
-  <div class="grow-box">
-<div class="grow-head"><h1 class="grow-name">حاسبة <span lang="en">ZD</span></h1><p>ست طرق في مصر تكبّر بيها فلوسك، جنب بعض.</p></div>
+  <div class="calc-box">
+<div class="calc-head"><h1 class="calc-name">ZD Calculator</h1><p>Egypt's six ways to grow your money, side by side.</p></div>
 </div>
-  <p class="stamp" id="dataStamp">البيانات بتتحدّث كذا مرة في اليوم</p>
+  <p class="stamp" id="dataStamp">Data refreshed several times a day</p>
 
-  <nav class="apptabs" role="tablist" aria-label="الأدوات">
-    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">احسب</button>
-    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">المحفظة</button>
-    <button type="button" role="tab" id="t-analyze" aria-selected="false" aria-controls="tab-analyze">حلّل</button>
-    <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">الأهداف</button>
+  <nav class="apptabs" role="tablist" aria-label="Tools">
+    <button type="button" role="tab" id="t-compare" aria-selected="true" aria-controls="tab-compare">Calculate</button>
+    <button type="button" role="tab" id="t-portfolio" aria-selected="false" aria-controls="tab-portfolio">Portfolio</button>
+    <button type="button" role="tab" id="t-analyze" aria-selected="false" aria-controls="tab-analyze">Analyze</button>
+    <button type="button" role="tab" id="t-goal" aria-selected="false" aria-controls="tab-goal">Goals</button>
   </nav>
-  <p class="tab-desc" id="tabDesc" aria-live="polite"><b>احسب</b> · توقّع فلوسك: شوف كل اختيار ممكن يكبر إزاي.</p>
+  <p class="tab-desc" id="tabDesc" aria-live="polite"><b>Calculate</b> · Project your wealth: see how each option could grow.</p>
 
 
   <div class="grid">
-    <form class="panel" onsubmit="return false" aria-label="أرقامك">
+    <form class="panel" onsubmit="return false" aria-label="Your numbers">
       <div class="field currow">
-        <span class="sublabel" id="curLbl">فلوسي بالـ</span>
+        <span class="sublabel" id="curLbl">My money is in</span>
         <div class="seg cur" role="group" aria-labelledby="curLbl">
-          <button type="button" data-cur="EGP" aria-pressed="true">جنيه</button>
-          <button type="button" data-cur="USD" aria-pressed="false">دولار</button>
+          <button type="button" data-cur="EGP" aria-pressed="true">EGP</button>
+          <button type="button" data-cur="USD" aria-pressed="false">USD</button>
         </div>
       </div>
       <div class="field goal-only">
-        <label for="goal">هدفي تمنه النهارده</label>
-        <div class="inp"><input id="goal" inputmode="numeric"><span class="curunit">جنيه</span></div>
+        <label for="goal">My goal costs today</label>
+        <div class="inp"><input id="goal" inputmode="numeric"><span class="curunit">EGP</span></div>
         <div class="quick" data-goal data-egp="500000,1000000,3000000,5000000" data-usd="10000,25000,50000,100000"></div>
-        <span class="small">عربية، مقدّم شقة، جامعة ابنك. اكتب تمنه دلوقتي.</span>
+        <span class="small">A car, a flat's down payment, your child's university. Type what it costs now.</span>
       </div>
       <div class="field">
-        <label for="start">معايا دلوقتي</label>
-        <div class="inp"><input id="start" inputmode="numeric"><span class="curunit">جنيه</span></div>
+        <label for="start">I have now</label>
+        <div class="inp"><input id="start" inputmode="numeric"><span class="curunit">EGP</span></div>
         <div class="quick" data-for="start" data-egp="0,50000,100000,500000,1000000" data-usd="0,1000,5000,10000,25000"></div>
       </div>
       <div class="field nogoal">
-        <label for="monthly">أقدر أزوّد كل شهر</label>
-        <div class="inp"><input id="monthly" inputmode="numeric"><span class="curunit">جنيه</span></div>
+        <label for="monthly">I can add each month</label>
+        <div class="inp"><input id="monthly" inputmode="numeric"><span class="curunit">EGP</span></div>
         <div class="quick" data-for="monthly" data-egp="1000,3000,5000,10000" data-usd="50,100,250,500"></div>
       </div>
       <div class="field">
-        <label for="years" id="yearsLbl">لمدة قد إيه</label>
+        <label for="years" id="yearsLbl">For how long</label>
         <div class="yearsrow"><input type="range" id="years" min="1" max="25" step="1"><output id="yearsOut" for="years"></output></div>
       </div>
 
       <details class="assume" id="assume">
-        <summary>عدّل الافتراضات</summary>
+        <summary>Customize assumptions</summary>
         <div class="assume-body">
-        <p class="sublabel" id="outlookLbl">نظرتك للسوق</p>
+        <p class="sublabel" id="outlookLbl">Investment outlook</p>
         <div class="seg preset" role="group" aria-labelledby="outlookLbl">
-          <button type="button" data-p="cautious" aria-pressed="false">حذِرة</button>
-          <button type="button" data-p="balanced" aria-pressed="true">متوازنة</button>
-          <button type="button" data-p="past" aria-pressed="false">آخر 10 سنين</button>
+          <button type="button" data-p="cautious" aria-pressed="false">Cautious</button>
+          <button type="button" data-p="balanced" aria-pressed="true">Balanced</button>
+          <button type="button" data-p="past" aria-pressed="false">Last 10 years</button>
         </div>
         <p class="presetnote" id="presetNote"></p>
         <div class="field" style="margin-bottom:14px">
-          <label for="infl">التضخم في السنة</label>
+          <label for="infl">Inflation, yearly</label>
           <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
-          <span class="small" id="infLatest">آخر رقم: 13.9% (سبتمبر 2026)</span>
+          <span class="small" id="infLatest">Latest: 13.9% (September 2026)</span>
         </div>
         <div class="field">
-          <label for="raise">أزوّد مبلغي الشهري كل سنة بـ</label>
+          <label for="raise">Raise my monthly amount each year by</label>
           <div class="inp"><input id="raise" inputmode="decimal"><span>%</span></div>
         </div>
 
         <details class="assume adv" id="advset">
-        <summary>إعدادات متقدّمة</summary>
+        <summary>Advanced settings</summary>
         <div>
         <details class="sect" open style="margin-top:16px">
-          <summary>العوائد في السنة</summary>
+          <summary>Returns, yearly</summary>
           <table class="atable">
             <tbody>
-              <tr><td>الشهادة، أول 3 سنين</td><td><input id="cd1" inputmode="decimal" aria-label="فايدة الشهادة أول 3 سنين"></td><td>%</td></tr>
-              <tr><td>الشهادة، بعد التجديد</td><td><input id="cd2" inputmode="decimal" aria-label="فايدة الشهادة بعد التجديد"></td><td>%</td></tr>
-              <tr><td>EGX30، بالتوزيعات</td><td><input id="egx" inputmode="decimal" aria-label="عائد EGX30"></td><td>%</td></tr>
-              <tr><td>الأسهم الأمريكية، بالدولار</td><td><input id="us" inputmode="decimal" aria-label="عائد الأسهم الأمريكية بالدولار"></td><td>%</td></tr>
-              <tr><td>الدهب، بالدولار</td><td><input id="gold" inputmode="decimal" aria-label="عائد الدهب بالدولار"></td><td>%</td></tr>
-              <tr><td>نزول الجنيه قصاد الدولار</td><td><input id="fx" inputmode="decimal" aria-label="نزول الجنيه في السنة"></td><td>%</td></tr>
-              <tr><td>زيادة سعر العقار</td><td><input id="re" inputmode="decimal" aria-label="زيادة سعر العقار"></td><td>%</td></tr>
-              <tr><td>الإيجار، بعد المصاريف</td><td><input id="rent" inputmode="decimal" aria-label="صافي عائد الإيجار"></td><td>%</td></tr>
-              <tr><td>الدولار النهارده، بالجنيه</td><td><input id="rate0" inputmode="decimal" aria-label="سعر الدولار النهارده بالجنيه"></td><td>جنيه</td></tr>
+              <tr><td>Certificate, first 3 years</td><td><input id="cd1" inputmode="decimal" aria-label="Certificate rate first 3 years"></td><td>%</td></tr>
+              <tr><td>Certificate, after renewal</td><td><input id="cd2" inputmode="decimal" aria-label="Certificate rate after renewal"></td><td>%</td></tr>
+              <tr><td>EGX30, with dividends</td><td><input id="egx" inputmode="decimal" aria-label="EGX return"></td><td>%</td></tr>
+              <tr><td>US stocks, in USD</td><td><input id="us" inputmode="decimal" aria-label="US stocks return in USD"></td><td>%</td></tr>
+              <tr><td>Gold, in USD</td><td><input id="gold" inputmode="decimal" aria-label="Gold return in USD"></td><td>%</td></tr>
+              <tr><td>Pound's fall vs USD</td><td><input id="fx" inputmode="decimal" aria-label="Yearly fall of the pound"></td><td>%</td></tr>
+              <tr><td>Property price growth</td><td><input id="re" inputmode="decimal" aria-label="Property price growth"></td><td>%</td></tr>
+              <tr><td>Rent, after costs</td><td><input id="rent" inputmode="decimal" aria-label="Net rental yield"></td><td>%</td></tr>
+              <tr><td>Dollar today, in EGP</td><td><input id="rate0" inputmode="decimal" aria-label="US dollar rate today in pounds"></td><td>EGP</td></tr>
             </tbody>
           </table>
         </details>
 
         <details class="sect" style="margin-top:14px">
-          <summary>المصاريف والضرايب</summary>
+          <summary>Costs and taxes</summary>
           <table class="atable">
-            <thead><tr><th>الاختيار</th><th>شرا</th><th>بيع</th><th>سنوي</th></tr></thead>
+            <thead><tr><th>Option</th><th>Buy</th><th>Sell</th><th>Yearly</th></tr></thead>
             <tbody>
-              <tr><td>الشهادة</td><td><input id="c_cd_b" aria-label="مصاريف شرا الشهادة"></td><td><input id="c_cd_s" aria-label="مصاريف كسر الشهادة"></td><td><input id="c_cd_y" aria-label="مصاريف الشهادة السنوية"></td></tr>
-              <tr><td>EGX30</td><td><input id="c_egx_b" aria-label="مصاريف شرا EGX30"></td><td><input id="c_egx_s" aria-label="مصاريف بيع EGX30"></td><td><input id="c_egx_y" aria-label="مصاريف EGX30 السنوية"></td></tr>
-              <tr><td>أسهم أمريكية</td><td><input id="c_us_b" aria-label="مصاريف شرا الأسهم الأمريكية"></td><td><input id="c_us_s" aria-label="مصاريف بيع الأسهم الأمريكية"></td><td><input id="c_us_y" aria-label="مصاريف الأسهم الأمريكية السنوية"></td></tr>
-              <tr><td>دهب</td><td><input id="c_gold_b" aria-label="مصاريف شرا الدهب"></td><td><input id="c_gold_s" aria-label="مصاريف بيع الدهب"></td><td><input id="c_gold_y" aria-label="مصاريف الدهب السنوية"></td></tr>
-              <tr><td>عقار</td><td><input id="c_re_b" aria-label="مصاريف شرا العقار"></td><td><input id="c_re_s" aria-label="مصاريف بيع العقار"></td><td><input id="c_re_y" aria-label="مصاريف العقار السنوية"></td></tr>
+              <tr><td>Certificate</td><td><input id="c_cd_b" aria-label="Certificate buy cost"></td><td><input id="c_cd_s" aria-label="Certificate sell cost"></td><td><input id="c_cd_y" aria-label="Certificate yearly cost"></td></tr>
+              <tr><td>EGX30</td><td><input id="c_egx_b" aria-label="EGX buy cost"></td><td><input id="c_egx_s" aria-label="EGX sell cost"></td><td><input id="c_egx_y" aria-label="EGX yearly cost"></td></tr>
+              <tr><td>US stocks</td><td><input id="c_us_b" aria-label="US buy cost"></td><td><input id="c_us_s" aria-label="US sell cost"></td><td><input id="c_us_y" aria-label="US yearly cost"></td></tr>
+              <tr><td>Gold</td><td><input id="c_gold_b" aria-label="Gold buy cost"></td><td><input id="c_gold_s" aria-label="Gold sell cost"></td><td><input id="c_gold_y" aria-label="Gold yearly cost"></td></tr>
+              <tr><td>Property</td><td><input id="c_re_b" aria-label="Property buy cost"></td><td><input id="c_re_s" aria-label="Property sell cost"></td><td><input id="c_re_y" aria-label="Property yearly cost"></td></tr>
             </tbody>
           </table>
-          <p class="small" style="margin-top:10px">كله بالنسبة المئوية. شرا = بيتدفع على كل مبلغ بتحطه. بيع = بيتدفع مرة واحدة في الآخر. سنوي = بيتخصم من العائد كل سنة (ضرايب التوزيعات، والرسوم، والصيانة).</p>
+          <p class="small" style="margin-top:10px">All in %. Buy = paid on every amount you put in. Sell = paid once at the end. Yearly = taken off the return each year (taxes on dividends, fees, maintenance).</p>
         </details>
         </div>
         </details>
         </div>
       </details>
 
-      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-end">ابدأ من الأول</button>
+      <button type="button" id="reset" class="quick" style="all:unset;cursor:pointer;font-size:14px;border:1px solid currentColor;border-radius:999px;padding:8px 16px;align-self:flex-end">Reset</button>
     </form>
 
     <section class="results" id="tab-compare" aria-live="polite">
       <div class="hero">
-        <span class="eyebrow" id="hEyebrow">بعد 5 سنين</span>
+        <span class="eyebrow" id="hEyebrow">After 5 years</span>
         <div class="hero-big" id="bestVal">—</div>
         <div class="hero-today" id="heroSub">—</div>
         <div class="hero-rows">
-          <div><span>إنت حطيت</span><b id="putVal">—</b></div>
-          <div><span>المطلوب عشان تلحق الأسعار</span><b id="growVal">—</b></div>
+          <div><span>You put in</span><b id="putVal">—</b></div>
+          <div><span>Needed to keep up with prices</span><b id="calcVal">—</b></div>
         </div>
         <p class="hero-note" id="bestTxt">—</p>
       </div>
 
       <div class="tm" id="tmA">
-        <span class="eyebrow">بفلوس النهارده</span>
-        <h3 class="tm-h">هيغلب التضخم ولا لأ؟</h3>
+        <span class="eyebrow">In today's money</span>
+        <h3 class="tm-h">Would it beat inflation?</h3>
         <p class="tm-p" id="tmIntro">—</p>
-        <div class="tm-ends" aria-hidden="true"><span>› ورا</span><span>قدّام ‹</span></div>
+        <div class="tm-ends" aria-hidden="true"><span>‹ Behind</span><span>Ahead ›</span></div>
         <div class="tm-list" id="tmList"></div>
-        <p class="small" style="margin:12px 0 0"><b class="gain">الأخضر ▲</b>: بيغلب التضخم. <b class="loss">الأحمر ▼</b>: بيتأخر عنه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+        <p class="small" style="margin:12px 0 0"><b class="gain">Green ▲</b>: beats inflation. <b class="loss">Red ▼</b>: falls behind. Same order every time, never ranked.</p>
       </div>
-      <a class="zd-line" id="askZdLine" data-zd-entry="underchart" hidden href="https://invest.amrelhadeka.com/zd/"><span>عايز تفهم ده على فلوسك إنت؟</span><b>اسأل <span lang="en">ZD</span> ←</b></a>
-      <details class="tm-more" id="tmMore"><summary>شوف المبالغ قبل التضخم</summary>
+      <a class="zd-line" id="askZdLine" data-zd-entry="underchart" hidden href="https://invest.amrelhadeka.com/zd/"><span>Want this explained for your own money?</span><b>Ask ZD ›</b></a>
+      <details class="tm-more" id="tmMore"><summary>See the amounts before inflation</summary>
       <div class="tm" id="tmD">
-        <span class="eyebrow">جنب بعض</span>
-        <h3 class="tm-h">الأرقام ببساطة</h3>
-        <table class="tmt"><caption class="sr">كل اختيار قبل وبعد التضخم</caption>
-          <thead><tr><th scope="col">الاختيار</th><th scope="col" id="tmThen">بعد 5 سنين</th><th scope="col" id="tmNow" data-t="بفلوس النهارده">بفلوس النهارده</th></tr></thead>
+        <span class="eyebrow">Side by side</span>
+        <h3 class="tm-h">The numbers, plainly</h3>
+        <table class="tmt"><caption class="sr">Each option before and after inflation</caption>
+          <thead><tr><th scope="col">Option</th><th scope="col" id="tmThen">After 5 years</th><th scope="col" id="tmNow" data-t="Today's money">Today's money</th></tr></thead>
           <tbody id="tmBody"></tbody></table>
         <p class="small" style="margin:10px 0 0" id="tmFoot">—</p>
       </div>
       </details>
-      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
+      <div class="book-box"><div><b>Want to talk your numbers through?</b><p>A one-hour session with me, online. Where to start, in plain words.</p></div><a class="book-btn" href="/#book" data-book="calculator">Book a session</a></div>
 
       <details class="sect detail" id="detail">
-      <summary>الجدول كامل</summary>
+      <summary>Full table</summary>
       <div class="tablewrap" style="margin-top:12px">
         <table class="rt">
-          <caption class="sr">النتايج بالتفصيل</caption>
-          <thead><tr><th>الاختيار</th><th id="thRate">صافي في السنة، بالجنيه</th><th id="thVal">القيمة بالجنيه</th><th>بفلوس النهارده</th><th>فوق التضخم*</th><th>أوحش سنة اتسجّلت</th></tr></thead>
+          <caption class="sr">Detailed results</caption>
+          <thead><tr><th>Option</th><th id="thRate">Net yearly, EGP</th><th id="thVal">Value in EGP</th><th>In today's money</th><th>Beyond inflation*</th><th>Worst year on record</th></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
-        <p class="small" style="margin-top:8px">*أكتر (أو أقل) من اللي محتاجه عشان تلحق الأسعار، بفلوس النهارده، بعد المصاريف.</p>
+        <p class="small" style="margin-top:8px">*More (or less) than you need to keep up with prices, in today's money, after costs.</p>
       </div>
       </details>
     </section>
   <section class="results analyze" id="tab-analyze" aria-live="polite" hidden>
       <div class="tm">
-        <span class="eyebrow" id="aHead">بفلوس النهارده</span>
-        <h3 class="tm-h">كل واحد ممكن يقع قد إيه؟</h3>
+        <span class="eyebrow" id="aHead">In today's money</span>
+        <h3 class="tm-h">How hard could each one fall?</h3>
         <p class="tm-p" id="aSub">—</p>
-        <div class="tm-ends" aria-hidden="true"><span>وقعة أكبر ›</span><span>مفيش وقعة</span></div>
+        <div class="tm-ends" aria-hidden="true"><span>‹ Bigger fall</span><span>No fall</span></div>
         <div class="tm-list end" id="aList"></div>
-        <p class="small" style="margin:12px 0 0">أي اختيار ممكن تيجيله سنة وحشة. المهم تقدر تستنى لحد ما تعدّي. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+        <p class="small" style="margin:12px 0 0">Every option can have a bad year. What matters is whether you can wait it out. Same order every time, never ranked.</p>
       </div>
-      <details class="tm-more"><summary>شوف كل واحد بيتصرّف إزاي</summary>
+      <details class="tm-more"><summary>See how each one behaves</summary>
       <div class="tm">
-        <table class="tmt"><caption class="sr">كل اختيار بيتصرّف إزاي</caption>
-          <thead><tr><th scope="col">الاختيار</th><th scope="col">الطلوع والنزول</th><th scope="col">أوحش سنة</th></tr></thead>
+        <table class="tmt"><caption class="sr">How each option behaves</caption>
+          <thead><tr><th scope="col">Option</th><th scope="col">Ups and downs</th><th scope="col">Worst year</th></tr></thead>
           <tbody id="aBody"></tbody></table>
         <div id="aRisks"></div>
-        <p class="small" style="margin:10px 0 0">أوحش سنة هي أكبر وقعة في سنة واحدة اتسجّلت لكل اختيار (EGX30 في 2011، و S&amp;P 500 في 2008، والدهب في 2013 بالدولار، وأسعار العقار في مصر في 2020). المستقبل ممكن يبقى أحسن أو أوحش.</p>
+        <p class="small" style="margin:10px 0 0">Worst years are the biggest one-year falls on record for each option (EGX30 in 2011, the S&amp;P 500 in 2008, gold in 2013 in dollars, Egyptian property prices in 2020). The future can be better or worse.</p>
       </div>
       </details>
-      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
+      <div class="book-box"><div><b>Want to talk your numbers through?</b><p>A one-hour session with me, online. Where to start, in plain words.</p></div><a class="book-btn" href="/#book" data-book="calculator">Book a session</a></div>
     </section>
   <section class="results goal" id="tab-goal" aria-live="polite" hidden>
       <div class="hero">
-        <span class="eyebrow" id="gEyebrow">هدفك</span>
+        <span class="eyebrow" id="gEyebrow">Your goal</span>
         <div class="hero-big" id="gMonthly">—</div>
         <div class="hero-today" id="gWith">—</div>
         <div class="hero-rows">
-          <div><span>الهدف بفلوس النهارده</span><b id="gToday">—</b></div>
-          <div><span id="gFutLbl">السعر ساعتها</span><b id="gFuture">—</b></div>
+          <div><span>Goal in today's money</span><b id="gToday">—</b></div>
+          <div><span id="gFutLbl">Price then</span><b id="gFuture">—</b></div>
         </div>
         <p class="hero-note" id="gNote">—</p>
       </div>
       <div class="tm">
-        <span class="eyebrow">كل شهر</span>
-        <h3 class="tm-h">أقل قد إيه من إنك تحوّشها في البيت؟</h3>
+        <span class="eyebrow">Each month</span>
+        <h3 class="tm-h">How much less than saving it at home?</h3>
         <p class="tm-p" id="gIntro">—</p>
-        <div class="tm-ends" aria-hidden="true"><span>› محتاج أكتر</span><span>محتاج أقل ‹</span></div>
+        <div class="tm-ends" aria-hidden="true"><span>‹ Needs more</span><span>Needs less ›</span></div>
         <div class="tm-list" id="gList"></div>
-        <p class="small" style="margin:12px 0 0"><b class="gain">الأخضر ▲</b>: محتاج أقل كل شهر. <b class="loss">الأحمر ▼</b>: محتاج أكتر. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+        <p class="small" style="margin:12px 0 0"><b class="gain">Green ▲</b>: needs less each month. <b class="loss">Red ▼</b>: needs more. Same order every time, never ranked.</p>
       </div>
-      <details class="tm-more"><summary>شوف المبالغ الشهرية</summary>
+      <details class="tm-more"><summary>See the monthly amounts</summary>
       <div class="tm">
-        <table class="tmt"><caption class="sr">المبلغ الشهري اللي كل اختيار محتاجه</caption>
-          <thead><tr><th scope="col">الاختيار</th><th scope="col">المطلوب كل شهر</th></tr></thead>
+        <table class="tmt"><caption class="sr">Monthly amount each option needs</caption>
+          <thead><tr><th scope="col">Option</th><th scope="col">Needed each month</th></tr></thead>
           <tbody id="gBody"></tbody></table>
-        <p class="small" style="margin:10px 0 0">الأسعار بتزيد مع التضخم، فهدفك هيتكلّف أكتر بعدين. بنكبّره بنسبة التضخم اللي في افتراضاتك، وبعدين نحسب المبلغ الشهري اللي كل اختيار محتاجه عشان يوصل، بعد المصاريف.</p>
+        <p class="small" style="margin:10px 0 0">Prices rise with inflation, so your goal will cost more later. We grow it by the inflation rate in your assumptions, then work out the monthly amount each option needs to get there, after costs.</p>
       </div>
       </details>
-      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
+      <div class="book-box"><div><b>Want to talk your numbers through?</b><p>A one-hour session with me, online. Where to start, in plain words.</p></div><a class="book-btn" href="/#book" data-book="calculator">Book a session</a></div>
     </section>
   <section class="pf" id="tab-portfolio" aria-labelledby="pf-title" hidden>
-    <p class="eyebrow blue">ابني محفظتك</p>
-    <h2 id="pf-title">وزّع فلوسك.</h2>
-    <p class="sub">قسّم مبالغك على الست اختيارات. حرّك شريط واحد والباقي هيتظبط لوحده، عشان المجموع يفضل دايمًا 100%.</p>
-    <div class="mixes" role="group" aria-label="توزيعات كمثال">
-      <button type="button" data-mix="safe">أغلبها دخل ثابت</button>
-      <button type="button" data-mix="balanced" aria-pressed="true">متوازنة</button>
-      <button type="button" data-mix="growth">نمو</button>
-      <button type="button" data-mix="dollar">دولار أكتر</button>
+    <p class="eyebrow blue">Portfolio builder</p>
+    <h2 id="pf-title">Mix your money.</h2>
+    <p class="sub">Split your amounts across the six options. Move one slider and the others adjust, so the total always stays at 100%.</p>
+    <div class="mixes" role="group" aria-label="Example mixes">
+      <button type="button" data-mix="safe">Mostly fixed income</button>
+      <button type="button" data-mix="balanced" aria-pressed="true">Balanced</button>
+      <button type="button" data-mix="growth">Growth</button>
+      <button type="button" data-mix="dollar">Dollar-heavy</button>
     </div>
-    <p class="small" style="margin-top:8px">توزيعات كمثال عشان تتعلّم، مش ترشيح ليك.</p>
+    <p class="small" style="margin-top:8px">Example mixes for learning, not a recommendation for you.</p>
     <div class="pfgrid">
       <div>
         <div class="stack" id="pfStack" aria-hidden="true"></div>
         <div class="sliders" id="pfSliders"></div>
-        <div class="total100"><span>المجموع</span><b id="pfTotal">100%</b></div>
+        <div class="total100"><span>Total</span><b id="pfTotal">100%</b></div>
       </div>
       <div class="pfres" aria-live="polite">
         <div class="tm" style="margin-top:0">
-          <span class="eyebrow">بفلوس النهارده</span>
-          <h3 class="tm-h">توزيعتك هتغلب التضخم؟</h3>
+          <span class="eyebrow">In today's money</span>
+          <h3 class="tm-h">Would your mix beat inflation?</h3>
           <p class="tm-p" id="pfTxt">—</p>
-          <div class="tm-ends" aria-hidden="true"><span>› ورا</span><span>قدّام ‹</span></div>
+          <div class="tm-ends" aria-hidden="true"><span>‹ Behind</span><span>Ahead ›</span></div>
           <div class="tm-list" id="pfRows"></div>
-          <p class="small" style="margin:12px 0 0"><b class="gain">الأخضر ▲</b>: بيغلب التضخم. <b class="loss">الأحمر ▼</b>: بيتأخر عنه. كل جزء متقارن بإنه يلحق الأسعار على نصيبه. نفس الترتيب كل مرة، من غير ترتيب للأحسن.</p>
+          <p class="small" style="margin:12px 0 0"><b class="gain">Green ▲</b>: beats inflation. <b class="loss">Red ▼</b>: falls behind. Each part is compared with keeping up with prices on its share. Same order every time, never ranked.</p>
         </div>
-        <details class="tm-more"><summary>شوف المبالغ</summary>
+        <details class="tm-more"><summary>See the amounts</summary>
         <div class="tm">
-          <table class="tmt"><caption class="sr">توزيعتك قبل وبعد التضخم</caption>
-            <thead><tr><th scope="col">الجزء</th><th scope="col" id="pfThen">بعد 5 سنين</th><th scope="col">بفلوس النهارده</th></tr></thead>
+          <table class="tmt"><caption class="sr">Your mix before and after inflation</caption>
+            <thead><tr><th scope="col">Part</th><th scope="col" id="pfThen">After 5 years</th><th scope="col">Today's money</th></tr></thead>
             <tbody id="pfBody"></tbody></table>
         </div>
         </details>
-      <div class="book-box"><div><b>عايز نتكلم في أرقامك سوا؟</b><p>جلسة ساعة معايا أونلاين. نبدأ منين، بكلام بسيط.</p></div><a class="book-btn" href="/ar/#book" data-book="calculator">احجز جلسة</a></div>
+      <div class="book-box"><div><b>Want to talk your numbers through?</b><p>A one-hour session with me, online. Where to start, in plain words.</p></div><a class="book-btn" href="/#book" data-book="calculator">Book a session</a></div>
         <p class="small" id="pfRisk"></p>
       </div>
     </div>
@@ -701,47 +672,44 @@ h1, .pf h2 { line-height: 1.3; }
 
 
   <details class="notes">
-    <summary>الأرقام دي جاية منين؟</summary>
-    <p><b>السيناريوهات جاية منين.</b> <b>آخر 10 سنين</b> بيستخدم اللي حصل فعلًا: EGX30 طلع 12.8% في السنة على السعر بس من آخر 2014 لآخر 2024، غير التوزيعات (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">عوائد EGX30 السنوية</a>). وS&amp;P 500 جاب 14.8% في السنة بالدولار، من 2016 لـ2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). ودهب عيار 21 طلع من 287.62 جنيه للجرام في أبريل 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">أموال الغد</a>) لحوالي <span id="srcGold">6,217</span> النهارده (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>، سعر عيار 24 مضروب في 21 على 24)، يعني حوالي 25.6% في السنة بالجنيه، واللي بتتقسم لحوالي 7.6% للدهب بالدولار و16.7% لنزول الجنيه. وأسعار العقار طلعت حوالي 12.2% في السنة في سنين مؤشر عقارماب من 2014 لـ2024 اللي بيعرضها <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>، بعائد إيجار إجمالي 6.7% على مستوى مصر. أما <b>متوازنة</b> و<b>حذِرة</b> فتخمينات أقل وبتبص لقدّام، عشان العشر سنين اللي فاتوا كان فيهم تعويمين كبار.</p>
-    <p><b>أرقام النهارده.</b> التضخم <span id="srcInfl">13.9% في سبتمبر 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS عن طريق Daily News Egypt</a>)</span>. شهادات الـ3 سنين الثابتة حوالي <span id="srcCd">17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise، أغسطس 2026</a>)</span>، وفايدة التجديد تخمين، عشان البنك المركزي بيخفّض الفايدة. تداولات البورصة المصرية عليها ضريبة دمغة 0.05% على البيع وعلى الشرا من أغسطس 2026، بدل ضريبة الأرباح الرأسمالية (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). الدولار النهارده: <span id="srcUsd">55.29 جنيه (<a href="https://www.exchangerate-api.com/" target="_blank" rel="noopener">ExchangeRate-API</a>، 24 أكتوبر 2026)</span>، وبيتحدّث كذا مرة في اليوم. المصاريف الافتراضية لمصنعية الدهب، وعمولات السمسرة، وفروق تحويل العملة، ورسوم العقار تقديرات، فعدّلها على حسب حالتك.</p>
-    <p><b>أوحش سنة اتسجّلت</b> بتوضّح كل اختيار وقع قد إيه في سنة واحدة: EGX30 <bdi>−49.3%</bdi> في 2011، والعقار <bdi>−9.6%</bdi> في 2020 (عقارماب)، والمعروف إن S&amp;P 500 نزل <bdi>−37%</bdi> في 2008 والدهب <bdi>−28%</bdi> في 2013 (بالدولار). العقار كمان محتاج مبلغ كبير في الأول، وممكن ياخد شهور عشان يتباع. والشهادات هي الاختيار الوحيد بسعر ثابت، ولحد ما مدتها تخلص بس.</p>
-    <p>اتراجعت يوم <span id="srcChecked">24 أكتوبر 2026</span>.</p>
+    <summary>Where the numbers come from</summary>
+    <p><b>Where the scenarios come from.</b> <b>Last 10 years</b> uses what actually happened: EGX30 rose 12.8% a year on price alone from end-2014 to end-2024, plus dividends (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">EGX30 yearly returns</a>). The S&amp;P 500 returned 14.8% a year in dollars, 2016–2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). 21K gold rose from 287.62 EGP a gram in April 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">Amwal Al Ghad</a>) to about <span id="srcGold">6,217</span> today (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>, 24K × 21/24), about 25.6% a year in pounds, which splits into about 7.6% for gold in dollars and 16.7% for the pound's fall. Property prices rose about 12.2% a year in the Aqarmap index years 2014–2024 shown by <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>, with gross rental yields of 6.7% nationally. <b>Balanced</b> and <b>Cautious</b> are lower, forward-looking guesses, because the last decade included two large devaluations.</p>
+    <p><b>Today's rates.</b> Inflation <span id="srcInfl">13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS via Daily News Egypt</a>)</span>. 3-year fixed certificates about <span id="srcCd">17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise, August 2026</a>)</span>; the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: <span id="srcUsd">55.29 EGP (<a href="https://www.exchangerate-api.com/" target="_blank" rel="noopener">ExchangeRate-API</a>, 24 Oct 2026)</span>, refreshed several times a day. Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
+    <p><b>Worst year on record</b> shows how hard each option has fallen in a single year: EGX30 −49.3% in 2011, property −9.6% in 2020 (Aqarmap), and the widely reported S&amp;P 500 −37% in 2008 and gold −28% in 2013 (in USD). Property also needs a large amount up front and can take months to sell. Certificates are the only fixed rate, and only until they mature.</p>
+    <p>Checked <span id="srcChecked">24 October 2026</span>.</p>
   </details>
   <section class="askzd" id="askZd" data-zd-entry="bottom" hidden aria-label="ZD">
-    <div><b>اسأل ZD الأرقام دي معناها إيه بالنسبالك</b><p>ZD، رفيقك المالي الذكي، يقدر يشرحلك الأرقام دي على دخلك ومصاريفك وأهدافك إنت. تعليمي بس، ومش بيقولك تشتري إيه.</p></div>
-    <a id="askZdBtn" href="https://invest.amrelhadeka.com/zd/" rel="noopener">اسأل ZD ←</a>
+    <div><b>Ask ZD what this means for you</b><p>ZD, your AI financial companion, can walk you through these numbers with your own income, spending and goals. Educational only, it does not tell you what to buy.</p></div>
+    <a id="askZdBtn" href="https://invest.amrelhadeka.com/zd/" rel="noopener">Ask ZD ›</a>
   </section>
-  <p class="disc zd-disc" role="note"><b>محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</b> كل رقم هنا توضيح مبني على افتراضات تقدر تغيّرها، مش توقّع. العوائد الحقيقية بتتغيّر وممكن تبقى بالسالب.</p>
+  <p class="disc zd-disc" role="note"><b>Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</b> Every figure here is an illustration based on assumptions you can change, not a prediction. Real returns change and can be negative.</p>
 
-  <footer class="foot"><span><b>عمرو الحادقة</b> · invest.amrelhadeka.com</span><span style="display:flex;gap:16px;flex-wrap:wrap"><a href="/ar/#join">نصايح عن الفلوس، مرة في الشهر ←</a><a href="https://photography.amrelhadeka.com/">التصوير</a></span></footer>
+  <footer class="foot"><span><b>Amr El Hadeka</b> · invest.amrelhadeka.com</span><span style="display:flex;gap:16px;flex-wrap:wrap"><a href="/#join">Get money notes, once a month ›</a><a href="https://photography.amrelhadeka.com/">Photography</a></span></footer>
 </div>
 
 <script>
 (function () {
   const PRESETS = {
-    cautious: { note: 'حذِرة: عوائد أقل، والجنيه بينزل أبطأ من السنين اللي فاتت.', cd1: 17.75, cd2: 12, egx: 12, us: 7, gold: 3, fx: 4, re: 9, rent: 4.5 },
-    balanced: { note: 'متوازنة: تخمين في النص للسنين الجاية.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
-    past: { note: 'آخر 10 سنين: اللي كل اختيار جابه فعلًا مؤخرًا، ومعاهم تعويمين كبار. المستقبل ممكن يبقى أهدى.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
+    cautious: { note: 'Cautious: lower returns and a slower fall of the pound than recent years.', cd1: 17.75, cd2: 12, egx: 12, us: 7, gold: 3, fx: 4, re: 9, rent: 4.5 },
+    balanced: { note: 'Balanced: a middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
+    past: { note: 'Last 10 years: what each option actually returned recently, including two big devaluations. The future may be calmer.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
   };
   const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9, rate0: 55.29,
     c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
     c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
-  const WORST = { cd: '<bdi>0%</bdi> (ثابتة)', egx: '<bdi>−49.3%</bdi> (2011)', us: '<bdi>−37%</bdi> (2008، بالدولار)', gold: '<bdi>−28%</bdi> (2013، بالدولار)', re: '<bdi>−9.6%</bdi> (2020)', cash: 'عمره ما بيكبر' };
+  const WORST = { cd: '0% (fixed)', egx: '−49.3% (2011)', us: '−37% (2008, USD)', gold: '−28% (2013, USD)', re: '−9.6% (2020)', cash: 'Never grows' };
   const RATE_KEYS = ['cd1','cd2','egx','us','gold','fx','re','rent'];
   const ALL = Object.keys(BASE).concat(RATE_KEYS);
   const $ = id => document.getElementById(id);
   const fmt = n => Math.round(n).toLocaleString('en-US');
-  const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2).replace(/\.?0+$/, '') + ' مليون' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + ' ألف' : fmt(n);
-  const yrsTxt = n => n === 1 ? 'سنة' : n === 2 ? 'سنتين' : n <= 10 ? n + ' سنين' : n + ' سنة';
-  const AR_MONTHS = { January: 'يناير', February: 'فبراير', March: 'مارس', April: 'أبريل', May: 'مايو', June: 'يونيو', July: 'يوليو', August: 'أغسطس', September: 'سبتمبر', October: 'أكتوبر', November: 'نوفمبر', December: 'ديسمبر' };
-  const arDate = t => String(t).replace(/January|February|March|April|May|June|July|August|September|October|November|December/g, m => AR_MONTHS[m]);
+  const compact = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(Math.abs(n) >= 1e7 ? 1 : 2) + 'M' : Math.abs(n) >= 1e3 ? Math.round(n / 1e3) + 'K' : fmt(n);
   let cur = 'EGP'; try { if (localStorage.getItem('emc-cur') === 'USD') cur = 'USD'; } catch (e) {}
   const CV = { r0: 55.31, fx: 7 };
   const usdMode = () => cur === 'USD';
   const fxAt = y => CV.r0 * Math.pow(1 + CV.fx / 100, y);
   const M = (x, y) => usdMode() ? x / fxAt(y || 0) : x;
-  const money = (x, y) => usdMode() ? '$' + fmt(M(x, y)) : fmt(x) + ' جنيه';
-  const compactU = n => Math.abs(n) >= 1e3 && Math.abs(n) < 1e5 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + ' ألف' : compact(n);
+  const money = (x, y) => usdMode() ? '$' + fmt(M(x, y)) : fmt(x) + ' EGP';
+  const compactU = n => Math.abs(n) >= 1e3 && Math.abs(n) < 1e5 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : compact(n);
   const moneyC = (x, y) => usdMode() ? '$' + compactU(M(x, y)) : compact(x);
   const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; };
   let state = { mode: 'easy', preset: 'balanced' };
@@ -785,7 +753,7 @@ h1, .pf h2 { line-height: 1.3; }
   function calc() {
     const v = {}; ALL.forEach(k => v[k] = num($(k).value));
     v.years = Math.max(1, Math.min(25, Math.round(v.years)));
-    $('yearsOut').textContent = yrsTxt(v.years);
+    $('yearsOut').textContent = v.years + (v.years === 1 ? ' year' : ' years');
     const P = PRESETS[state.preset];
     const custom = RATE_KEYS.some(k => Math.abs(v[k] - P[k]) > 1e-9);
     save(v, custom);
@@ -799,12 +767,12 @@ h1, .pf h2 { line-height: 1.3; }
     for (let y = 0; y < v.years; y++) { putU += dep * 12; dep *= 1 + U.raise / 100; }
     const usd = r => ((1 + r / 100) * (1 + v.fx / 100) - 1) * 100;
     const opts = [
-      { key: 'cd', name: 'شهادة بنكية', sub: 'ثابتة 3 سنين، وبعدين بتتجدّد', rate: m => m <= 36 ? v.cd1 : v.cd2, buy: v.c_cd_b, sell: v.c_cd_s, yearly: v.c_cd_y },
-      { key: 'egx', name: 'أسهم EGX30', sub: 'أكبر 30 شركة في مصر', rate: () => v.egx, buy: v.c_egx_b, sell: v.c_egx_s, yearly: v.c_egx_y },
-      { key: 'us', name: 'أسهم أمريكية', sub: usdMode() ? 'S&P 500' : 'S&P 500، محسوبة بالجنيه', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
-      { key: 'gold', name: 'دهب', sub: usdMode() ? 'متسعّر بالدولار' : 'محسوب بالجنيه', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
-      { key: 're', name: 'عقار', sub: 'زيادة السعر + الإيجار', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
-      { key: 'cash', name: usdMode() ? 'دولارات في البيت' : 'كاش في البيت', sub: 'تحت البلاطة', rate: () => usdMode() ? v.fx : 0, buy: 0, sell: 0, yearly: 0 }
+      { key: 'cd', name: 'Bank certificate', sub: 'Fixed for 3 years, then renewed', rate: m => m <= 36 ? v.cd1 : v.cd2, buy: v.c_cd_b, sell: v.c_cd_s, yearly: v.c_cd_y },
+      { key: 'egx', name: 'EGX30 stocks', sub: 'Egypt\'s top 30 companies', rate: () => v.egx, buy: v.c_egx_b, sell: v.c_egx_s, yearly: v.c_egx_y },
+      { key: 'us', name: 'US stocks', sub: usdMode() ? 'S&P 500' : 'S&P 500, counted in EGP', rate: () => usd(v.us), buy: v.c_us_b, sell: v.c_us_s, yearly: v.c_us_y },
+      { key: 'gold', name: 'Gold', sub: usdMode() ? 'Priced in dollars' : 'Counted in EGP', rate: () => usd(v.gold), buy: v.c_gold_b, sell: v.c_gold_s, yearly: v.c_gold_y },
+      { key: 're', name: 'Property', sub: 'Price growth + rent', rate: () => ((1 + v.re / 100) * (1 + v.rent / 100) - 1) * 100, buy: v.c_re_b, sell: v.c_re_s, yearly: v.c_re_y },
+      { key: 'cash', name: usdMode() ? 'Dollars at home' : 'Cash at home', sub: 'Under the mattress', rate: () => usdMode() ? v.fx : 0, buy: 0, sell: 0, yearly: 0 }
     ];
     const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
     opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
@@ -812,22 +780,22 @@ h1, .pf h2 { line-height: 1.3; }
     opts.forEach(o => { let lo = -50, hi = 80; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
     opts.sort((a, b) => TM_ORDER.indexOf(a.key) - TM_ORDER.indexOf(b.key)); // fixed order everywhere, never ranked
 
-    const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
+    const yTxt = v.years + (v.years === 1 ? ' year' : ' years');
     const beatN = opts.filter(o => o.key !== 'cash' && o.beyond >= 0).length;
-    $('hEyebrow').textContent = 'بعد ' + yTxt;
-    $('bestVal').textContent = beatN + ' من 5';
-    $('heroSub').textContent = 'اختيارات هتغلب زيادة الأسعار بالافتراضات دي، بعد المصاريف.';
+    $('hEyebrow').textContent = 'After ' + yTxt;
+    $('bestVal').textContent = beatN + ' of 5';
+    $('heroSub').textContent = 'options would beat rising prices at these assumptions, after costs.';
     $('putVal').textContent = usdMode() ? '$' + fmt(putU) : money(K.put, 0);
-    $('growVal').textContent = money(K.final, v.years);
-    $('bestTxt').textContent = 'كل اختيار تحت، بنفس الترتيب كل مرة. دي افتراضات مش توقعات، ومش توصية.';
+    $('calcVal').textContent = money(K.final, v.years);
+    $('bestTxt').textContent = 'Each option is shown below in the same order every time. Assumptions, not predictions, and not a recommendation.';
     renderToday(opts, K, v, deflate);
 
     $('tbody').innerHTML = opts.map(o =>
-      '<tr><td><b>' + o.name + '</b></td><td><bdi>' + o.netRate.toFixed(1) + '%</bdi></td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
-      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '"><bdi>' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(M(o.beyond, 0))) + '</bdi></td><td>' + WORST[o.key] + '</td></tr>').join('');
+      '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
+      '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '">' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(M(o.beyond, 0))) + '</td><td>' + WORST[o.key] + '</td></tr>').join('');
 
-    const cu = usdMode() ? 'الدولار' : 'الجنيه';
-    $('thRate').textContent = 'صافي في السنة، بالجنيه'; $('thVal').textContent = 'القيمة بـ' + cu;
+    const cu = usdMode() ? 'USD' : 'EGP';
+    $('thRate').textContent = 'Net yearly, EGP'; $('thVal').textContent = 'Value in ' + cu;
     renderPortfolio(opts, K, v);
     renderGoal(opts, v);
     renderAnalyze(opts, v);
@@ -835,12 +803,12 @@ h1, .pf h2 { line-height: 1.3; }
   }
 
   // One row of the A-style chart: name, one signed number, a bar from the line (filled = ahead, outline = behind).
-  const sgnTxt = x => { const t = moneyC(Math.abs(x), 0), m = t.match(/^(\$?[\d.,]+)(.*)$/); return m ? '<bdi dir="ltr">' + (x >= 0 ? '+' : '−') + m[1] + '</bdi>' + m[2] : (x >= 0 ? '+' : '−') + t; };
+  const sgnTxt = x => (x >= 0 ? '+' : '−') + moneyC(Math.abs(x), 0);
   function tmRow(name, x, maxAbs, label, mode, tone, arrow) {
     const up = x >= 0, w = Math.max(1.5, Math.abs(x) / maxAbs * (mode === 'end' ? 100 : 50));
     const cls = mode === 'end' ? 'neutral' : (up ? 'up' : 'down');
     tone = tone || (up ? 'gain' : 'loss'); arrow = arrow != null ? arrow : (up ? '▲ ' : '▼ ');
-    return '<div class="tm-row"><div class="tm-top"><span>' + name + '</span><b class="' + tone + '"><bdi>' + arrow + label + '</bdi>' + (mode !== 'infl' ? '' : '<span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span>') + '</b></div>' +
+    return '<div class="tm-row"><div class="tm-top"><span>' + name + '</span><b class="' + tone + '"><bdi>' + arrow + label + '</bdi>' + (mode !== 'infl' ? '' : '<span class="sr"> ' + (up ? 'beats inflation' : 'falls behind inflation') + '</span>') + '</b></div>' +
       '<div class="tm-track" aria-hidden="true">' + (x === 0 && mode === 'end' ? '' : '<div class="tm-bar ' + cls + '" style="width:' + w.toFixed(2) + '%"></div>') + '</div></div>';
   }
   // Today's-money views (designs A + D): fixed order, never ranked.
@@ -849,39 +817,39 @@ h1, .pf h2 { line-height: 1.3; }
     const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean);
     const sgn = sgnTxt;
     const maxAbs = Math.max(1, ...rows.map(o => Math.abs(o.beyond)));
-    $('tmIntro').innerHTML = 'الخط اللي في النص هو اللي محتاجه بس عشان تلحق زيادة الأسعار: <b><bdi>' + money(K.final / deflate, 0) + '</bdi></b> بفلوس النهارده. ناحية الشمال: قدّام. ناحية اليمين: ورا.';
+    $('tmIntro').innerHTML = 'The middle line is what you would need just to keep up with rising prices: <b>' + money(K.final / deflate, 0) + '</b> in today\'s money. Right of it: ahead. Left of it: behind.';
     $('tmList').innerHTML = rows.map(o => {
       const up = o.beyond >= 0, w = Math.max(1.5, Math.abs(o.beyond) / maxAbs * 50);
-      return '<div class="tm-row"><div class="tm-top"><span>' + o.name + '</span><b class="' + (up ? 'gain' : 'loss') + '"><bdi>' + (up ? '▲ ' : '▼ ') + sgn(o.beyond) + '</bdi><span class="sr"> ' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span></b></div>' +
+      return '<div class="tm-row"><div class="tm-top"><span>' + o.name + '</span><b class="' + (up ? 'gain' : 'loss') + '"><bdi>' + (up ? '▲ ' : '▼ ') + sgn(o.beyond) + '</bdi><span class="sr"> ' + (up ? 'beats inflation' : 'falls behind inflation') + '</span></b></div>' +
         '<div class="tm-track" aria-hidden="true"><div class="tm-bar ' + (up ? 'up' : 'down') + '" style="width:' + w.toFixed(2) + '%"></div></div></div>';
     }).join('');
-    const thenTxt = 'بعد ' + v.years + (v.years === 1 ? ' سنة' : ' سنين');
-    $('tmThen').textContent = thenTxt + (usdMode() ? '' : ' (جنيه)');
-    $('tmNow').textContent = $('tmNow').dataset.t + (usdMode() ? '' : ' (جنيه)');
+    const thenTxt = 'After ' + v.years + (v.years === 1 ? ' year' : ' years');
+    $('tmThen').textContent = thenTxt + (usdMode() ? '' : ' (EGP)');
+    $('tmNow').textContent = $('tmNow').dataset.t + (usdMode() ? '' : ' (EGP)');
     $('tmBody').innerHTML = rows.map(o => {
       const up = o.beyond >= 0;
-      return '<tr><td>' + o.name + '</td><td><bdi>' + moneyC(o.value, v.years) + '</bdi></td><td class="tdy ' + (up ? 'gain' : 'loss') + '"><bdi>' + moneyC(o.real, 0) + '</bdi> <span aria-hidden="true">' + (up ? '↑' : '↓') + '</span><span class="sr">' + (up ? 'بيغلب التضخم' : 'بيتأخر عن التضخم') + '</span></td></tr>';
+      return '<tr><td>' + o.name + '</td><td><bdi>' + moneyC(o.value, v.years) + '</bdi></td><td class="tdy ' + (up ? 'gain' : 'loss') + '"><bdi>' + moneyC(o.real, 0) + '</bdi> <span aria-hidden="true">' + (up ? '↑' : '↓') + '</span><span class="sr">' + (up ? 'beats inflation' : 'falls behind inflation') + '</span></td></tr>';
     }).join('');
-    $('tmFoot').textContent = '↑ بيغلب التضخم: قيمته أكتر من ' + money(K.final / deflate, 0) + ' اللي محتاجهم عشان تلحق الأسعار، بفلوس النهارده. ↓ بيتأخر عنه. «' + thenTxt + '» هو المبلغ قبل حساب التضخم. دي افتراضات مش توقعات.';
+    $('tmFoot').textContent = '↑ beats inflation: worth more than the ' + money(K.final / deflate, 0) + ' you would need to keep up, in today\'s money. ↓ falls behind. "' + thenTxt + '" is the amount before adjusting for inflation. Assumptions, not predictions.';
   }
 
   const RISK = {
-    cd:   { lvl: 0, label: 'طلوع ونزول قليل', risk: 'مقفولة 3 سنين، وكسرها بدري بيكلّفك. ولو التضخم طلع فوق الفايدة، هتفضل ورا.', min: 3 },
-    re:   { lvl: 1, label: 'طلوع ونزول قليل', risk: 'صعب تبيعه بسرعة، ومحتاج مبلغ كبير عشان تبدأ.', min: 5 },
-    gold: { lvl: 2, label: 'طلوع ونزول متوسط', risk: 'مابيدّيش دخل، وممكن يفضل واقف سنين.', min: 3 },
-    us:   { lvl: 3, label: 'طلوع ونزول عالي', risk: 'بتتحرّك مع الأسواق الأمريكية ومع سعر الدولار.', min: 5 },
-    egx:  { lvl: 3, label: 'طلوع ونزول عالي', risk: 'تقلّبات كبيرة مع اقتصاد مصر والجنيه.', min: 5 },
-    cash: { lvl: 0, label: 'مفيش طلوع ونزول', risk: 'بيخسر من قيمته كل سنة قصاد الأسعار اللي بتزيد.', min: 0 }
+    cd:   { lvl: 0, label: 'Low ups and downs', risk: 'Locked for 3 years, and breaking it early costs you. If inflation rises above the rate, you fall behind.', min: 3 },
+    re:   { lvl: 1, label: 'Low ups and downs', risk: 'Hard to sell quickly, and it needs a large amount to start.', min: 5 },
+    gold: { lvl: 2, label: 'Medium ups and downs', risk: 'Pays no income, and can stay flat for years.', min: 3 },
+    us:   { lvl: 3, label: 'High ups and downs', risk: 'Moves with US markets and with the dollar rate.', min: 5 },
+    egx:  { lvl: 3, label: 'High ups and downs', risk: 'Big swings with Egypt\'s economy and the pound.', min: 5 },
+    cash: { lvl: 0, label: 'No ups and downs', risk: 'It loses buying power every single year to rising prices.', min: 0 }
   };
   function renderAnalyze(opts, v) {
-    const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
+    const yTxt = v.years + (v.years === 1 ? ' year' : ' years');
     const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean);
     const beatCount = rows.filter(o => o.key !== 'cash' && o.beyond >= 0).length;
-    $('aSub').textContent = 'لو كل اختيار جاتله أوحش سنة اتسجّلت في الآخر خالص، ده قد إيه من قيمته هيروح، بفلوس النهارده. ' + beatCount + ' من 5 اختيارات بتغلب زيادة الأسعار على ' + yTxt + '. أنهي يناسبك بيعتمد على ظروفك ووقتك وقد إيه تستحمل المخاطرة. مش توصية.';
+    $('aSub').textContent = 'If each option had its worst year on record at the very end, this is how much of its value would go, in today\'s money. ' + beatCount + ' of 5 options beat rising prices over ' + yTxt + '. Which suits you depends on your own situation, timeline and comfort with risk. Not a recommendation.';
     const loss = o => o.real * Math.abs(Math.min(0, PF_WORST[o.key])) / 100;
     const maxL = Math.max(1, ...rows.map(loss));
     $('aList').innerHTML = rows.map(o => {
-      const l = loss(o), lbl = o.key === 'cash' ? 'بيخسر قيمته كل سنة' : l > 0 ? sgnTxt(-l) + ' <bdi dir="ltr">(−' + Math.abs(PF_WORST[o.key]) + '%)</bdi>' : 'مفيش وقعة';
+      const l = loss(o), lbl = o.key === 'cash' ? 'Loses buying power yearly' : l > 0 ? sgnTxt(-l) + ' <bdi dir="ltr">(−' + Math.abs(PF_WORST[o.key]) + '%)</bdi>' : 'No fall';
       const fall = o.key === 'cash' || l > 0;
       return tmRow(o.name, l > 0 ? -l : 0, maxL, lbl, 'end', fall ? 'loss' : 'gain', fall ? '▼ ' : '');
     }).join('');
@@ -900,36 +868,36 @@ h1, .pf h2 { line-height: 1.3; }
       return { o, need: Math.max(0, need) / (usdMode() ? CV.r0 : 1), done: f0 >= target };
     });
     const cash = rows.find(r => r.o.key === 'cash');
-    const yTxt = yrs + (yrs === 1 ? ' سنة' : ' سنين');
-    const amt = n => usdMode() ? '$' + fmt(n) : fmt(n) + ' جنيه';
+    const yTxt = yrs + (yrs === 1 ? ' year' : ' years');
+    const amt = n => usdMode() ? '$' + fmt(n) : fmt(n) + ' EGP';
     $('gToday').textContent = money(G, 0);
-    $('gFutLbl').textContent = 'السعر بعد ' + yTxt;
+    $('gFutLbl').textContent = 'Price in ' + yTxt;
     $('gFuture').textContent = money(target, yrs);
     if (G <= 0) {
-      $('gMonthly').textContent = 'اكتب هدفك'; $('gWith').textContent = 'اكتب هدفك بيتكلّف كام النهارده.'; $('gNote').textContent = ''; $('gIntro').textContent = ''; $('gList').innerHTML = ''; $('gBody').innerHTML = ''; return;
+      $('gMonthly').textContent = 'Type a goal'; $('gWith').textContent = 'Enter what your goal costs today.'; $('gNote').textContent = ''; $('gIntro').textContent = ''; $('gList').innerHTML = ''; $('gBody').innerHTML = ''; return;
     }
-    $('gEyebrow').textContent = 'هدفك';
+    $('gEyebrow').textContent = 'Your goal';
     $('gMonthly').textContent = money(G, 0);
-    $('gWith').textContent = 'بفلوس النهارده، يعني حوالي ' + money(target, yrs) + ' بعد ' + yTxt + ' مع زيادة الأسعار.';
-    $('gNote').textContent = 'لو حوّشتها في البيت هتحتاج ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. مش توصية.';
-    $('gIntro').textContent = 'الخط اللي في النص هو إنك تحوّشها ' + cash.o.name + ': ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. ناحية الشمال: محتاج أقل كل شهر. ناحية اليمين: محتاج أكتر.';
+    $('gWith').textContent = 'in today\'s money, about ' + money(target, yrs) + ' in ' + yTxt + ' with prices rising.';
+    $('gNote').textContent = 'Saving it at home would take ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' EGP') + ' a month. Not a recommendation.';
+    $('gIntro').textContent = 'The middle line is saving it as ' + cash.o.name.toLowerCase() + ': ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' EGP') + ' a month. Right of it: needs less each month. Left: needs more.';
     const diffs = rows.map(r => cash.need - r.need);
     const maxD = Math.max(1, ...diffs.map(Math.abs));
     $('gList').innerHTML = rows.filter(r => r.o.key !== 'cash').map(r => {
       const d = cash.need - r.need;
-      return tmRow(r.o.name, d, maxD, amt(Math.abs(d)) + (d >= 0 ? ' أقل في الشهر' : ' أكتر في الشهر'), 'center');
+      return tmRow(r.o.name, d, maxD, amt(Math.abs(d)) + (d >= 0 ? ' less a month' : ' more a month'), 'center');
     }).join('');
-    $('gBody').innerHTML = rows.map(r => '<tr><td>' + r.o.name + '</td><td class="tdy"><bdi>' + (r.done ? 'متغطّي' : amt(r.need) + ' في الشهر') + '</bdi></td></tr>').join('');
+    $('gBody').innerHTML = rows.map(r => '<tr><td>' + r.o.name + '</td><td class="tdy"><bdi>' + (r.done ? 'Covered' : amt(r.need) + ' a month') + '</bdi></td></tr>').join('');
   }
 
 
-  const chipTxt = n => n >= 1e6 ? (n / 1e6) + ' مليون' : n >= 1e3 ? (n / 1e3) + ' ألف' : String(n);
+  const chipTxt = n => n >= 1e6 ? (n / 1e6) + 'M' : n >= 1e3 ? (n / 1e3) + 'K' : String(n);
   function drawChips() {
     document.querySelectorAll('.quick[data-egp]').forEach(q => {
       const vals = q.dataset[usdMode() ? 'usd' : 'egp'].split(',').map(Number);
-      q.innerHTML = vals.map(n => '<button type="button" data-v="' + n + '">' + (usdMode() ? (n ? '$' + fmt(n) : '0') : chipTxt(n)) + '</button>').join('');
+      q.innerHTML = vals.map(n => '<button type="button" data-v="' + n + '">' + (usdMode() && n ? '$' : '') + chipTxt(n) + '</button>').join('');
     });
-    document.querySelectorAll('.curunit').forEach(el => el.textContent = usdMode() ? 'دولار' : 'جنيه');
+    document.querySelectorAll('.curunit').forEach(el => el.textContent = usdMode() ? 'USD' : 'EGP');
     document.querySelectorAll('.seg.cur button').forEach(b => b.setAttribute('aria-pressed', b.dataset.cur === cur));
   }
   document.addEventListener('click', e => {
@@ -956,7 +924,7 @@ h1, .pf h2 { line-height: 1.3; }
 
   // ---------- Portfolio builder ----------
   const PF_KEYS = ['egx', 'us', 'gold', 'cd', 're', 'cash'];
-  const PF_NAMES = { egx: 'أسهم EGX30', us: 'أسهم أمريكية', gold: 'دهب', cd: 'شهادة بنكية', re: 'عقار', cash: 'كاش' };
+  const PF_NAMES = { egx: 'EGX30 stocks', us: 'US stocks', gold: 'Gold', cd: 'Bank certificate', re: 'Property', cash: 'Cash' };
   const PF_WORST = { egx: -49.3, us: -37, gold: -28, cd: 0, re: -9.6, cash: 0 };
   const MIXES = {
     safe: { cd: 50, egx: 15, us: 10, gold: 15, re: 0, cash: 10 },
@@ -1004,17 +972,17 @@ h1, .pf h2 { line-height: 1.3; }
       parts.push({ k, w, value: r });
     });
     const beyond = (total - K.final) / deflate, beats = total >= K.final;
-    const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
-    $('pfTxt').textContent = 'توزيعتك: ' + money(total / deflate, 0) + ' بفلوس النهارده، ' + (beats ? 'قدّام' : 'ورا') + ' زيادة الأسعار بـ' + money(Math.abs(beyond), 0) + '. الخط اللي في النص هو إنك تلحق الأسعار.';
+    const yTxt = v.years + (v.years === 1 ? ' year' : ' years');
+    $('pfTxt').textContent = 'Your mix: ' + money(total / deflate, 0) + ' in today\'s money, ' + (beats ? 'ahead of' : 'behind') + ' rising prices by ' + money(Math.abs(beyond), 0) + '. The middle line is keeping up with prices.';
     const items = TM_ORDER.map(k => parts.find(p => p.k === k)).filter(Boolean).map(p => ({ name: PF_NAMES[p.k] + ' · ' + Math.round(p.w * 100) + '%', value: p.value, b: (p.value - K.final * p.w) / deflate }));
-    const all = [{ name: 'التوزيعة كلها', value: total, b: beyond }].concat(items);
+    const all = [{ name: 'Whole mix', value: total, b: beyond }].concat(items);
     const maxB = Math.max(1, ...all.map(x => Math.abs(x.b)));
     $('pfRows').innerHTML = all.map(x => tmRow(x.name, x.b, maxB, sgnTxt(x.b), 'infl')).join('');
-    $('pfThen').textContent = 'بعد ' + yTxt;
+    $('pfThen').textContent = 'After ' + yTxt;
     $('pfBody').innerHTML = all.map(x => '<tr><td>' + x.name + '</td><td><bdi>' + moneyC(x.value, v.years) + '</bdi></td><td class="tdy ' + (x.b >= 0 ? 'gain' : 'loss') + '"><bdi>' + moneyC(x.value / deflate, 0) + '</bdi> <span aria-hidden="true">' + (x.b >= 0 ? '↑' : '↓') + '</span></td></tr>').join('');
     const worst = PF_KEYS.reduce((a, k) => a + pf[k] / 100 * PF_WORST[k], 0);
     const big = PF_KEYS.slice().sort((a, b) => pf[b] - pf[a])[0];
-    $('pfRisk').textContent = 'التنويع: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' من 6 اختيارات، وأكبر نصيب ' + pf[big] + '% في ' + PF_NAMES[big] + '. لو كل جزء جاتله أوحش سنة اتسجّلت في نفس الوقت (حساب تقريبي ومش متوقّع)، التوزيعة هتقع حوالي ' + Math.abs(worst).toFixed(0) + '% السنة دي.';
+    $('pfRisk').textContent = 'Spread: ' + PF_KEYS.filter(k => pf[k] > 0).length + ' of 6 options, biggest share ' + pf[big] + '% in ' + PF_NAMES[big] + '. If every part had its worst year on record at the same time (rough and unlikely), the mix would fall about ' + Math.abs(worst).toFixed(0) + '% that year.';
   }
   document.querySelectorAll('.mixes button').forEach(b => b.addEventListener('click', () => { pf = Object.assign({}, MIXES[b.dataset.mix]); pfMix = b.dataset.mix; pfRender(); }));
   pfBuild();
@@ -1028,9 +996,9 @@ h1, .pf h2 { line-height: 1.3; }
     document.body.classList.toggle('ptab', t === 'portfolio');
     document.body.classList.toggle('gtab', t === 'goal');
     document.body.classList.toggle('atab', t === 'analyze');
-    $('yearsLbl').textContent = t === 'goal' ? 'عايزه بعد' : 'لمدة قد إيه';
+    $('yearsLbl').textContent = t === 'goal' ? 'I want it in' : 'For how long';
     document.querySelectorAll('.gtile').forEach(el => el.classList.toggle('on', el.dataset.tab === t));
-    var TD = {compare:'<b>احسب</b> · توقّع فلوسك: شوف كل اختيار ممكن يكبر إزاي.',portfolio:'<b>المحفظة</b> · نوّع: قسّم فلوسك على الست اختيارات.',analyze:'<b>حلّل</b> · افهم المخاطرة: كل واحد ممكن ينزل قد إيه.',goal:'<b>الأهداف</b> · خطط لمستقبلك: كل اختيار محتاج كام في الشهر.'}; if ($('tabDesc')) $('tabDesc').innerHTML = TD[t];
+    var TD = {compare:'<b>Calculate</b> · Project your wealth: see how each option could grow.',portfolio:'<b>Portfolio</b> · Diversify: mix your money across the six options.',analyze:'<b>Analyze</b> · Understand risk: how hard each one could fall.',goal:'<b>Goals</b> · Plan your future: what each option needs each month.'}; if ($('tabDesc')) $('tabDesc').innerHTML = TD[t];
     window.__tab = t; if (window.track) track('tab', t, 1);
     try { localStorage.setItem('emc-tab', t); } catch (e) {}
   }
@@ -1048,28 +1016,28 @@ h1, .pf h2 { line-height: 1.3; }
   $('goal').addEventListener('blur', () => { $('goal').value = fmt(num($('goal').value)); });
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const link = (name, url) => /^https:\/\//.test(url || '') ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
-  const longDate = iso => { const d = new Date(iso + (iso.length === 10 ? 'T12:00:00Z' : '')); return isNaN(d) ? iso : d.toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }); };
+  const longDate = iso => { const d = new Date(iso + (iso.length === 10 ? 'T12:00:00Z' : '')); return isNaN(d) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Cairo' }); };
   function applyData(d) {
     if (!d) return;
     const ok = x => typeof x === 'number' && isFinite(x) && x > 0;
     if (d.usd_egp && ok(d.usd_egp.value)) {
       BASE.rate0 = d.usd_egp.value;
-      $('srcUsd').innerHTML = d.usd_egp.value.toFixed(2) + ' جنيه (' + link(d.usd_egp.source_name, d.usd_egp.source_url) + '، ' + esc(longDate(d.usd_egp.as_of)) + ')';
+      $('srcUsd').innerHTML = d.usd_egp.value.toFixed(2) + ' EGP (' + link(d.usd_egp.source_name, d.usd_egp.source_url) + ', ' + esc(longDate(d.usd_egp.as_of)) + ')';
     }
     if (d.inflation && ok(d.inflation.value)) {
       BASE.infl = d.inflation.value;
-      $('infLatest').textContent = 'آخر رقم: ' + d.inflation.value + '% (' + arDate(d.inflation.period) + ')';
-      $('srcInfl').innerHTML = d.inflation.value + '% في ' + esc(arDate(d.inflation.period)) + ' (' + link(d.inflation.source_name, d.inflation.source_url) + ')';
+      $('infLatest').textContent = 'Latest: ' + d.inflation.value + '% (' + d.inflation.period + ')';
+      $('srcInfl').innerHTML = d.inflation.value + '% in ' + esc(d.inflation.period) + ' (' + link(d.inflation.source_name, d.inflation.source_url) + ')';
     }
     if (d.cd3 && ok(d.cd3.value)) {
       Object.keys(PRESETS).forEach(k => PRESETS[k].cd1 = d.cd3.value);
-      $('srcCd').innerHTML = d.cd3.value + '% (' + link(d.cd3.source_name + '، ' + arDate(d.cd3.as_of), d.cd3.source_url) + ')';
+      $('srcCd').innerHTML = d.cd3.value + '% (' + link(d.cd3.source_name + ', ' + d.cd3.as_of, d.cd3.source_url) + ')';
     }
     if (d.gold21 && ok(d.gold21.value)) $('srcGold').textContent = Math.round(d.gold21.value).toLocaleString('en-US');
-    if (typeof d.checked === 'string' && d.checked) $('srcChecked').textContent = arDate(d.checked);
+    if (typeof d.checked === 'string' && d.checked) $('srcChecked').textContent = d.checked;
     if (d.updated) {
       const t = new Date(d.updated);
-      if (!isNaN(t)) $('dataStamp').textContent = 'اتحدّثت ' + t.toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', timeZone: 'Africa/Cairo' }) + '، الساعة ' + t.toLocaleTimeString('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }) + ' · بتتحدّث كذا مرة في اليوم';
+      if (!isNaN(t)) $('dataStamp').textContent = 'Updated ' + t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }) + ', ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' }) + ' · refreshed several times a day';
     }
   }
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h) { setTab(h); calc(); } });
@@ -1082,12 +1050,12 @@ h1, .pf h2 { line-height: 1.3; }
   document.querySelector('form.panel').addEventListener('input', used);
   document.querySelector('form.panel').addEventListener('click', e => { if (e.target.closest('.quick button, .seg button')) used(); });
   document.addEventListener('input', e => { if (e.target.closest('#tab-portfolio')) used(); });
-  if (window.track) track('view', 'grow-ar', 1);
+  if (window.track) track('view', 'calculator', 1);
 
   // ---------- Ask ZD (hand-off to the ZD app) ----------
   // The card only appears once the ZD app answers, so visitors never see a broken link.
   const ZD_APP = (document.querySelector('meta[name="zd-app"]') || {}).content || 'https://invest.amrelhadeka.com/zd';
-  const ZDT = {"qcompare": "معايا {start} دلوقتي وأقدر أزوّد {monthly} في الشهر لمدة {years} سنين. ساعدني أفهم ده ممكن يعني إيه بالنسبالي.", "qgoal": "هدفي تمنه {goal} النهارده وعايزه بعد {years} سنين. معايا {start} دلوقتي. ساعدني أفهم محتاج إيه.", "unit": " جنيه", "usd": "$"};
+  const ZDT = {"qcompare": "I have {start} now and can add {monthly} a month for {years} years. Help me understand what this could mean for me.", "qgoal": "My goal costs {goal} today and I want it in {years} years. I have {start} now. Help me understand what it would take.", "unit": " EGP", "usd": "$"};
   function zdAmount(x) { return usdMode() ? ZDT.usd + fmt(x) : fmt(x) + ZDT.unit; }
   window.updateAskZd = updateAskZd;
   function updateAskZd() {
@@ -1096,13 +1064,13 @@ h1, .pf h2 { line-height: 1.3; }
     const vals = { start: zdAmount(num($('start').value)), monthly: zdAmount(num($('monthly').value)), goal: zdAmount(num($('goal').value)), years: yrs };
     const tpl = window.__tab === 'goal' ? ZDT.qgoal : ZDT.qcompare;
     const q = tpl.replace(/\{(\w+)\}/g, (_, k) => vals[k]);
-    a.href = ZD_APP + '/#/chat?lang=ar&from=site&q=' + encodeURIComponent(q);
+    a.href = ZD_APP + '/#/chat?lang=en&from=site&q=' + encodeURIComponent(q);
     const line = document.getElementById('askZdLine'); if (line) line.href = a.href;
   }
   document.addEventListener('input', updateAskZd); document.addEventListener('click', () => setTimeout(updateAskZd, 0));
   function start() { setTab(startTab); drawChips(); load(); calc(); pfRender(); }
   const getJson = url => fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
-  getJson('https://grow-data.amrelhadeka.workers.dev/site.json').catch(() => getJson('/grow/data.json')).then(applyData).catch(() => {}).finally(start);
+  getJson('https://calculator-data.amrelhadeka.workers.dev/site.json').catch(() => getJson('data.json')).then(applyData).catch(() => {}).finally(start);
 })();
 </script>
 <script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>

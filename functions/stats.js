@@ -62,7 +62,7 @@ export async function onRequestGet({ request, env }) {
 
   const q = (sql, ...b) => env.DB.prepare(sql).bind(...b).all().then(r => r.results || []);
   const totals = await q('SELECT event, value, SUM(count) AS n FROM events WHERE day >= ?1 GROUP BY event, value ORDER BY n DESC', since);
-  const daily = await q("SELECT day AS value, SUM(count) AS n FROM events WHERE day >= ?1 AND event = 'view' AND value = 'grow' GROUP BY day ORDER BY day DESC", since);
+  const daily = await q("SELECT day AS value, SUM(count) AS n FROM events WHERE day >= ?1 AND event = 'view' AND value IN ('grow', 'calculator') GROUP BY day ORDER BY day DESC", since);
 
   const pick = ev => totals.filter(r => r.event === ev);
   const sum = (ev, val) => totals.filter(r => r.event === ev && (val === undefined || r.value === val)).reduce((a, r) => a + r.n, 0);
@@ -71,24 +71,24 @@ export async function onRequestGet({ request, env }) {
 
   const link = d => `<a href="?key=${encodeURIComponent(key)}&days=${d}" class="${d === days ? 'on' : ''}">${d} days</a>`;
   const body = `
-<h1>grow. stats</h1>
+<h1>ZD Calculator stats</h1>
 <p class="sub">Last ${days} days, Cairo time. Counts are per browser session, anonymous.</p>
 <nav class="range">${[7, 30, 90].map(link).join('')}</nav>
 <div class="kpis">
-  <div class="kpi main"><span>Opened Grow</span><b>${fmt(sum('view', 'grow'))}</b></div>
+  <div class="kpi main"><span>Opened the calculator</span><b>${fmt(sum('view', 'grow') + sum('view', 'calculator'))}</b></div>
   <div class="kpi"><span>Used a tool</span><b>${fmt(sum('use'))}</b></div>
   <div class="kpi"><span>Set a goal</span><b>${fmt(sum('goal'))}</b></div>
   <div class="kpi"><span>Homepage visits</span><b>${fmt(sum('view', 'home'))}</b></div>
 </div>
-<h2>Grow opens per day</h2>${list(daily)}
+<h2>Calculator opens per day</h2>${list(daily)}
 <h2>Tools people used</h2>${list(pick('use'), LABELS.use)}
 <h2>Tabs opened</h2>${list(pick('tab'), LABELS.tab)}
 <h2>Outlook chosen</h2>${list(pick('outlook'), LABELS.outlook)}
 <h2>Currency switches</h2>${list(pick('currency'), LABELS.currency)}
-<h2>Homepage: tiles and Explore</h2>${list(pick('tile').concat(pick('explore').map(r => ({ value: 'Explore grow button', n: r.n }))), LABELS.tile)}
+<h2>Homepage: tiles and Explore</h2>${list(pick('tile').concat(pick('explore').map(r => ({ value: 'Open the calculator button', n: r.n }))), LABELS.tile)}
 <h2>Lessons read</h2>${list(lessons)}
 <h2>Where people came from (src links)</h2>${list(pick('src'))}
 <h2>Page views</h2>${list(pages)}
-<p class="note">Add ?src=name to any link you share (for example invest.amrelhadeka.com/grow?src=reel12) to see it under "Where people came from". For overall traffic, devices and countries, use Cloudflare Web Analytics.</p>`;
-  return new Response(page('grow. stats', body), { headers });
+<p class="note">Add ?src=name to any link you share (for example invest.amrelhadeka.com/calculator?src=reel12) to see it under "Where people came from". For overall traffic, devices and countries, use Cloudflare Web Analytics.</p>`;
+  return new Response(page('ZD Calculator stats', body), { headers });
 }
