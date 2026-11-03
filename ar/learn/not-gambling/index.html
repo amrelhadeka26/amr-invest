@@ -55,7 +55,7 @@
 <link rel="stylesheet" href="/ar/ar.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
-<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 <header class="site-header">
@@ -63,7 +63,7 @@
 <a class="logo" href="/ar/" aria-label="الصفحة الرئيسية"><img src="/assets/logo.png" alt="عمرو الحادقة" width="240" height="218"></a>
 <nav class="nav" aria-label="القائمة">
 <a href="/ar/#learn">اتعلّم</a>
-<a href="/ar/grow/">الحاسبة</a>
+<a href="/ar/calculator/">الحاسبة</a>
 <a href="/ar/#about">عنّي</a>
 <a class="btn btn-dark" href="/ar/#book">احجز جلسة</a>
 <span class="lang" role="group" aria-label="اللغة"><a href="/learn/not-gambling/" lang="en" hreflang="en" aria-label="English">EN</a><a href="/ar/learn/not-gambling/" lang="ar" aria-label="العربية" aria-current="true">عربي</a></span>
@@ -124,7 +124,7 @@
 <div class="book-box"><div><b>عايز نتكلم فيها سوا؟</b><p>جلسة ساعة أونلاين. فلوسك، أسئلتك، بكلام بسيط.</p></div><a class="btn btn-dark" href="/ar/#book" data-book="lesson">احجز جلسة</a></div>
 <div class="cta">
 <a class="btn btn-light" href="/ar/#join">خد فحص الفلوس ببلاش</a>
-<a class="btn btn-light" href="/ar/grow/">افتح حاسبة <span lang="en">ZD</span></a>
+<a class="btn btn-light" href="/ar/calculator/">افتح حاسبة <span lang="en">ZD</span></a>
 </div>
 <a class="next" href="/ar/learn/before-you-invest/"><span>الدرس الجاي · قبل ما تستثمر</span><b>افهم فلوسك قبل ما تستثمرها. ←</b></a>
 <p class="note">الأرقام في الدرس ده للتوضيح، مش توقعات. محتوى تعليمي بس، مش نصيحة مالية شخصية.</p>

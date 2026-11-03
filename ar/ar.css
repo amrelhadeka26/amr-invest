@@ -1,7 +1,7 @@
 /* Arabic pages: right-to-left overrides, loaded after each page's own styles */
 html[dir=rtl] body{font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Segoe UI","IBM Plex Sans Arabic","Noto Sans Arabic",Tahoma,Arial,sans-serif;letter-spacing:0;line-height:1.7}
 [dir=rtl] h1,[dir=rtl] h2,[dir=rtl] h3,[dir=rtl] b,[dir=rtl] .btn,[dir=rtl] .gtile b,[dir=rtl] .myth h3,[dir=rtl] .book-facts b{letter-spacing:0}
-[dir=rtl] .grow-name{letter-spacing:-0.04em}
+[dir=rtl] .calc-name{letter-spacing:-0.04em}
 [dir=rtl] h1,[dir=rtl] h2{line-height:1.3}
 [dir=rtl] .hero h1{line-height:1.3}
 [dir=rtl] .hero .lead{line-height:1.5}

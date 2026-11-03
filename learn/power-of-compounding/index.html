@@ -53,7 +53,7 @@
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
-<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','grow_'+e,{grow_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 </head>
 <body>
 <header class="site-header">
@@ -61,7 +61,7 @@
 <a class="logo" href="/" aria-label="Amr El Hadeka, home"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a>
 <nav class="nav" aria-label="Main">
 <a href="/#learn">Learn</a>
-<a href="/grow/">Calculator</a>
+<a href="/calculator/">Calculator</a>
 <a href="/#about">About</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
 <span class="lang" role="group" aria-label="Language"><a href="/learn/power-of-compounding/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/learn/power-of-compounding/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
@@ -112,13 +112,13 @@
 <p>Divide 72 by a yearly rate to see roughly how many years it takes to double. At 10%, money doubles in about 7 years. At 13.9% inflation, prices double in about 5. At 30% on a credit card, debt doubles in under 2.5.</p>
 
 <h2>It works against you too</h2>
-<p>Inflation compounds on cash that sits still. Debt compounds on unpaid balances. Fees compound on everything you invest. So clear expensive debt, keep fees low, and aim for a return above inflation. Try your own numbers in <a href="/grow/">grow.</a></p>
+<p>Inflation compounds on cash that sits still. Debt compounds on unpaid balances. Fees compound on everything you invest. So clear expensive debt, keep fees low, and aim for a return above inflation. Try your own numbers in <a href="/calculator/">grow.</a></p>
 <p class="takeaway">The best day to start compounding was years ago. The second best is this month, with whatever amount you have.</p>
 </div>
 <div class="book-box"><div><b>Want to talk it through with me?</b><p>A one-hour session, online. Your money, your questions, plain words.</p></div><a class="btn btn-dark" href="/#book" data-book="lesson">Book a session</a></div>
 <div class="cta">
 <a class="btn btn-light" href="/#join">Get the free money check</a>
-<a class="btn btn-light" href="/grow/">Open the ZD Calculator</a>
+<a class="btn btn-light" href="/calculator/">Open the ZD Calculator</a>
 </div>
 <a class="next" href="/learn/where-to-invest/"><span>Next lesson · Where can you invest?</span><b>Every investment has a job, and a risk. ›</b></a>
 <p class="note">All figures are illustrations at an assumed constant rate, compounded monthly for monthly deposits, before inflation, fees and taxes. Real returns vary year to year. Inflation: Central Bank of Egypt, September 2026. Educational content only, not personal financial advice.</p>

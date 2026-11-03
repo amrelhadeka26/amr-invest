@@ -1,4 +1,6 @@
-/calculator /grow/ 301
-/calculator/* /grow/:splat 301
+/grow /calculator/ 301
+/grow/* /calculator/:splat 301
+/ar/grow /ar/calculator/ 301
+/ar/grow/* /ar/calculator/:splat 301
 /ar/zd /zd/#/home?lang=ar 302
 /ar/zd/ /zd/#/home?lang=ar 302

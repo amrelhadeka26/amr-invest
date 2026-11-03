@@ -2,7 +2,7 @@
   "name": "ZD Calculator",
   "short_name": "ZD Calculator",
   "description": "Calculate, build a portfolio, understand risk and plan goals, in EGP or USD, after inflation.",
-  "id": "/grow/",
+  "id": "/calculator/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
