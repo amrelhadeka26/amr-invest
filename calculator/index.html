@@ -285,6 +285,7 @@ details.assume[open] > summary::after { transform: rotate(-135deg) translateY(-3
 .hero-rows span { display: block; font-size: 13px; }
 .hero-rows b { font-size: 19px; font-variant-numeric: tabular-nums; }
 .hero-note { margin: 14px 0 0; font-size: 13px; }
+#bestTxt { color: #a1a1a6; }
 .keep { border: 1.5px solid var(--ink); border-radius: 20px; padding: 18px 20px; }
 .keep b { font-size: 24px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .keep p { margin: 6px 0 0; font-size: 13.5px; }
@@ -752,6 +753,10 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 
   function calc() {
     const v = {}; ALL.forEach(k => v[k] = num($(k).value));
+    // Keep inputs in a sensible range so a typo can never produce nonsense or infinite numbers.
+    const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+    v.start = Math.max(0, v.start); v.monthly = Math.max(0, v.monthly); v.infl = clamp(v.infl, -50, 100); v.raise = clamp(v.raise, -50, 100);
+    RATE_KEYS.forEach(k => v[k] = clamp(v[k], -90, 300)); Object.keys(BASE).filter(k => k.startsWith('c_')).forEach(k => v[k] = clamp(v[k], 0, 100));
     v.years = Math.max(1, Math.min(25, Math.round(v.years)));
     $('yearsOut').textContent = v.years + (v.years === 1 ? ' year' : ' years');
     const P = PRESETS[state.preset];
@@ -777,21 +782,21 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     const K = keepUp(v), deflate = Math.pow(1 + v.infl / 100, v.years);
     opts.forEach(o => { const s = sim(o, v); o.path = s.path; o.value = s.final; o.real = s.final / deflate; o.beyond = (s.final - K.final) / deflate; });
     // effective net yearly rate (after costs) via bisection on a cost-free sim
-    opts.forEach(o => { let lo = -50, hi = 80; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
+    opts.forEach(o => { let lo = -99, hi = 400; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; const t = sim({ rate: () => mid, buy: 0, sell: 0, yearly: 0 }, v).final; if (t < o.value) lo = mid; else hi = mid; } o.netRate = (lo + hi) / 2; });
     opts.sort((a, b) => TM_ORDER.indexOf(a.key) - TM_ORDER.indexOf(b.key)); // fixed order everywhere, never ranked
 
     const yTxt = v.years + (v.years === 1 ? ' year' : ' years');
     const beatN = opts.filter(o => o.key !== 'cash' && o.beyond >= 0).length;
     $('hEyebrow').textContent = 'After ' + yTxt;
-    $('bestVal').textContent = beatN + ' of 5';
-    $('heroSub').textContent = 'options would beat rising prices at these assumptions, after costs.';
+    $('bestVal').textContent = K.final > 0 ? beatN + ' of 5' : '—';
+    $('heroSub').textContent = K.final > 0 ? 'options would beat rising prices at these assumptions, after costs.' : 'Type an amount to start.';
     $('putVal').textContent = usdMode() ? '$' + fmt(putU) : money(K.put, 0);
     $('calcVal').textContent = money(K.final, v.years);
     $('bestTxt').textContent = 'Each option is shown below in the same order every time. Assumptions, not predictions, and not a recommendation.';
     renderToday(opts, K, v, deflate);
 
     $('tbody').innerHTML = opts.map(o =>
-      '<tr><td><b>' + o.name + '</b></td><td>' + o.netRate.toFixed(1) + '%</td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
+      '<tr><td><b>' + o.name + '</b></td><td>' + (o.value > 0 ? (Math.abs(o.netRate) < 0.05 ? 0 : o.netRate).toFixed(1) + '%' : '—') + '</td><td>' + fmt(M(o.value, v.years)) + '</td><td>' + fmt(M(o.real, 0)) + '</td>' +
       '<td class="' + (o.beyond >= 0 ? 'gain' : '') + '">' + (o.beyond >= 0 ? '+' : '−') + fmt(Math.abs(M(o.beyond, 0))) + '</td><td>' + WORST[o.key] + '</td></tr>').join('');
 
     const cu = usdMode() ? 'USD' : 'EGP';
@@ -858,7 +863,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   }
 
   function renderGoal(opts, v) {
-    const GU = num($('goal').value), G = usdMode() ? GU * CV.r0 : GU, yrs = v.years;
+    const GU = Math.max(0, num($('goal').value)), G = usdMode() ? GU * CV.r0 : GU, yrs = v.years;
     try { localStorage.setItem('emc-goal', String(GU)); } catch (e) {}
     const target = G * Math.pow(1 + v.infl / 100, yrs);
     const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean).map(o => {
@@ -1037,7 +1042,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     if (typeof d.checked === 'string' && d.checked) $('srcChecked').textContent = d.checked;
     if (d.updated) {
       const t = new Date(d.updated);
-      if (!isNaN(t)) $('dataStamp').textContent = 'Updated ' + t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }) + ', ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' }) + ' · refreshed several times a day';
+      if (!isNaN(t)) $('dataStamp').textContent = 'Updated ' + t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }) + ', ' + t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' }) + (d.__backup ? ' · daily backup copy (live rates unreachable)' : ' · refreshed several times a day');
     }
   }
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h) { setTab(h); calc(); } });
@@ -1070,7 +1075,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   document.addEventListener('input', updateAskZd); document.addEventListener('click', () => setTimeout(updateAskZd, 0));
   function start() { setTab(startTab); drawChips(); load(); calc(); pfRender(); }
   const getJson = url => fetch(url, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
-  getJson('https://calculator-data.amrelhadeka.workers.dev/site.json').catch(() => getJson('data.json')).then(applyData).catch(() => {}).finally(start);
+  getJson('https://grow-data.amrelhadeka.workers.dev/site.json').catch(() => getJson('data.json').then(d => { if (d) d.__backup = true; return d; })).then(applyData).catch(() => {}).finally(start);
 })();
 </script>
 <script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }</script>

@@ -2,9 +2,12 @@
 // The app uses relative paths, so the same build works here and at its own workers.dev address.
 const APP = 'https://zd-app.amrelhadeka.workers.dev';
 // Shared with the ZD AI Worker so it can trust the visitor's address we pass on (used only for the guest-account cap).
-const KEY = '6422ca03946ea6b82ea63867a031b959';
+// Set it as the secret ZD_PROXY_KEY in this Pages project (and the same value as SITE_PROXY_KEY in the zd-app Worker).
+// The old value below is public (this repo is public), so it only works until both secrets are set.
+const OLD_KEY = '6422ca03946ea6b82ea63867a031b959';
 
-export async function onRequest({ request }) {
+export async function onRequest({ request, env }) {
+  const KEY = (env && env.ZD_PROXY_KEY) || OLD_KEY;
   const url = new URL(request.url);
   if (url.pathname === '/zd') return Response.redirect(`${url.origin}/zd/${url.search}`, 301);
   const target = APP + (url.pathname.slice(3) || '/') + url.search;
