@@ -1,6 +1,6 @@
 // Anonymous usage counter for the site.
 // Stores only daily counts per event: no IP addresses, no cookies, no personal data.
-const EVENTS = new Set(['view', 'tab', 'use', 'currency', 'outlook', 'goal', 'tile', 'explore', 'lesson', 'src', 'askzd', 'book', 'leadmagnet']);
+const EVENTS = new Set(['view', 'tab', 'use', 'currency', 'outlook', 'goal', 'tile', 'explore', 'lesson', 'src', 'askzd', 'book', 'leadmagnet', 'newsletter']);
 const VALUE = /^[a-z0-9_-]{0,40}$/;
 
 const cairoDay = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });

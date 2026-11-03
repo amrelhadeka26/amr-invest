@@ -197,7 +197,7 @@ section[id]{scroll-margin-top:60px}
 <h1>خلّي فلوسك تجيبلك فلوس.</h1>
 <p class="lead">دروس بسيطة للمصريين اللي عايزين فلوسهم تكبر.</p>
 <div class="cta-row">
-<a class="btn btn-dark" href="#join">خد فحص الفلوس ببلاش</a>
+<a class="btn btn-dark" href="#join">اشترك في النشرة</a>
 <a class="btn btn-light" href="#learn">ابدأ اتعلّم ←</a>
 </div>
 </div>
@@ -269,17 +269,16 @@ section[id]{scroll-margin-top:60px}
 </section>
 
 <section class="join" id="join">
-<p class="eyebrow">PDF صفحة واحدة ببلاش</p>
-<h2 class="h2">فحص الفلوس في 5 دقايق.</h2>
-<p class="sub">خمس أسئلة تعرف بيها فلوسك واقفة فين قبل ما تستثمر ولا جنيه. ببلاش على الإيميل، ومعاه رسالة قصيرة عن الفلوس مرة في الشهر. تقدر تلغي الاشتراك في أي وقت.</p>
+<h2 class="h2">نصايح عن الفلوس توصلك على الإيميل.</h2>
+<p class="sub">اشترك في النشرة بتاعتي عشان توصلك دروس استثمار بسيطة وقراءات للسوق. مجانًا، وتقدر تلغي الاشتراك في أي وقت.</p>
 <form id="guideForm" name="newsletter" method="POST" action="https://d32e8937.sibforms.com/serve/MUIFAF7kAgHgaTfaNtej_y3CkPRr82BKbjjHUMpzoKeE529cj5l6DnFr6qdanUDbRBFcFXhy2qGyejMkUZNr3_fnlaRB3h0WGDr6swPm5PI9N09oq7-X1NWd6e6NT_T6Pd43saskKRGJPy2DZt9EUQehmeY3IA9e6MPBERpEf1sOSYQXtbxmE0008i4K8jLH7LXm0FtaP_xBMizOwg==" target="bv-frame">
 <input type="text" name="email_address_check" value="" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 <input type="hidden" name="locale" value="en">
 <label>الإيميل<input type="email" name="EMAIL" required autocomplete="email" inputmode="email"></label>
-<button class="btn btn-dark" type="submit">ابعتلي الفحص ببلاش</button>
+<button class="btn btn-dark" type="submit">اشترك</button>
 </form>
 <iframe name="bv-frame" title="الاشتراك في النشرة" hidden></iframe>
-<p class="notice" id="formNote" hidden>فاضل خطوة! افتح الإيميل بتاعك ودوس على لينك التأكيد، وفحص الفلوس هيوصلك على طول بعدها. مش لاقيه؟ بص في Spam أو Promotions. ولحد ما يوصل، تابع <a href="https://www.instagram.com/amrelhadeka.invest/" target="_blank" rel="noopener">@amrelhadeka.invest</a> عشان توصلك الحاجات الأول.</p>
+<p class="notice" id="formNote" hidden>فاضل خطوة! افتح الإيميل بتاعك ودوس على لينك التأكيد عشان تشترك. مش لاقيه؟ بص في Spam أو Promotions. ولحد ما يوصل، تابع <a href="https://www.instagram.com/amrelhadeka.invest/" target="_blank" rel="noopener">@amrelhadeka.invest</a> عشان توصلك الحاجات الأول.</p>
 </section>
 </main>
 
@@ -298,7 +297,7 @@ section[id]{scroll-margin-top:60px}
   var $ = function(id){return document.getElementById(id);};
   var gf=$('guideForm');
   // Until a form service is connected, keep visitors on the page instead of a server error
-  gf.addEventListener('submit',function(){if(window.track)track('leadmagnet','ar');var btn=gf.querySelector('button');btn.disabled=true;btn.textContent='بنسجّلك…';setTimeout(function(){gf.hidden=true;$('formNote').hidden=false;},1200);});
+  gf.addEventListener('submit',function(){if(window.track)track('newsletter','ar');var btn=gf.querySelector('button');btn.disabled=true;btn.textContent='بنسجّلك…';setTimeout(function(){gf.hidden=true;$('formNote').hidden=false;},1200);});
   $('yr').textContent=new Date().getFullYear();
 })();
 </script>
