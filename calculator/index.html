@@ -381,7 +381,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 @media (max-width:430px){.site-header .nav a[href$="#about"]{display:none}.site-header .lang{border:0;padding:0}.site-header .lang a[aria-current]{display:none}.site-header .lang a{border:1px solid #1D1D1F;height:32px;padding:0 11px}}
 @media (max-width:380px){.site-header .nav{gap:10px}.site-header .lang a{padding:0 9px}}
 
-/* ZD: mandatory disclaimer + Ask ZD */
+/* ZD AI: mandatory disclaimer + Ask ZD AI */
 .zd-disc { color: var(--ink) !important; border: 1px solid var(--ink); border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.5; }
 .askzd { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1px solid var(--ink); border-radius: 20px; padding: 18px 20px; margin: 24px 0 0; }
 .askzd[hidden] { display: none; }
@@ -389,7 +389,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 .askzd p { margin: 4px 0 0; font-size: 13.5px; color: var(--muted); max-width: 520px; }
 .askzd a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 600; text-decoration: none; white-space: nowrap; }
 
-/* ZD entrances (hidden until the public launch switch is on) */
+/* ZD AI entrances (hidden until the public launch switch is on) */
 [data-zd-entry][hidden]{display:none!important}
 .site-header .nav .btn-zd{background:transparent;color:#1D1D1F!important;border:1.5px solid #1D1D1F}
 @media (max-width:480px){body.zd-on .nav>a[href$="#learn"],body.zd-on .nav>a[href$="/calculator/"]:not(.btn){display:none}}
@@ -420,7 +420,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 <a href="/#learn">Learn</a>
 <a href="/calculator/" aria-current="page">Calculator</a>
 <a href="/#about">About</a>
-<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://invest.amrelhadeka.com/zd/">Ask ZD</a>
+<a class="btn btn-zd" data-zd-entry="menu" data-zd-href="root" hidden href="https://invest.amrelhadeka.com/zd/">Ask ZD AI</a>
 <a class="btn btn-dark" href="/#book">Book a session</a>
 <span class="lang" role="group" aria-label="Language"><a href="/calculator/" lang="en" aria-label="English" aria-current="true">EN</a><a href="/ar/calculator/" lang="ar" hreflang="ar" aria-label="العربية">عربي</a></span>
 </nav>
@@ -554,7 +554,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
         <div class="tm-list" id="tmList"></div>
         <p class="small" style="margin:12px 0 0"><b class="gain">Green ▲</b>: beats inflation. <b class="loss">Red ▼</b>: falls behind. Same order every time, never ranked.</p>
       </div>
-      <a class="zd-line" id="askZdLine" data-zd-entry="underchart" hidden href="https://invest.amrelhadeka.com/zd/"><span>Want this explained for your own money?</span><b>Ask ZD ›</b></a>
+      <a class="zd-line" id="askZdLine" data-zd-entry="underchart" hidden href="https://invest.amrelhadeka.com/zd/"><span>Want this explained for your own money?</span><b>Ask ZD AI ›</b></a>
       <details class="tm-more" id="tmMore"><summary>See the amounts before inflation</summary>
       <div class="tm" id="tmD">
         <span class="eyebrow">Side by side</span>
@@ -678,9 +678,9 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     <p><b>Worst year on record</b> shows how hard each option has fallen in a single year: EGX30 −49.3% in 2011, property −9.6% in 2020 (Aqarmap), and the widely reported S&amp;P 500 −37% in 2008 and gold −28% in 2013 (in USD). Property also needs a large amount up front and can take months to sell. Certificates are the only fixed rate, and only until they mature.</p>
     <p>Checked <span id="srcChecked">24 October 2026</span>.</p>
   </details>
-  <section class="askzd" id="askZd" data-zd-entry="bottom" hidden aria-label="ZD">
-    <div><b>Ask ZD what this means for you</b><p>ZD, your AI financial companion, can walk you through these numbers with your own income, spending and goals. Educational only, it does not tell you what to buy.</p></div>
-    <a id="askZdBtn" href="https://invest.amrelhadeka.com/zd/" rel="noopener">Ask ZD ›</a>
+  <section class="askzd" id="askZd" data-zd-entry="bottom" hidden aria-label="ZD AI">
+    <div><b>Ask ZD AI what this means for you</b><p>ZD AI, your AI financial companion, can walk you through these numbers with your own income, spending and goals. Educational only, it does not tell you what to buy.</p></div>
+    <a id="askZdBtn" href="https://invest.amrelhadeka.com/zd/" rel="noopener">Ask ZD AI ›</a>
   </section>
   <p class="disc zd-disc" role="note"><b>Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</b> Every figure here is an illustration based on assumptions you can change, not a prediction. Real returns change and can be negative.</p>
 
@@ -1052,8 +1052,8 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   document.addEventListener('input', e => { if (e.target.closest('#tab-portfolio')) used(); });
   if (window.track) track('view', 'calculator', 1);
 
-  // ---------- Ask ZD (hand-off to the ZD app) ----------
-  // The card only appears once the ZD app answers, so visitors never see a broken link.
+  // ---------- Ask ZD AI (hand-off to the ZD AI app) ----------
+  // The card only appears once the ZD AI app answers, so visitors never see a broken link.
   const ZD_APP = (document.querySelector('meta[name="zd-app"]') || {}).content || 'https://invest.amrelhadeka.com/zd';
   const ZDT = {"qcompare": "I have {start} now and can add {monthly} a month for {years} years. Help me understand what this could mean for me.", "qgoal": "My goal costs {goal} today and I want it in {years} years. I have {start} now. Help me understand what it would take.", "unit": " EGP", "usd": "$"};
   function zdAmount(x) { return usdMode() ? ZDT.usd + fmt(x) : fmt(x) + ZDT.unit; }
