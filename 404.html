@@ -14,13 +14,24 @@ h1{margin:0 0 12px;font-size:clamp(32px,5vw,48px);letter-spacing:-0.025em;line-h
 p{margin:0 0 28px;font-size:19px;color:#424245}
 a{display:inline-flex;align-items:center;min-height:44px;padding:0 24px;border-radius:999px;background:#1D1D1F;color:#fff;text-decoration:none}
 </style>
+<style>
+/* audit Nov 6: skip link + 24px minimum tap height for menu and footer links */
+.skip{position:absolute;inset-inline-start:8px;top:8px;z-index:1000;display:inline-block;min-height:0;padding:10px 14px;border-radius:8px;background:#000;color:#fff;font-size:15px;text-decoration:none;transform:translateY(-300%)}
+.skip:focus{transform:none}
+.nav a:not([class]),footer a:not([class]){display:inline-block;min-height:24px;padding-block:3px;box-sizing:border-box}
+@media (max-width:430px){.site-header .logo{flex:none}.site-header .logo img{height:34px;width:auto}.site-header .wrap,.site-header .hwrap{gap:12px}.site-header .nav{gap:10px}.site-header .nav .btn{padding:0 12px}}
+@media (max-width:370px){.site-header .nav{gap:8px;font-size:12px}.site-header .nav .btn{padding:0 10px}}
+@media (max-width:340px){.site-header .nav>a:not([class]){display:none}}
+</style>
 </head>
 <body>
-<main>
+<a class="skip" href="#main">Skip to content</a>
+<main id="main">
 <img src="/assets/logo.png" alt="Amr El Hadeka">
 <h1>Page not found.</h1>
 <p>The page you were looking for isn't here.</p>
 <a href="/">Back to the site</a>
+<p style="font-size:13px;color:#6e6e73;margin:32px 0 0">Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</p>
 </main>
 </body>
 </html>

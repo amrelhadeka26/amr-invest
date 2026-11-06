@@ -54,8 +54,18 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
 <script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<style>
+/* audit Nov 6: skip link + 24px minimum tap height for menu and footer links */
+.skip{position:absolute;inset-inline-start:8px;top:8px;z-index:1000;display:inline-block;min-height:0;padding:10px 14px;border-radius:8px;background:#000;color:#fff;font-size:15px;text-decoration:none;transform:translateY(-300%)}
+.skip:focus{transform:none}
+.nav a:not([class]),footer a:not([class]){display:inline-block;min-height:24px;padding-block:3px;box-sizing:border-box}
+@media (max-width:430px){.site-header .logo{flex:none}.site-header .logo img{height:34px;width:auto}.site-header .wrap,.site-header .hwrap{gap:12px}.site-header .nav{gap:10px}.site-header .nav .btn{padding:0 12px}}
+@media (max-width:370px){.site-header .nav{gap:8px;font-size:12px}.site-header .nav .btn{padding:0 10px}}
+@media (max-width:340px){.site-header .nav>a:not([class]){display:none}}
+</style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
 <div class="wrap">
 <a class="logo" href="/" aria-label="Amr El Hadeka, home"><img src="/assets/logo.png" alt="Amr El Hadeka" width="240" height="218"></a>
@@ -69,9 +79,9 @@
 </div>
 </header>
 
-<main class="article">
+<main id="main" class="article">
 <div class="wrap">
-<a class="back" href="/#learn">‹ All lessons</a>
+<a class="back" href="/learn/">‹ All lessons</a>
 <p class="kicker">How investing works · Compounding</p>
 <h1>Compounding: let your money make money.</h1>
 <p class="dek">Returns that earn their own returns. It starts slowly, then speeds up, and its most important ingredient is time.</p>
