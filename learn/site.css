@@ -180,3 +180,6 @@ section[id]{scroll-margin-top:60px}
 .book-box .btn{white-space:nowrap}
 .book-box+.cta{margin-top:16px;padding-top:0;border-top:0}
 @media (max-width:600px){.book-box{flex-direction:column;align-items:stretch}}
+
+/* audit Nov 6: 24px tap height */
+.back{display:inline-block;min-height:24px;padding-block:3px;box-sizing:border-box}

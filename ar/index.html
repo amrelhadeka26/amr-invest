@@ -110,7 +110,7 @@ h1,h2{margin:0;font-weight:700;letter-spacing:-0.025em;line-height:1.07}
 .join label{flex:1 1 260px;display:flex;flex-direction:column;gap:6px;text-align:left;font-size:14px;font-weight:600}
 .join input[type=email]{min-height:50px;padding:0 16px;border:1px solid var(--line);border-radius:12px;background:var(--white);font:inherit;font-size:17px;font-weight:400}
 .join button{min-height:50px}
-.hp{position:absolute;left:-9999px}
+.hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 footer{background:var(--soft);border-top:1px solid var(--line)}
 footer .wrap{padding-top:20px;padding-bottom:28px;display:flex;flex-direction:column;gap:12px;font-size:12px;color:var(--muted)}
@@ -139,8 +139,8 @@ section[id]{scroll-margin-top:60px}
 .cal-box iframe{width:100%;height:100%;border:0;display:block}
 .cal-again{display:block;margin:14px auto 0;background:none;border:0;color:var(--ink2);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer}
 .pre{max-width:560px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;text-align:left}
-.pre label{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
-.pre input{min-height:50px;padding:0 16px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:17px;font-weight:400}
+.pre label{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+.pre input{width:100%;min-width:0;box-sizing:border-box;min-height:50px;padding:0 16px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:17px;font-weight:400}
 .pre .btn{min-height:50px;flex:1 1 100%}
 #calWrap{margin-top:8px}
 .fine-center{margin:14px 0 0;font-size:14px;color:var(--muted)}
@@ -174,8 +174,18 @@ section[id]{scroll-margin-top:60px}
 <script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 <meta name="zd-app" content="https://invest.amrelhadeka.com/zd">
 <meta name="zd-public" content="1">
+<style>
+/* audit Nov 6: skip link + 24px minimum tap height for menu and footer links */
+.skip{position:absolute;inset-inline-start:8px;top:8px;z-index:1000;display:inline-block;min-height:0;padding:10px 14px;border-radius:8px;background:#000;color:#fff;font-size:15px;text-decoration:none;transform:translateY(-300%)}
+.skip:focus{transform:none}
+.nav a:not([class]),footer a:not([class]){display:inline-block;min-height:24px;padding-block:3px;box-sizing:border-box}
+@media (max-width:430px){.site-header .logo{flex:none}.site-header .logo img{height:34px;width:auto}.site-header .wrap,.site-header .hwrap{gap:12px}.site-header .nav{gap:10px}.site-header .nav .btn{padding:0 12px}}
+@media (max-width:370px){.site-header .nav{gap:8px;font-size:12px}.site-header .nav .btn{padding:0 10px}}
+@media (max-width:340px){.site-header .nav>a:not([class]){display:none}}
+</style>
 </head>
 <body>
+<a class="skip" href="#main">انتقل للمحتوى</a>
 
 <header class="site-header">
 <div class="wrap">
@@ -191,7 +201,7 @@ section[id]{scroll-margin-top:60px}
 </div>
 </header>
 
-<main>
+<main id="main">
 <section class="hero" id="top">
 <div class="wrap">
 <h1>خلّي فلوسك تجيبلك فلوس.</h1>
