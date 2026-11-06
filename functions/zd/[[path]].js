@@ -1,7 +1,7 @@
-// ZD lives inside the website: invest.amrelhadeka.com/zd/* is served by the ZD app (Cloudflare Worker "zd-app").
+// ZD AI lives inside the website: invest.amrelhadeka.com/zd/* is served by the ZD AI app (Cloudflare Worker "zd-app").
 // The app uses relative paths, so the same build works here and at its own workers.dev address.
 const APP = 'https://zd-app.amrelhadeka.workers.dev';
-// Shared with the ZD Worker so it can trust the visitor's address we pass on (used only for the guest-account cap).
+// Shared with the ZD AI Worker so it can trust the visitor's address we pass on (used only for the guest-account cap).
 const KEY = '6422ca03946ea6b82ea63867a031b959';
 
 export async function onRequest({ request }) {
