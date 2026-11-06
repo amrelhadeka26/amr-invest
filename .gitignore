@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+qa/*.json
+qa/pages.txt
+.wrangler/
