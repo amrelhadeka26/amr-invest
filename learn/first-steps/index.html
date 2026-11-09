@@ -169,5 +169,6 @@
 <script>track('view','lesson-first-steps',1);</script>
 <script>document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('lang',a.lang)}catch(e){}if(location.hash&&a.getAttribute('href').indexOf('#')<0)a.setAttribute('href',a.getAttribute('href')+location.hash);if(window.track)track('lang',a.lang)})});</script>
 <script>document.querySelectorAll('[data-book]').forEach(function(a){a.addEventListener('click',function(){if(window.track)track('book',a.getAttribute('data-book'))})});</script>
+<script>try{if(navigator.doNotTrack!=='1'&&!navigator.globalPrivacyControl)navigator.sendBeacon('/zd/api/track',new Blob([JSON.stringify({p:location.pathname,r:document.referrer})],{type:'application/json'}))}catch(e){}</script>
 </body>
 </html>

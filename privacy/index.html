@@ -33,7 +33,7 @@ a{color:#1D1D1F}</style>
 <main id="main">
 <header><a href="/">invest.amrelhadeka.com</a><a href="/ar/privacy/" lang="ar">العربية</a></header>
 <h1>Privacy notice and terms</h1>
-<p class="muted">For ZD AI (invest.amrelhadeka.com/zd) and invest.amrelhadeka.com. Last updated 3 November 2026.</p>
+<p class="muted">For ZD AI (invest.amrelhadeka.com/zd) and invest.amrelhadeka.com. Last updated 9 November 2026.</p>
 
 <h2>Who we are</h2>
 <p>ZD AI and this website are run by Amr El Hadeka in Egypt. Questions or requests: <a href="mailto:invest@amrelhadeka.com">invest@amrelhadeka.com</a>.</p>
@@ -44,13 +44,14 @@ a{color:#1D1D1F}</style>
 <li><b>If you create an account with email:</b> your email, a name and your password (stored only as a secure hash).</li>
 <li><b>What you choose to enter in ZD AI:</b> for example income, spending, savings, debts, goals and the questions you ask. You never need to enter bank account numbers, card numbers or passwords, and ZD AI will never ask for them.</li>
 <li><b>Guest accounts:</b> if you try ZD AI without signing in, we create a private guest account just for you. It is deleted automatically after 7 days.</li>
-<li><b>Website usage:</b> anonymous daily counts of which pages and buttons are used. No cookies and no IP addresses are stored for this.</li>
+<li><b>Website usage:</b> anonymous daily counts of which pages are visited, the site you came from (for example Instagram or Google), your country and whether you use a phone or a computer. No cookies and no IP addresses are stored for this, and a visitor can't be followed from one day to the next. If your browser sends "Do Not Track" or "Global Privacy Control", the visit isn't counted.</li>
 <li><b>Newsletter and sessions:</b> if you subscribe or book a session, your email (and booking details) go to our newsletter tool (Brevo) or booking tool (Calendly).</li>
 </ul>
 
 <h2>Why we use it</h2>
 <ul>
 <li>To run ZD AI for you: show your numbers, answer your questions and keep the results you save.</li>
+<li>To understand, in totals only, how the website and ZD AI are used (for example how many people visit, which tools they open and which topics come up), so we can improve them. These totals never show who said what.</li>
 <li>To keep the service safe and affordable, for example daily limits on AI answers and limits on new guest accounts.</li>
 <li>We don't sell your information and we don't use it for advertising.</li>
 </ul>
@@ -85,5 +86,6 @@ a{color:#1D1D1F}</style>
 <li>We may update this page; the date at the top shows the latest version.</li>
 </ul>
 </main>
+<script>try{if(navigator.doNotTrack!=='1'&&!navigator.globalPrivacyControl)navigator.sendBeacon('/zd/api/track',new Blob([JSON.stringify({p:location.pathname,r:document.referrer})],{type:'application/json'}))}catch(e){}</script>
 </body>
 </html>

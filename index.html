@@ -347,5 +347,6 @@ section[id]{scroll-margin-top:60px}
   fetch(app + '/api/status', { mode: 'cors', signal: ctl ? ctl.signal : undefined }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.ok) show(); }).catch(function () {}).then(function () { clearTimeout(t); });
 })();
 </script>
+<script>try{if(navigator.doNotTrack!=='1'&&!navigator.globalPrivacyControl)navigator.sendBeacon('/zd/api/track',new Blob([JSON.stringify({p:location.pathname,r:document.referrer})],{type:'application/json'}))}catch(e){}</script>
 </body>
 </html>
