@@ -34,6 +34,6 @@ a{display:inline-flex;align-items:center;min-height:44px;padding:0 24px;border-r
 <a href="/ar/">ارجع للموقع</a>
 <p style="font-size:13px;color:#6e6e73;margin:32px 0 0">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</p>
 </main>
-<script>try{if(navigator.doNotTrack!=='1'&&!navigator.globalPrivacyControl)navigator.sendBeacon('/zd/api/track',new Blob([JSON.stringify({p:location.pathname,r:document.referrer})],{type:'application/json'}))}catch(e){}</script>
+<script>(function(){try{if(navigator.doNotTrack==='1'||navigator.globalPrivacyControl)return;var q=new URLSearchParams(location.search),t=function(p){navigator.sendBeacon('/zd/api/track',new Blob([JSON.stringify({p:p,r:document.referrer,c:q.get('c')||q.get('utm_campaign')||'',s:q.get('utm_source')||''})],{type:'application/json'}))};t(location.pathname);document.addEventListener('submit',function(e){var f=e.target;if(f&&/sibforms/.test(f.action||''))t(f.name==='newsletter'||f.id==='guideForm'?'/~newsletter':'/~form')},true)}catch(e){}})()</script>
 </body>
 </html>
