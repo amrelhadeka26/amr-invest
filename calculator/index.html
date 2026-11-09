@@ -417,7 +417,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
 .nav a:not([class]),footer a:not([class]){display:inline-block;min-height:24px;padding-block:3px;box-sizing:border-box}
 @media (max-width:430px){.site-header .logo{flex:none}.site-header .logo img{height:34px;width:auto}.site-header .wrap,.site-header .hwrap{gap:12px}.site-header .nav{gap:10px}.site-header .nav .btn{padding:0 12px}}
 @media (max-width:370px){.site-header .nav{gap:8px;font-size:12px}.site-header .nav .btn{padding:0 10px}}
-@media (max-width:340px){.site-header .nav>a:not([class]){display:none}}
+@media (max-width:340px){.site-header .nav>a:not([class]){display:none}.site-header .nav{gap:6px}.site-header .nav .btn{padding:0 8px;font-size:11.5px}}
 </style>
 </head>
 <body>
@@ -496,7 +496,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
         <div class="field" style="margin-bottom:14px">
           <label for="infl">Inflation, yearly</label>
           <div class="inp"><input id="infl" inputmode="decimal"><span>%</span></div>
-          <span class="small" id="infLatest">Latest: 13.9% (September 2026)</span>
+          <span class="small" id="infLatest">Latest: 12.7% (October 2026)</span>
         </div>
         <div class="field">
           <label for="raise">Raise my monthly amount each year by</label>
@@ -685,7 +685,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
   <details class="notes">
     <summary>Where the numbers come from</summary>
     <p><b>Where the scenarios come from.</b> <b>Last 10 years</b> uses what actually happened: EGX30 rose 12.8% a year on price alone from end-2014 to end-2024, plus dividends (<a href="https://www.1stock1.com/1stock1_2595.htm" target="_blank" rel="noopener">EGX30 yearly returns</a>). The S&amp;P 500 returned 14.8% a year in dollars, 2016–2025 (<a href="https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return" target="_blank" rel="noopener">Fidelity</a>). 21K gold rose from 287.62 EGP a gram in April 2013 (<a href="https://en.amwalalghad.com/?p=17964" target="_blank" rel="noopener">Amwal Al Ghad</a>) to about <span id="srcGold">6,217</span> today (<a href="https://goldpricez.com/gold/history/egp/years-3" target="_blank" rel="noopener">GoldPriceZ</a>, 24K × 21/24), about 25.6% a year in pounds, which splits into about 7.6% for gold in dollars and 16.7% for the pound's fall. Property prices rose about 12.2% a year in the Aqarmap index years 2014–2024 shown by <a href="https://www.globalpropertyguide.com/middle-east/egypt/price-history" target="_blank" rel="noopener">Global Property Guide</a>, with gross rental yields of 6.7% nationally. <b>Balanced</b> and <b>Cautious</b> are lower, forward-looking guesses, because the last decade included two large devaluations.</p>
-    <p><b>Today's rates.</b> Inflation <span id="srcInfl">13.9% in September 2026 (<a href="https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/" target="_blank" rel="noopener">CAPMAS via Daily News Egypt</a>)</span>. 3-year fixed certificates about <span id="srcCd">17.75% (<a href="https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/" target="_blank" rel="noopener">Enterprise, August 2026</a>)</span>; the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: <span id="srcUsd">55.29 EGP (<a href="https://www.exchangerate-api.com/" target="_blank" rel="noopener">ExchangeRate-API</a>, 24 Oct 2026)</span>, refreshed several times a day. Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
+    <p><b>Today's rates.</b> Inflation <span id="srcInfl">12.7% in October 2026 (<a href="https://tradingeconomics.com/egypt/inflation-cpi/news/598833" target="_blank" rel="noopener">CAPMAS via Trading Economics</a>)</span>. 3-year fixed certificates about <span id="srcCd">17.75% (<a href="https://www.bankygate.com/en/products/cds/6" target="_blank" rel="noopener">Banky, November 2026</a>)</span>; the renewal rate is a guess, since the CBE has been cutting rates. EGX trades pay 0.05% stamp duty each way since August 2026, replacing capital gains tax (<a href="https://www.zawya.com/en/economy/north-africa/mcdr-begins-implementing-stamp-duty-withholding-on-the-egyptian-exchange-trades-after-tax-law-amendments-418042" target="_blank" rel="noopener">Zawya</a>). Dollar today: <span id="srcUsd">55.29 EGP (<a href="https://www.exchangerate-api.com/" target="_blank" rel="noopener">ExchangeRate-API</a>, 24 Oct 2026)</span>, refreshed several times a day. Default costs for gold workmanship, broker and FX spreads, and property fees are estimates; edit them to match your own.</p>
     <p><b>Worst year on record</b> shows how hard each option has fallen in a single year: EGX30 −49.3% in 2011, property −9.6% in 2020 (Aqarmap), and the widely reported S&amp;P 500 −37% in 2008 and gold −28% in 2013 (in USD). Property also needs a large amount up front and can take months to sell. Certificates are the only fixed rate, and only until they mature.</p>
     <p>Checked <span id="srcChecked">24 October 2026</span>.</p>
   </details>
@@ -705,7 +705,7 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     balanced: { note: 'Balanced: a middle guess for the years ahead.', cd1: 17.75, cd2: 14, egx: 15, us: 9, gold: 5, fx: 7, re: 12, rent: 5 },
     past: { note: 'Last 10 years: what each option actually returned recently, including two big devaluations. The future may be calmer.', cd1: 17.75, cd2: 15, egx: 15.5, us: 14.8, gold: 7.6, fx: 16.7, re: 12.2, rent: 5 }
   };
-  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 13.9, rate0: 55.29,
+  const BASE = { start: 100000, monthly: 3000, years: 5, raise: 0, infl: 12.7, rate0: 54.03,
     c_cd_b: 0, c_cd_s: 0, c_cd_y: 0, c_egx_b: 0.25, c_egx_s: 0.25, c_egx_y: 0.3, c_us_b: 1, c_us_s: 0.5, c_us_y: 0.4,
     c_gold_b: 3, c_gold_s: 1, c_gold_y: 0, c_re_b: 3, c_re_s: 2.5, c_re_y: 0.5 };
   const WORST = { cd: '0% (fixed)', egx: '−49.3% (2011)', us: '−37% (2008, USD)', gold: '−28% (2013, USD)', re: '−9.6% (2020)', cash: 'Never grows' };

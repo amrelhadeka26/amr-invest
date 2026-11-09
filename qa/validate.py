@@ -1,4 +1,6 @@
-import json
+import json, urllib.request
+# The calculator's default inflation is the live figure; read the same one.
+LIVE_INFL=json.load(urllib.request.urlopen(urllib.request.Request('https://grow-data.amrelhadeka.workers.dev/site.json', headers={'User-Agent': 'zd-qa'})))['inflation']['value']
 exec(open('qa/indep.py').read())
 d=json.load(open('qa/calc_out.json'))['res']
 P={'balanced':dict(cd1=17.75,cd2=14,egx=15,us=9,gold=5,fx=7,re=12,rent=5),'past':dict(cd1=17.75,cd2=15,egx=15.5,us=14.8,gold=7.6,fx=16.7,re=12.2,rent=5),'cautious':dict(cd1=17.75,cd2=12,egx=12,us=7,gold=3,fx=4,re=9,rent=4.5)}
@@ -8,7 +10,7 @@ checked=0;fails=[];maxdiff=0
 for x in d:
     s=x['s']; v=x['out']
     if s['name'] in ('negative start','infl -100','all zero','text input','huge'): continue
-    p=dict(P[s.get('preset','balanced')]); base=dict(start=100000,monthly=3000,years=5,infl=13.9,raise_=0)
+    p=dict(P[s.get('preset','balanced')]); base=dict(start=100000,monthly=3000,years=5,infl=LIVE_INFL,raise_=0)
     costs={k:list(c) for k,c in C.items()}
     for k,val in s['v'].items():
         if k in p: p[k]=float(val)

@@ -1,21 +1,21 @@
 {
-  "updated": "2026-11-07T08:37:36+02:00",
+  "updated": "2026-11-09T22:00:00+02:00",
   "usd_egp": {
-    "value": 53.9,
-    "as_of": "2026-11-07",
+    "value": 54.03,
+    "as_of": "2026-11-09",
     "source_name": "ExchangeRate-API",
     "source_url": "https://www.exchangerate-api.com/"
   },
   "inflation": {
-    "value": 13.9,
-    "period": "September 2026",
-    "source_name": "CAPMAS via Daily News Egypt",
-    "source_url": "https://www.dailynewsegypt.com/2026/10/10/egypts-annual-urban-inflation-eases-to-13-9-in-september/"
+    "value": 12.7,
+    "period": "October 2026",
+    "source_name": "CAPMAS via Trading Economics",
+    "source_url": "https://tradingeconomics.com/egypt/inflation-cpi/news/598833"
   },
   "cd3": {
     "value": 17.75,
-    "as_of": "August 2026",
-    "source_name": "Enterprise",
-    "source_url": "https://enterpriseam.com/egypt/2026/08/16/the-egyptian-investors-guide-to-savings-cds-and-time-deposits/"
+    "as_of": "November 2026",
+    "source_name": "Banky",
+    "source_url": "https://www.bankygate.com/en/products/cds/6"
   }
 }
