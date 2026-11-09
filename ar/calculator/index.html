@@ -1138,5 +1138,6 @@ h1, .pf h2 { line-height: 1.3; }
 })();
 </script>
 <script>document.querySelectorAll('[data-book]').forEach(function(a){a.addEventListener('click',function(){if(window.track)track('book',a.getAttribute('data-book'))})});</script>
+<script>try{if(navigator.doNotTrack!=='1'&&!navigator.globalPrivacyControl)navigator.sendBeacon('/zd/api/track',new Blob([JSON.stringify({p:location.pathname,r:document.referrer})],{type:'application/json'}))}catch(e){}</script>
 </body>
 </html>

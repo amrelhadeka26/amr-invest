@@ -14,6 +14,7 @@ export async function onRequest({ request, env }) {
   const headers = new Headers(request.headers);
   headers.delete('host');
   headers.set('x-zd-ip', request.headers.get('cf-connecting-ip') || '');
+  headers.set('x-zd-country', (request.cf && request.cf.country) || '');
   headers.set('x-zd-proxy-key', KEY);
   const init = { method: request.method, headers, redirect: 'manual' };
   if (request.method !== 'GET' && request.method !== 'HEAD') init.body = request.body;
