@@ -60,7 +60,14 @@ async function openCalendarPicker(){
     $('calendarChoices').innerHTML=calendarOptions.map((c,i)=>'<option value="'+i+'" '+(c.id===v.selectedId?'selected':'')+'>'+safe(c.name)+(c.primary?' (primary)':'')+'</option>').join('');
     $('calendarPickerStatus').textContent=v.selectedId?'Currently selected calendar shown above.':'Choose which calendar should receive HQ action deadlines.';
     $('saveCalendarChoice').disabled=false;
-  }catch(e){$('calendarPickerStatus').textContent=e.message}
+  }catch(e){$('calendarPickerStatus').textContent=e.message;
+    if(e.message.includes('not connected') || e.message.includes('Connect Google Calendar first')){
+      const link=document.createElement('button');
+      link.type='button';link.className='btn primary';link.textContent='Connect amr@amrelhadeka.com';
+      link.onclick=()=>{location.href='/hq/auth/calendar'};
+      $('calendarPickerStatus').append(document.createElement('div'),link);
+    }
+  }
 }
 async function saveCalendarChoice(){
   const calendar=calendarOptions[Number($('calendarChoices').value)];
