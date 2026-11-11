@@ -92,14 +92,21 @@ async function gcal(token,path,method="GET",body) {
   if(r.status===204)return null;
   return r.json();
 }
+async function listWritableCalendars(token) {
+  let items=[], pageToken="";
+  do {
+    const suffix=pageToken?"&pageToken="+encodeURIComponent(pageToken):"";
+    const page=await gcal(token,"/users/me/calendarList?maxResults=250"+suffix);
+    items.push(...(page.items||[]));
+    pageToken=page.nextPageToken||"";
+  }while(pageToken && items.length<1000);
+  return items.filter(x=>["owner","writer"].includes(x.accessRole) && !x.deleted)
+    .map(x=>({id:x.id,name:x.summary||x.id,primary:!!x.primary,accessRole:x.accessRole}));
+}
 async function ensureCalendar(env,token,existing) {
-  if(existing)return existing;
-  const list=await gcal(token,"/users/me/calendarList?maxResults=250");
-  let calendar=(list.items||[]).find(x=>x.summary==="ZD Business" && x.accessRole==="owner");
-  if(!calendar)calendar=await gcal(token,"/calendars","POST",{summary:"ZD Business",timeZone:"Africa/Cairo",description:"Private ZD Business HQ action deadlines"});
-  const id=calendar.id;
-  await env.DB.prepare("UPDATE hq_google_tokens SET calendar_id=? WHERE account=?").bind(id,OWNER).run();
-  return id;
+  // Never choose a calendar or create a new one without an explicit owner selection.
+  if(!existing)throw Error("Choose a Google Calendar in HQ before syncing dated actions");
+  return existing;
 }
 const nextDate = date => {const d=new Date(date+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)};
 async function syncCalendar(env,doc) {
@@ -117,15 +124,21 @@ async function syncCalendar(env,doc) {
     const prev=old.get(id);
     if(prev?.digest===digest && prev.calendar_id===cid)continue;
     const event={summary:"ZD HQ | "+String(t.name).slice(0,180),description:"Priority: "+(t.priority||"")+"\\n"+(t.notes||""),start:{date:t.due},end:{date:nextDate(t.due)}};
-    const path="/calendars/"+encodeURIComponent(cid)+"/events"+(prev?"/"+encodeURIComponent(prev.event_id):"");
-    const result=await gcal(session.access_token,path,prev?"PATCH":"POST",event);
+    const onSameCalendar=prev && prev.calendar_id===cid;
+    const path="/calendars/"+encodeURIComponent(cid)+"/events"+(onSameCalendar?"/"+encodeURIComponent(prev.event_id):"");
+    const result=await gcal(session.access_token,path,onSameCalendar?"PATCH":"POST",event);
+    if(prev && !onSameCalendar){
+      // Only remove an HQ-tracked event, never any other event on the old calendar.
+      try {await gcal(session.access_token,"/calendars/"+encodeURIComponent(prev.calendar_id)+"/events/"+encodeURIComponent(prev.event_id),"DELETE")}
+      catch(err){if(!String(err).includes("404"))throw err}
+    }
     await env.DB.prepare("INSERT INTO hq_calendar_events(task_id,event_id,calendar_id,digest) VALUES(?,?,?,?) ON CONFLICT(task_id) DO UPDATE SET event_id=excluded.event_id,calendar_id=excluded.calendar_id,digest=excluded.digest").bind(id,result.id,cid,digest).run();
   }
   for(const e of existing)if(!planned.has(e.task_id)) {
     try {await gcal(session.access_token,"/calendars/"+encodeURIComponent(e.calendar_id)+"/events/"+encodeURIComponent(e.event_id),"DELETE")}catch(err){if(!String(err).includes("404"))throw err}
     await env.DB.prepare("DELETE FROM hq_calendar_events WHERE task_id=?").bind(e.task_id).run();
   }
-  return {connected:true,synced:planned.size,calendar:"ZD Business"};
+  return {connected:true,synced:planned.size,calendarId:cid};
 }
 async function callback(req,env) {
   const url=new URL(req.url);
@@ -181,7 +194,29 @@ export async function onRequest(context) {
         return json({saved:true,calendar});
       }
       if(path==="/hq/api/calendar/status" && req.method==="GET"){
-        const row=await calendarRow(env);return json({connected:!!row,calendar:row?.calendar_id?"ZD Business":null});
+        const row=await calendarRow(env);
+        return json({connected:!!row,calendarId:row?.calendar_id||null,canManageCalendar:user.email===OWNER});
+      }
+      if(path==="/hq/api/calendar/list" && req.method==="GET"){
+        if(user.email!==OWNER)return json({error:"Only the primary owner may choose a calendar"},403);
+        const session=await calendarToken(env);
+        if(!session)return json({error:"Connect Google Calendar first"},400);
+        return json({calendars:await listWritableCalendars(session.access_token),selectedId:session.calendar_id});
+      }
+      if(path==="/hq/api/calendar/select" && req.method==="POST"){
+        if(user.email!==OWNER)return json({error:"Only the primary owner may choose a calendar"},403);
+        const session=await calendarToken(env);
+        if(!session)return json({error:"Connect Google Calendar first"},400);
+        const payload=await req.json();
+        if(typeof payload?.calendarId!=="string"||payload.calendarId.length>300)return json({error:"Invalid calendar selection"},400);
+        const options=await listWritableCalendars(session.access_token);
+        const chosen=options.find(c=>c.id===payload.calendarId);
+        if(!chosen)return json({error:"Calendar not found or not writable"},400);
+        await env.DB.prepare("UPDATE hq_google_tokens SET calendar_id=?,updated_at=datetime('now') WHERE account=?").bind(chosen.id,OWNER).run();
+        const row=await env.DB.prepare("SELECT data FROM hq_documents WHERE id=?").bind("main").first();
+        let sync=null;
+        if(row){try{sync=await syncCalendar(env,JSON.parse(row.data))}catch(e){sync={warning:String(e.message||e)}}}
+        return json({selectedId:chosen.id,selectedName:chosen.name,sync});
       }
       if(path==="/hq/api/calendar/sync" && req.method==="POST"){
         const row=await env.DB.prepare("SELECT data FROM hq_documents WHERE id=?").bind("main").first();
