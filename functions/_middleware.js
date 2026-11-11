@@ -40,7 +40,7 @@ async function sessionUser(req,env) {
   try {const data=JSON.parse(td.decode(unb64(p)));return data.exp>Date.now()/1000 && ALLOWED_ACCOUNTS.has(data.email) && data.sub ? data : null}catch{return null}
 }
 function params(mode,state) {
-  const q=new URLSearchParams({client_id:CLIENT_ID,redirect_uri:CALLBACK,response_type:"code",scope:mode==="calendar"?"openid email profile https://www.googleapis.com/auth/calendar":"openid email profile",state,access_type:"offline",prompt:mode==="calendar"?"consent":"select_account"});
+  const q=new URLSearchParams({client_id:CLIENT_ID,redirect_uri:CALLBACK,response_type:"code",scope:mode==="calendar"?"openid email profile https://www.googleapis.com/auth/calendar":"openid email profile",state,access_type:"offline",prompt:mode==="calendar"?"consent select_account":"select_account"});
   return "https://accounts.google.com/o/oauth2/v2/auth?"+q.toString();
 }
 async function startOAuth(mode,env) {
@@ -84,7 +84,7 @@ async function calendarToken(env) {
   if(!r.ok)throw Error("Calendar token refresh failed, reconnect Google Calendar");
   const value=await r.json();
   tok.access_token=value.access_token;tok.expires_at=Date.now()+(value.expires_in||3600)*1000;
-  await env.DB.prepare("UPDATE hq_google_tokens SET encrypted=?, updated_at=datetime('now') WHERE account=?").bind(await seal(tok,env),OWNER).run();
+  await env.DB.prepare("UPDATE hq_google_tokens SET encrypted=?, updated_at=datetime('now') WHERE account=?").bind(await seal(tok,env),CALENDAR_MANAGER).run();
   return {access_token:tok.access_token,calendar_id:row.calendar_id};
 }
 async function gcal(token,path,method="GET",body) {
@@ -158,7 +158,7 @@ async function callback(req,env) {
       let prior={};if(prev)try{prior=await unseal(prev.encrypted,env)}catch{}
       const stored={access_token:tok.access_token,refresh_token:tok.refresh_token||prior.refresh_token,expires_at:Date.now()+(tok.expires_in||3600)*1000};
       if(!stored.refresh_token)throw Error("Google did not return Calendar refresh permission");
-      await env.DB.prepare("INSERT INTO hq_google_tokens(account,encrypted,calendar_id,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(account) DO UPDATE SET encrypted=excluded.encrypted,updated_at=excluded.updated_at").bind(OWNER,await seal(stored,env),null).run();
+      await env.DB.prepare("INSERT INTO hq_google_tokens(account,encrypted,calendar_id,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(account) DO UPDATE SET encrypted=excluded.encrypted,updated_at=excluded.updated_at").bind(CALENDAR_MANAGER,await seal(stored,env),null).run();
     }
     const ses=await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET);
     return redirect(ORIGIN+"/hq/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
@@ -203,19 +203,19 @@ export async function onRequest(context) {
       if(path==="/hq/api/calendar/list" && req.method==="GET"){
         if(user.email!==CALENDAR_MANAGER)return json({error:"Only the calendar manager may choose a calendar"},403);
         const session=await calendarToken(env);
-        if(!session)return json({error:"Connect Google Calendar first"},400);
+        if(!session)return json({error:"Google Calendar is not connected to amr@amrelhadeka.com. Please connect that account first.",needsConnection:true},400);
         return json({calendars:await listWritableCalendars(session.access_token),selectedId:session.calendar_id});
       }
       if(path==="/hq/api/calendar/select" && req.method==="POST"){
         if(user.email!==CALENDAR_MANAGER)return json({error:"Only the calendar manager may choose a calendar"},403);
         const session=await calendarToken(env);
-        if(!session)return json({error:"Connect Google Calendar first"},400);
+        if(!session)return json({error:"Google Calendar is not connected to amr@amrelhadeka.com. Please connect that account first.",needsConnection:true},400);
         const payload=await req.json();
         if(typeof payload?.calendarId!=="string"||payload.calendarId.length>300)return json({error:"Invalid calendar selection"},400);
         const options=await listWritableCalendars(session.access_token);
         const chosen=options.find(c=>c.id===payload.calendarId);
         if(!chosen)return json({error:"Calendar not found or not writable"},400);
-        await env.DB.prepare("UPDATE hq_google_tokens SET calendar_id=?,updated_at=datetime('now') WHERE account=?").bind(chosen.id,OWNER).run();
+        await env.DB.prepare("UPDATE hq_google_tokens SET calendar_id=?,updated_at=datetime('now') WHERE account=?").bind(chosen.id,CALENDAR_MANAGER).run();
         const row=await env.DB.prepare("SELECT data FROM hq_documents WHERE id=?").bind("main").first();
         let sync=null;
         if(row){try{sync=await syncCalendar(env,JSON.parse(row.data))}catch(e){sync={warning:String(e.message||e)}}}
