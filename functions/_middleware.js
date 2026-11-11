@@ -2,6 +2,7 @@
 // All /hq routes fail closed unless an allowed Google account has authenticated.
 const CLIENT_ID = "322859135457-3prdc4b02hm4d1piguamdve1pbs2anf1.apps.googleusercontent.com";
 const OWNER = "amrelhadeka@gmail.com";
+const ALLOWED_ACCOUNTS = new Set([OWNER, "amr@amrelhadeka.com"]);
 const ORIGIN = "https://invest.amrelhadeka.com";
 const CALLBACK = ORIGIN + "/hq/auth/callback";
 const SESSION_NAME = "zd_hq_session";
@@ -26,8 +27,8 @@ async function verifySig(value,sig,secret) {
   let diff=0;for(let i=0;i<sig.length;i++)diff|=expected.charCodeAt(i)^sig.charCodeAt(i);
   return diff===0;
 }
-async function signSession(sub,secret) {
-  const payload=b64(te.encode(JSON.stringify({sub,email:OWNER,exp:Math.floor(Date.now()/1000)+604800})));
+async function signSession(sub,email,secret) {
+  const payload=b64(te.encode(JSON.stringify({sub,email,exp:Math.floor(Date.now()/1000)+604800})));
   return payload+"."+await hmac("session|"+payload,secret);
 }
 async function sessionUser(req,env) {
@@ -35,7 +36,7 @@ async function sessionUser(req,env) {
   const i=value.lastIndexOf(".");if(i<0)return null;
   const p=value.slice(0,i);
   if(!await verifySig("session|"+p,value.slice(i+1),env.GOOGLE_CLIENT_SECRET||""))return null;
-  try {const data=JSON.parse(td.decode(unb64(p)));return data.exp>Date.now()/1000 && data.email===OWNER && data.sub ? data : null}catch{return null}
+  try {const data=JSON.parse(td.decode(unb64(p)));return data.exp>Date.now()/1000 && ALLOWED_ACCOUNTS.has(data.email) && data.sub ? data : null}catch{return null}
 }
 function params(mode,state) {
   const q=new URLSearchParams({client_id:CLIENT_ID,redirect_uri:CALLBACK,response_type:"code",scope:mode==="calendar"?"openid email profile https://www.googleapis.com/auth/calendar":"openid email profile",state,access_type:"offline",prompt:mode==="calendar"?"consent":"select_account"});
@@ -57,7 +58,7 @@ async function googleProfile(access_token) {
   const r=await fetch("https://openidconnect.googleapis.com/v1/userinfo",{headers:{Authorization:"Bearer "+access_token}});
   if(!r.ok)throw Error("Google identity verification failed");
   const u=await r.json();
-  if(u.email!==OWNER || u.email_verified!==true || !u.sub)throw Error("This Google account is not authorized");
+  if(!ALLOWED_ACCOUNTS.has(u.email) || u.email_verified!==true || !u.sub)throw Error("This Google account is not authorized");
   return u;
 }
 async function aesKey(env) {
@@ -136,13 +137,14 @@ async function callback(req,env) {
     const tok=await exchange(url.searchParams.get("code"),env);
     const profile=await googleProfile(tok.access_token);
     if(mode==="calendar"){
+      if(profile.email!==OWNER)throw Error("Only the primary account can connect or change the shared ZD Business Calendar");
       const prev=await calendarRow(env);
       let prior={};if(prev)try{prior=await unseal(prev.encrypted,env)}catch{}
       const stored={access_token:tok.access_token,refresh_token:tok.refresh_token||prior.refresh_token,expires_at:Date.now()+(tok.expires_in||3600)*1000};
       if(!stored.refresh_token)throw Error("Google did not return Calendar refresh permission");
       await env.DB.prepare("INSERT INTO hq_google_tokens(account,encrypted,calendar_id,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(account) DO UPDATE SET encrypted=excluded.encrypted,updated_at=excluded.updated_at").bind(OWNER,await seal(stored,env),null).run();
     }
-    const ses=await signSession(profile.sub,env.GOOGLE_CLIENT_SECRET);
+    const ses=await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET);
     return redirect(ORIGIN+"/hq/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
   }catch(e){return new Response("ZD HQ Google login: "+String(e.message||e),{status:401,headers:{...htmlHeaders,"Content-Type":"text/plain; charset=utf-8"}})}
 }
@@ -159,7 +161,7 @@ export async function onRequest(context) {
     return redirect(ORIGIN+"/hq/auth/login");
   }
   if(path==="/hq/auth/logout")return redirect(ORIGIN+"/hq/auth/login",[cookie(SESSION_NAME,"",0)]);
-  if(path==="/hq/auth/calendar" && req.method==="GET")return startOAuth("calendar",env);
+  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==OWNER)return new Response("Only the primary owner may connect Google Calendar",{status:403,headers:htmlHeaders});return startOAuth("calendar",env)}
   if(path==="/hq")return redirect(ORIGIN+"/hq/");
   if(path.startsWith("/hq/api/")) {
     if(req.method!=="GET" && (req.headers.get("Origin")||ORIGIN)!==ORIGIN)return json({error:"Origin rejected"},403);
@@ -185,6 +187,7 @@ export async function onRequest(context) {
         return json(row?await syncCalendar(env,JSON.parse(row.data)):{error:"No dashboard data to sync"},row?200:400);
       }
       if(path==="/hq/api/calendar/disconnect" && req.method==="POST"){
+        if(user.email!==OWNER)return json({error:"Only primary owner may disconnect calendar"},403);
         await env.DB.prepare("DELETE FROM hq_google_tokens WHERE account=?").bind(OWNER).run();
         return json({disconnected:true});
       }
