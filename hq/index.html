@@ -29,7 +29,7 @@ async function calendarStatus(){
     const me=await meRes.json(),v=await statusRes.json(),btn=$('calendarButton'),choose=$('chooseCalendarButton');
     selectedCalendarId=v.calendarId||null;
     if(!me.canManageCalendar){
-      btn.textContent=v.connected?'Google Calendar linked':'Calendar managed by primary account';
+      btn.textContent=v.connected?'Google Calendar linked':'Calendar managed by business account';
       btn.disabled=true;btn.onclick=null;choose.classList.add('hidden');
     }else if(v.connected){
       btn.disabled=!v.calendarId;btn.textContent=v.calendarId?'Sync calendar':'Choose a calendar to sync';
@@ -42,7 +42,7 @@ async function calendarStatus(){
       choose.classList.add('hidden');
     }
     const param=new URLSearchParams(location.search).get('calendar');
-    if(param==='owner-only')toast('HQ is available. Calendar linking is managed by the primary account.');
+    if(param==='owner-only')toast('HQ is available. Calendar linking is managed by amr@amrelhadeka.com.');
     if(param==='connected'&&me.canManageCalendar)await openCalendarPicker();
     if(param)history.replaceState(null,'','/hq/');
   }catch(e){toast('Calendar status unavailable: '+e.message)}
