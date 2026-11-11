@@ -2,7 +2,8 @@
 // All /hq routes fail closed unless an allowed Google account has authenticated.
 const CLIENT_ID = "322859135457-3prdc4b02hm4d1piguamdve1pbs2anf1.apps.googleusercontent.com";
 const OWNER = "amrelhadeka@gmail.com";
-const ALLOWED_ACCOUNTS = new Set([OWNER, "amr@amrelhadeka.com"]);
+const CALENDAR_MANAGER = "amr@amrelhadeka.com";
+const ALLOWED_ACCOUNTS = new Set([OWNER, CALENDAR_MANAGER]);
 const ORIGIN = "https://invest.amrelhadeka.com";
 const CALLBACK = ORIGIN + "/hq/auth/callback";
 const SESSION_NAME = "zd_hq_session";
@@ -73,7 +74,7 @@ async function seal(value,env) {
 async function unseal(value,env) {
   const [a,b]=value.split(".");return JSON.parse(td.decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(a)},await aesKey(env),unb64(b))));
 }
-async function calendarRow(env) {return env.DB.prepare("SELECT encrypted, calendar_id FROM hq_google_tokens WHERE account=?").bind(OWNER).first()}
+async function calendarRow(env) {return env.DB.prepare("SELECT encrypted, calendar_id FROM hq_google_tokens WHERE account=?").bind(CALENDAR_MANAGER).first()}
 async function calendarToken(env) {
   const row=await calendarRow(env);if(!row)return null;
   const tok=await unseal(row.encrypted,env);
@@ -129,13 +130,15 @@ async function syncCalendar(env,doc) {
     const result=await gcal(session.access_token,path,onSameCalendar?"PATCH":"POST",event);
     if(prev && !onSameCalendar){
       // Only remove an HQ-tracked event, never any other event on the old calendar.
+      // A previous Google account's calendar may not be accessible to this account.
+      // Do not block synchronization to the new calendar when legacy cleanup is forbidden.
       try {await gcal(session.access_token,"/calendars/"+encodeURIComponent(prev.calendar_id)+"/events/"+encodeURIComponent(prev.event_id),"DELETE")}
-      catch(err){if(!String(err).includes("404"))throw err}
+      catch(err){if(!/Google Calendar (403|404):/.test(String(err)))throw err}
     }
     await env.DB.prepare("INSERT INTO hq_calendar_events(task_id,event_id,calendar_id,digest) VALUES(?,?,?,?) ON CONFLICT(task_id) DO UPDATE SET event_id=excluded.event_id,calendar_id=excluded.calendar_id,digest=excluded.digest").bind(id,result.id,cid,digest).run();
   }
   for(const e of existing)if(!planned.has(e.task_id)) {
-    try {await gcal(session.access_token,"/calendars/"+encodeURIComponent(e.calendar_id)+"/events/"+encodeURIComponent(e.event_id),"DELETE")}catch(err){if(!String(err).includes("404"))throw err}
+    try {await gcal(session.access_token,"/calendars/"+encodeURIComponent(e.calendar_id)+"/events/"+encodeURIComponent(e.event_id),"DELETE")}catch(err){if(!/Google Calendar (403|404):/.test(String(err)))throw err}
     await env.DB.prepare("DELETE FROM hq_calendar_events WHERE task_id=?").bind(e.task_id).run();
   }
   return {connected:true,synced:planned.size,calendarId:cid};
@@ -150,7 +153,7 @@ async function callback(req,env) {
     const tok=await exchange(url.searchParams.get("code"),env);
     const profile=await googleProfile(tok.access_token);
     if(mode==="calendar"){
-      if(profile.email!==OWNER)return redirect(ORIGIN+"/hq/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
+      if(profile.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
       const prev=await calendarRow(env);
       let prior={};if(prev)try{prior=await unseal(prev.encrypted,env)}catch{}
       const stored={access_token:tok.access_token,refresh_token:tok.refresh_token||prior.refresh_token,expires_at:Date.now()+(tok.expires_in||3600)*1000};
@@ -174,12 +177,12 @@ export async function onRequest(context) {
     return redirect(ORIGIN+"/hq/auth/login");
   }
   if(path==="/hq/auth/logout")return redirect(ORIGIN+"/hq/auth/login",[cookie(SESSION_NAME,"",0)]);
-  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==OWNER)return redirect(ORIGIN+"/hq/?calendar=owner-only");return startOAuth("calendar",env)}
+  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/?calendar=owner-only");return startOAuth("calendar",env)}
   if(path==="/hq")return redirect(ORIGIN+"/hq/");
   if(path.startsWith("/hq/api/")) {
     if(req.method!=="GET" && (req.headers.get("Origin")||ORIGIN)!==ORIGIN)return json({error:"Origin rejected"},403);
     try {
-      if(path==="/hq/api/me" && req.method==="GET")return json({email:user.email,canManageCalendar:user.email===OWNER});
+      if(path==="/hq/api/me" && req.method==="GET")return json({email:user.email,canManageCalendar:user.email===CALENDAR_MANAGER});
       if(path==="/hq/api/data" && req.method==="GET"){
         const row=await env.DB.prepare("SELECT data FROM hq_documents WHERE id=?").bind("main").first();
         return json({data:row?JSON.parse(row.data):null});
@@ -195,16 +198,16 @@ export async function onRequest(context) {
       }
       if(path==="/hq/api/calendar/status" && req.method==="GET"){
         const row=await calendarRow(env);
-        return json({connected:!!row,calendarId:row?.calendar_id||null,canManageCalendar:user.email===OWNER});
+        return json({connected:!!row,calendarId:row?.calendar_id||null,canManageCalendar:user.email===CALENDAR_MANAGER});
       }
       if(path==="/hq/api/calendar/list" && req.method==="GET"){
-        if(user.email!==OWNER)return json({error:"Only the primary owner may choose a calendar"},403);
+        if(user.email!==CALENDAR_MANAGER)return json({error:"Only the calendar manager may choose a calendar"},403);
         const session=await calendarToken(env);
         if(!session)return json({error:"Connect Google Calendar first"},400);
         return json({calendars:await listWritableCalendars(session.access_token),selectedId:session.calendar_id});
       }
       if(path==="/hq/api/calendar/select" && req.method==="POST"){
-        if(user.email!==OWNER)return json({error:"Only the primary owner may choose a calendar"},403);
+        if(user.email!==CALENDAR_MANAGER)return json({error:"Only the calendar manager may choose a calendar"},403);
         const session=await calendarToken(env);
         if(!session)return json({error:"Connect Google Calendar first"},400);
         const payload=await req.json();
@@ -223,8 +226,8 @@ export async function onRequest(context) {
         return json(row?await syncCalendar(env,JSON.parse(row.data)):{error:"No dashboard data to sync"},row?200:400);
       }
       if(path==="/hq/api/calendar/disconnect" && req.method==="POST"){
-        if(user.email!==OWNER)return json({error:"Only primary owner may disconnect calendar"},403);
-        await env.DB.prepare("DELETE FROM hq_google_tokens WHERE account=?").bind(OWNER).run();
+        if(user.email!==CALENDAR_MANAGER)return json({error:"Only calendar manager may disconnect calendar"},403);
+        await env.DB.prepare("DELETE FROM hq_google_tokens WHERE account=?").bind(CALENDAR_MANAGER).run();
         return json({disconnected:true});
       }
       return json({error:"Unknown HQ API route"},404);
