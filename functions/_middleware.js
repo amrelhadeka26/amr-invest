@@ -1,6 +1,6 @@
 // ZD Business HQ, private authentication, storage and calendar integration.
 // All /hq routes fail closed unless an allowed Google account has authenticated.
-const CLIENT_ID = "322859135457-3prdc4b02hm4d1piquamdyelpbs2anf1.apps.googleusercontent.com";
+const CLIENT_ID = "322859135457-3prdc4b02hm4d1piguamdve1pbs2anf1.apps.googleusercontent.com";
 const OWNER = "amrelhadeka@gmail.com";
 const ORIGIN = "https://invest.amrelhadeka.com";
 const CALLBACK = ORIGIN + "/hq/auth/callback";
