@@ -137,7 +137,7 @@ async function callback(req,env) {
     const tok=await exchange(url.searchParams.get("code"),env);
     const profile=await googleProfile(tok.access_token);
     if(mode==="calendar"){
-      if(profile.email!==OWNER)throw Error("Only the primary account can connect or change the shared ZD Business Calendar");
+      if(profile.email!==OWNER)return redirect(ORIGIN+"/hq/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
       const prev=await calendarRow(env);
       let prior={};if(prev)try{prior=await unseal(prev.encrypted,env)}catch{}
       const stored={access_token:tok.access_token,refresh_token:tok.refresh_token||prior.refresh_token,expires_at:Date.now()+(tok.expires_in||3600)*1000};
@@ -161,11 +161,12 @@ export async function onRequest(context) {
     return redirect(ORIGIN+"/hq/auth/login");
   }
   if(path==="/hq/auth/logout")return redirect(ORIGIN+"/hq/auth/login",[cookie(SESSION_NAME,"",0)]);
-  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==OWNER)return new Response("Only the primary owner may connect Google Calendar",{status:403,headers:htmlHeaders});return startOAuth("calendar",env)}
+  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==OWNER)return redirect(ORIGIN+"/hq/?calendar=owner-only");return startOAuth("calendar",env)}
   if(path==="/hq")return redirect(ORIGIN+"/hq/");
   if(path.startsWith("/hq/api/")) {
     if(req.method!=="GET" && (req.headers.get("Origin")||ORIGIN)!==ORIGIN)return json({error:"Origin rejected"},403);
     try {
+      if(path==="/hq/api/me" && req.method==="GET")return json({email:user.email,canManageCalendar:user.email===OWNER});
       if(path==="/hq/api/data" && req.method==="GET"){
         const row=await env.DB.prepare("SELECT data FROM hq_documents WHERE id=?").bind("main").first();
         return json({data:row?JSON.parse(row.data):null});
