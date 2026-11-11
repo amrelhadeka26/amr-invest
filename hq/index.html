@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ZD | Business HQ</title><style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ZD AI · Business HQ</title><style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 :root{color-scheme:light;font-family:Inter,-apple-system,BlinkMacSystemFont,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;color:#000;background:#fff;font-size:14px}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.35;cursor:not-allowed}.shell{display:flex;min-height:100vh}aside{background:#000;color:#fff;width:245px;flex-shrink:0;padding:30px 18px;position:sticky;top:0;height:100vh;overflow:auto}aside h1{font-size:34px;letter-spacing:-2px;margin:0}aside .small{font-size:10px;font-weight:700;letter-spacing:2.5px}nav{margin-top:36px;display:grid;gap:5px}nav button{border:1px solid transparent;text-align:left;color:#fff;background:transparent;border-radius:10px;padding:12px;font-weight:500}nav button.active{background:#fff;color:#000}main{padding:36px clamp(18px,3vw,48px);flex:1;min-width:0;max-width:1500px}.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:800}.head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;border-bottom:1px solid #000;padding-bottom:26px}.head h2{font-size:clamp(30px,4vw,45px);letter-spacing:-2px;margin:8px 0 5px;font-weight:800}.sub{color:#444}.tools{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #000;border-radius:999px;padding:9px 15px;background:#fff;color:#000;white-space:nowrap}.btn.primary{color:#fff;background:#000}.btn:hover{opacity:.7}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;margin:22px 0}.card,.panel{border:1px solid #000;border-radius:17px;padding:20px;background:#fff}.card .value{font-size:35px;font-weight:800;letter-spacing:-2px}.caption{font-size:12px;color:#444;margin-top:7px}.row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.section{margin:28px 0 16px}.section h3{font-size:22px;letter-spacing:-.7px;margin:0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px;margin-top:14px}.card h4{margin:0 0 10px;font-size:15px}.pill{font-size:11px;border:1px solid #000;border-radius:99px;padding:3px 8px;display:inline-block}.tablewrap{overflow-x:auto;border:1px solid #000;border-radius:14px;margin-top:13px}table{border-collapse:collapse;width:100%;min-width:800px}th,td{padding:13px 11px;border-bottom:1px solid #bbb;text-align:left;vertical-align:middle}th{font-size:11px;text-transform:uppercase;letter-spacing:.6px}td{font-size:12px}tr:last-child td{border-bottom:0}input,select,textarea{border:1px solid #000;background:#fff;padding:9px;border-radius:8px;max-width:100%}input[type=date]{min-width:145px}.filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.notice{border:1px solid #000;border-radius:13px;padding:15px;margin-top:15px;line-height:1.6}.muted{color:#666}.hidden{display:none!important}dialog{border:2px solid #000;border-radius:18px;padding:25px;width:min(520px,calc(100% - 32px));max-height:90vh;overflow:auto}dialog::backdrop{background:#0009}dialog h3{font-size:23px;letter-spacing:-1px;margin:0 0 15px}label{display:block;font-weight:600;margin:12px 0;font-size:12px}label input,label textarea,label select{display:block;width:100%;margin-top:7px}textarea{min-height:80px;resize:vertical}.formactions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}#toast{position:fixed;bottom:22px;right:20px;padding:13px 20px;background:#000;color:#fff;border-radius:12px;z-index:2;display:none}#toast.on{display:block}.dept{display:block;width:100%;text-align:left}.focus{border:1px solid #000;border-radius:14px;padding:20px}.focus strong{font-size:17px}hr{border:0;border-top:1px solid #000;margin:25px 0}@media(max-width:750px){.shell{display:block}aside{position:static;width:100%;height:auto;padding:15px 18px}aside h1{font-size:27px}nav{display:flex;overflow:auto;margin-top:10px}nav button{white-space:nowrap}main{padding:23px 15px}}
 
@@ -69,7 +69,110 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
  #toast{bottom:calc(82px + env(safe-area-inset-bottom,0px));left:12px;right:12px;max-width:none;text-align:center;z-index:90}
 }
 @media(prefers-reduced-motion:reduce){aside{transition:none}}
-#recordFields label{display:block;margin:12px 0}#recordFields input,#recordFields textarea{display:block;width:100%;margin-top:6px}#recordFields textarea{min-height:76px}</style></head><body><div class="mobile-top"><div><strong>ZD.</strong><small>BUSINESS HQ</small></div><button type="button" aria-label="Open navigation" onclick="drawer(true)">☰</button></div><div class="mobile-shade" id="mobileShade" onclick="drawer(false)"></div><div class="shell"><aside id="sideNav"><button class="drawer-close" aria-label="Close navigation" onclick="drawer(false)">×</button><h1>ZD.</h1><div class="small">BUSINESS HQ</div><nav id="nav"></nav><p style="font-size:11px;line-height:1.7;margin-top:32px">Private founder dashboard.<br>Strategy, execution, and priorities.</p></aside><main><header class="head"><div><div class="eyebrow">Founder command center</div><h2 id="heading">Overview</h2><div class="sub" id="subtitle"></div></div><button class="btn mobile-tools-toggle" onclick="toggleHeaderTools()" id="toolsToggle" aria-expanded="false">Calendar, backup and account ⚙</button><div class="tools" id="headerTools"><button class="btn" id="calendarButton" onclick="location.href='/hq/auth/calendar'">Connect Calendar</button><button class="btn hidden" id="chooseCalendarButton" onclick="openCalendarPicker()">Choose calendar</button><button class="btn" onclick="downloadBackup()">Export backup</button><button class="btn" onclick="document.getElementById('fileInput').click()">Import</button><input id="fileInput" class="hidden" type="file" accept="application/json"><button class="btn" onclick="location.href='/hq/auth/logout'">Sign out</button></div></header><div id="content"></div></main></div><div class="mobile-bottom" id="mobileBottom"><button data-page="Overview" onclick="nav('Overview')"><span>⌂</span>Home</button><button data-page="Top 3 Actions" onclick="nav('Top 3 Actions')"><span>◎</span>Top 3</button><button class="add" onclick="edit(null)"><span>＋</span>Add</button><button data-page="Weekly CEO Review" onclick="nav('Weekly CEO Review')"><span>▤</span>Review</button><button onclick="drawer(true)"><span>☰</span>More</button></div><dialog id="calendarPicker"><h3>Choose Google Calendar</h3><p class="sub">Only actions with deadlines are synced. If you change calendars, ZD HQ will move its own linked events to the selected calendar, without changing your other appointments.</p><label>Available calendars<select id="calendarChoices"></select></label><p class="caption" id="calendarPickerStatus"></p><div class="formactions"><button class="btn" type="button" onclick="document.getElementById('calendarPicker').close()">Cancel</button><button class="btn primary" type="button" id="saveCalendarChoice" onclick="saveCalendarChoice()">Use this calendar</button></div></dialog><dialog id="editor"><form id="editorForm"><h3 id="editorHeading">Add action</h3><label>Action<input name="name" maxlength="180" required></label><label>Department<select name="dept" id="deptInput"></select></label><label>Priority<select name="priority"><option>P0</option><option>P1</option><option>P2</option></select></label><label>Status<select name="status"><option>Not Started</option><option>In Progress</option><option>Paused</option><option>Blocked</option><option>Done</option></select></label><label>Deadline<input name="due" type="date"></label><label>Notes<textarea name="notes"></textarea></label><div class="formactions"><button class="btn" type="button" onclick="document.getElementById('editor').close()">Cancel</button><button class="btn primary" type="submit">Save action</button></div></form></dialog><dialog id="recordEditorDialog"><form id="recordForm"><h3 id="recordHeading">Edit record</h3><div id="recordFields"></div><div class="formactions"><button type="button" class="btn" onclick="document.getElementById('recordEditorDialog').close()">Cancel</button><button class="btn primary" type="submit">Save record</button></div></form></dialog><div id="toast"></div><script>
+#recordFields label{display:block;margin:12px 0}#recordFields input,#recordFields textarea{display:block;width:100%;margin-top:6px}#recordFields textarea{min-height:76px}
+/* Shared ZD AI Admin dashboard visual system, directly matched to zd-app src/web/index.css + tailwind.config.js */
+:root{
+ --ink:#1d1d1f;--ink2:#3a3a3c;--mute:#6e6e73;--line:#e5e5ea;--soft:#f5f5f7;--soft2:#fafafa;
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",Roboto,"Noto Sans Arabic","Geeza Pro",Tahoma,Arial,sans-serif;
+ color:var(--ink)
+}
+body{background:#fff;color:var(--ink);font-size:14px;font-feature-settings:"tnum" 1;-webkit-tap-highlight-color:transparent}
+.shell{max-width:1152px;margin:0 auto;min-height:calc(100vh - 56px);padding:24px 16px 40px;gap:32px;display:grid;grid-template-columns:208px minmax(0,1fr)}
+aside{background:#fff;color:var(--ink);border:0;width:208px;position:sticky;top:80px;align-self:start;height:auto;max-height:calc(100vh - 96px);overflow:auto;padding:0;box-shadow:none;transform:none}
+aside h1,aside .small,aside p{display:none!important}
+aside nav{display:flex;flex-direction:column;gap:4px;margin:0}
+aside nav button{display:flex;align-items:center;color:var(--ink2);font-size:15px;line-height:1.2;font-weight:400;white-space:normal;min-height:40px;padding:0 12px;border:0;border-radius:12px;background:transparent}
+aside nav button:hover{background:var(--soft2);color:var(--ink)}
+aside nav button.active{background:var(--ink);color:#fff;font-weight:600}
+main{max-width:none;padding:0;overflow:visible}
+.mobile-top{display:flex;position:sticky;top:0;left:auto;right:auto;height:56px;z-index:90;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);align-items:center;justify-content:space-between;padding:0 max(16px,calc((100vw - 1152px)/2 + 16px));backdrop-filter:blur(16px)}
+.mobile-top strong{font-size:25px;letter-spacing:-1.6px;font-weight:800;color:var(--ink)}
+.mobile-top small{font-size:15px;letter-spacing:0;margin-left:10px;font-weight:600;color:var(--ink)}
+.mobile-top button{display:none}
+.mobile-shade,.drawer-close,.mobile-bottom{display:none!important}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 0 14px;border:0}
+.head .eyebrow{display:none}
+.head h2{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.65px;margin:0}
+.head .sub{color:var(--mute);font-size:13px;margin-top:5px}
+.head .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0;border:0}
+.btn{height:44px;min-height:44px;border-radius:999px;border:1px solid var(--line);font-weight:500;font-size:14px;line-height:1.2;padding:0 16px;background:#fff;color:var(--ink);transition:transform .12s ease,background .15s ease;box-shadow:none}
+.btn:hover{background:var(--soft);opacity:1}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:var(--ink2)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4}
+.mobile-tools-toggle{display:none}
+.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
+.card,.panel,.focus{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04)}
+.card{padding:20px}
+.grid .card{background:var(--soft);border:0;box-shadow:none;border-radius:20px;padding:16px}
+.card .value{font-size:20px;letter-spacing:-.2px;font-weight:600;line-height:1.2;color:var(--ink)}
+.card .caption{font-size:12px;margin-top:6px}
+.caption,.sub,.muted{color:var(--mute)}
+.section{margin:20px 0 12px}
+.section h3{font-size:19px;letter-spacing:-.4px;font-weight:600}
+.cards{gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:12px}
+.focus{padding:20px}
+.focus h4{font-size:17px;line-height:1.4;font-weight:600;margin:12px 0;letter-spacing:-.25px}
+.pill{background:var(--soft);border:1px solid var(--line);border-radius:999px;color:var(--ink2);font-size:12px;font-weight:500;padding:6px 11px}
+.notice{border:1px solid var(--line);border-radius:15px;background:var(--soft2);padding:16px;color:var(--ink2);line-height:1.55}
+.dept{text-align:left;width:100%;background:#fff;border:1px solid var(--line)}
+.dept:hover{background:var(--soft2)}
+.dept h4{font-size:16px;letter-spacing:-.2px;margin:0 0 8px;font-weight:600}
+input,select,textarea{border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);min-height:44px;padding:10px 12px;font-size:15px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 2px rgba(29,29,31,.1)}
+input[type=date]{min-width:140px}
+.tablewrap{border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow-x:auto}
+table{min-width:720px}
+td,th{border-bottom:1px solid var(--line);padding:12px}
+th{font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--mute)}
+td{font-size:13px}
+dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 35px #0002}
+dialog::backdrop{background:rgba(0,0,0,.42)}
+dialog h3{font-weight:600;font-size:23px;letter-spacing:-.5px}
+label{font-weight:500;color:var(--mute);font-size:13px}
+label input,label select,label textarea{color:var(--ink)}
+#toast{background:var(--ink);color:#fff;border-radius:999px;font-size:14px}
+@media(min-width:1000px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:750px){
+ .shell{display:block;padding:20px 16px 50px;min-height:0}
+ .mobile-top{display:flex;position:sticky;top:0;left:0;right:0;height:56px;padding:0 16px}
+ .mobile-top strong{font-size:24px}.mobile-top small{font-size:14px}
+ .mobile-top button{display:none}
+ aside{display:block;position:relative;inset:auto;z-index:1;transform:none!important;transition:none;width:100%;height:auto;max-height:none;overflow:visible;padding:0;margin-bottom:18px;background:#fff;box-shadow:none}
+ aside nav{display:flex;flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:5px;white-space:nowrap;margin:0 -16px;padding:0 16px 6px}
+ aside nav::-webkit-scrollbar{display:none}
+ aside nav button{min-height:40px;height:40px;flex-shrink:0;padding:0 13px;background:var(--soft);font-size:15px;white-space:nowrap;font-weight:400;border-radius:12px}
+ aside nav button.active{background:var(--ink);color:#fff;font-weight:600}
+ main{padding:0;overflow:visible}
+ .head{padding:0 0 14px;display:flex;gap:12px;align-items:flex-end}
+ .head>div:first-child{width:auto;flex:1;min-width:150px}
+ .head h2{font-size:26px;letter-spacing:-.5px}
+ .head .sub{font-size:13px}
+ .mobile-tools-toggle{display:inline-flex;align-items:center;justify-content:center;font-size:13px;min-height:39px;height:39px;padding:8px 12px;max-width:135px;white-space:normal;text-align:center}
+ .head .tools{display:none}
+ .head .tools.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--soft2)}
+ .head .tools .btn{font-size:12px;white-space:normal;min-height:42px;height:auto;padding:9px;min-width:0}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 15px}
+ .grid .card{padding:14px;border-radius:16px}
+ .grid .card .value{font-size:20px}
+ .section{margin:18px 0 11px}
+ .section h3{font-size:19px}
+ .cards{grid-template-columns:1fr;gap:12px}
+ .card,.focus{border-radius:20px;padding:16px}
+ .tablewrap{border:0;border-radius:0;box-shadow:none}
+ .tablewrap tr{border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04)}
+ .tablewrap td{border:0}
+ .tablewrap td:before{color:var(--mute)}
+ .tablewrap td:first-child{font-weight:500}
+ .tablewrap td select,.tablewrap td input[type=date]{border-color:var(--line)}
+ .row.section .tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .row.section .tools .btn{font-size:13px}
+ .mobile-bottom,.mobile-shade,.drawer-close{display:none!important}
+ dialog{width:100%;border-radius:20px 20px 0 0;max-height:91dvh}
+ #toast{bottom:24px}
+}
+</style></head><body><div class="mobile-top"><div><strong>ZD.</strong><small>BUSINESS HQ</small></div><button type="button" aria-label="Open navigation" onclick="drawer(true)">☰</button></div><div class="mobile-shade" id="mobileShade" onclick="drawer(false)"></div><div class="shell"><aside id="sideNav"><button class="drawer-close" aria-label="Close navigation" onclick="drawer(false)">×</button><h1>ZD.</h1><div class="small">BUSINESS HQ</div><nav id="nav"></nav><p style="font-size:11px;line-height:1.7;margin-top:32px">Private founder dashboard.<br>Strategy, execution, and priorities.</p></aside><main><header class="head"><div><div class="eyebrow">Founder command center</div><h2 id="heading">Overview</h2><div class="sub" id="subtitle"></div></div><button class="btn mobile-tools-toggle" onclick="toggleHeaderTools()" id="toolsToggle" aria-expanded="false">Calendar, backup and account ⚙</button><div class="tools" id="headerTools"><button class="btn primary" type="button" onclick="edit(null)">+ Add action</button><button class="btn" id="calendarButton" onclick="location.href='/hq/auth/calendar'">Connect Calendar</button><button class="btn hidden" id="chooseCalendarButton" onclick="openCalendarPicker()">Choose calendar</button><button class="btn" onclick="downloadBackup()">Export backup</button><button class="btn" onclick="document.getElementById('fileInput').click()">Import</button><input id="fileInput" class="hidden" type="file" accept="application/json"><button class="btn" onclick="location.href='/hq/auth/logout'">Sign out</button></div></header><div id="content"></div></main></div><div class="mobile-bottom" id="mobileBottom"><button data-page="Overview" onclick="nav('Overview')"><span>⌂</span>Home</button><button data-page="Top 3 Actions" onclick="nav('Top 3 Actions')"><span>◎</span>Top 3</button><button class="add" onclick="edit(null)"><span>＋</span>Add</button><button data-page="Weekly CEO Review" onclick="nav('Weekly CEO Review')"><span>▤</span>Review</button><button onclick="drawer(true)"><span>☰</span>More</button></div><dialog id="calendarPicker"><h3>Choose Google Calendar</h3><p class="sub">Only actions with deadlines are synced. If you change calendars, ZD HQ will move its own linked events to the selected calendar, without changing your other appointments.</p><label>Available calendars<select id="calendarChoices"></select></label><p class="caption" id="calendarPickerStatus"></p><div class="formactions"><button class="btn" type="button" onclick="document.getElementById('calendarPicker').close()">Cancel</button><button class="btn primary" type="button" id="saveCalendarChoice" onclick="saveCalendarChoice()">Use this calendar</button></div></dialog><dialog id="editor"><form id="editorForm"><h3 id="editorHeading">Add action</h3><label>Action<input name="name" maxlength="180" required></label><label>Department<select name="dept" id="deptInput"></select></label><label>Priority<select name="priority"><option>P0</option><option>P1</option><option>P2</option></select></label><label>Status<select name="status"><option>Not Started</option><option>In Progress</option><option>Paused</option><option>Blocked</option><option>Done</option></select></label><label>Deadline<input name="due" type="date"></label><label>Notes<textarea name="notes"></textarea></label><div class="formactions"><button class="btn" type="button" onclick="document.getElementById('editor').close()">Cancel</button><button class="btn primary" type="submit">Save action</button></div></form></dialog><dialog id="recordEditorDialog"><form id="recordForm"><h3 id="recordHeading">Edit record</h3><div id="recordFields"></div><div class="formactions"><button type="button" class="btn" onclick="document.getElementById('recordEditorDialog').close()">Cancel</button><button class="btn primary" type="submit">Save record</button></div></form></dialog><div id="toast"></div><script>
 const DEPTS=['Business Strategy','Products & Tools','Courses & Education','Content & Marketing','Sales & Partnerships','Technology & Operations','Performance Dashboard'];
 const seed=[
 ['Business Strategy','Write one-page business model','P0'],['Business Strategy','Define target B2C audience','P0'],['Business Strategy','Decide free vs paid matrix','P0'],['Business Strategy','Map B2C and B2B revenue streams','P0'],['Business Strategy','Estimate pricing and unit economics','P1'],['Business Strategy','Review regulatory and tax requirements','P1'],
