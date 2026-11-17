@@ -132,7 +132,10 @@ async function fetchBrevo(env){
     campaigns=(e.campaigns||[]).map(x=>{const g=(x.statistics&&x.statistics.globalStats)||{};const d=num(g.delivered)||num(g.sent);return {name:x.name,sentDate:x.sentDate||"",delivered:d,opens:num(g.uniqueViews),clicks:num(g.uniqueClicks),openRate:d?num(g.uniqueViews)/d:null,clickRate:d?num(g.uniqueClicks)/d:null}})}catch(e){}
   return {subscribers:num(c.count),campaigns};
 }
-async function analytics(env,force){
+async function analytics(env0,force){
+  const pick=(...n)=>{for(const x of n){const v=env0[x]||env0[x+" "];if(typeof v==="string"&&v.trim())return v.trim()}return ""};
+  const env=Object.assign(Object.create(env0),{DB:env0.DB,ZERNIO_API_KEY:pick("ZERNIO_API_KEY","ZERNIO_KEY","ZERNIO","LATE_API_KEY"),BREVO_API_KEY:pick("BREVO_API_KEY","BREVO_KEY","BREVO","SENDINBLUE_API_KEY")});
+  for(const k of Object.keys(env0))if(!(k in env))env[k]=env0[k];
   await metricsTable(env);
   const rows=(await env.DB.prepare("SELECT source,data,fetched_at,error FROM hq_metrics").all()).results||[];
   const get=k=>rows.find(r=>r.source===k);
@@ -143,7 +146,7 @@ async function analytics(env,force){
   const save=async(k,data,err)=>{await env.DB.prepare("INSERT INTO hq_metrics(source,data,fetched_at,error) VALUES(?,?,datetime('now'),?) ON CONFLICT(source) DO UPDATE SET data=COALESCE(excluded.data,hq_metrics.data),fetched_at=excluded.fetched_at,error=excluded.error").bind(k,data?JSON.stringify(data):null,err||null).run()};
   const out={};
   for(const [k,key,fn] of [["zernio","ZERNIO_API_KEY",()=>fetchZernio(env,from)],["brevo","BREVO_API_KEY",()=>fetchBrevo(env)]]){
-    if(!env[key]){out[k]={missing:true};continue}
+    if(!env[key]){out[k]={missing:true,seen:Object.keys(env0).filter(n=>/zernio|late|brevo|sendinblue/i.test(n))};continue}
     let r=get(k);
     if(force||!fresh(r)){try{const d=await fn();await save(k,d,null);if(k==="brevo")await save("brevo:"+today,{subscribers:d.subscribers},null);r={data:JSON.stringify(d),fetched_at:new Date().toISOString().slice(0,19).replace("T"," "),error:null}}
       catch(e){await save(k,null,String(e.message||e).slice(0,300));r=Object.assign({},r||{},{error:String(e.message||e).slice(0,300)})}}
