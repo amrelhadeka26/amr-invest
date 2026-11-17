@@ -133,7 +133,7 @@ async function fetchBrevo(env){
   return {subscribers:num(c.count),campaigns};
 }
 async function analytics(env0,force){
-  const pick=(...n)=>{for(const x of n){const v=env0[x]||env0[x+" "];if(typeof v==="string"&&v.trim())return v.trim()}return ""};
+  const names=Object.keys(env0);const pick=(...n)=>{for(const x of n){const k=names.find(y=>y.trim().toUpperCase()===x);const v=k&&env0[k];if(typeof v==="string"&&v.trim())return v.trim()}return ""};
   const env=Object.assign(Object.create(env0),{DB:env0.DB,ZERNIO_API_KEY:pick("ZERNIO_API_KEY","ZERNIO_KEY","ZERNIO","LATE_API_KEY"),BREVO_API_KEY:pick("BREVO_API_KEY","BREVO_KEY","BREVO","SENDINBLUE_API_KEY")});
   for(const k of Object.keys(env0))if(!(k in env))env[k]=env0[k];
   await metricsTable(env);
