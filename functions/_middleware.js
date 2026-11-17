@@ -176,6 +176,9 @@ async function api(path,req,env,user){
         for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})});
       out.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
       return json({events:out,errors:errs})}
+    // Was this event deleted in Google Calendar? (deleted events answer 404/410, or come back with status "cancelled")
+    if(path==="/hq/api/cal/event-status"&&m==="GET"){const u=new URL(req.url);const c=u.searchParams.get("calendarId")||"",id=u.searchParams.get("eventId")||"";if(!c||c.length>300||!/^[a-v0-9]{5,1024}$/.test(id))return json({error:"Invalid event"},400);
+      try{const e=await gcal(tk,"/calendars/"+encodeURIComponent(c)+"/events/"+encodeURIComponent(id));return json({gone:e.status==="cancelled"})}catch(e){if(e.gstatus===404||e.gstatus===410)return json({gone:true});throw e}}
     if(path==="/hq/api/cal/event"){const b=await readBody(req,20000);if(typeof b.calendarId!=="string"||b.calendarId.length>300)return json({error:"Invalid calendar"},400);const base="/calendars/"+encodeURIComponent(b.calendarId)+"/events";
       if(m==="POST"){const ev=eventBody(b);if(b.eventId){if(!/^[a-v0-9]{5,1024}$/.test(b.eventId))return json({error:"Invalid event id"},400);ev.id=b.eventId}
         try{const r=await gcal(tk,base+"?sendUpdates=none","POST",ev);return json({id:r.id})}
