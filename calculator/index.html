@@ -283,6 +283,7 @@ details.assume[open] > summary::after { transform: rotate(-135deg) translateY(-3
 .hero-today span { font-weight: 700; font-variant-numeric: tabular-nums; }
 .hero-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.35); }
 .hero-rows span { display: block; font-size: 13px; }
+.hero-rows small.assume { display: block; font-size: 11.5px; opacity: .85; margin-top: 2px; }
 .hero-rows b { font-size: 19px; font-variant-numeric: tabular-nums; }
 .hero-note { margin: 14px 0 0; font-size: 13px; }
 #bestTxt { color: #a1a1a6; }
@@ -886,14 +887,15 @@ details.assume.adv { margin-top: 20px; border-top-color: var(--blue); }
     const yTxt = yrs + (yrs === 1 ? ' year' : ' years');
     const amt = n => usdMode() ? '$' + fmt(n) : fmt(n) + ' EGP';
     $('gToday').textContent = money(G, 0);
-    $('gFutLbl').textContent = 'Price in ' + yTxt;
+    // Say the assumption next to the number (testers asked where "1M becomes 1.8M" came from).
+    $('gFutLbl').innerHTML = 'Price in ' + yTxt + '<small class="assume">at ' + (Math.round(v.infl * 10) / 10) + '% inflation a year</small>';
     $('gFuture').textContent = money(target, yrs);
     if (G <= 0) {
       $('gMonthly').textContent = 'Type a goal'; $('gWith').textContent = 'Enter what your goal costs today.'; $('gNote').textContent = ''; $('gIntro').textContent = ''; $('gList').innerHTML = ''; $('gBody').innerHTML = ''; return;
     }
     $('gEyebrow').textContent = 'Your goal';
     $('gMonthly').textContent = money(G, 0);
-    $('gWith').textContent = 'in today\'s money, about ' + money(target, yrs) + ' in ' + yTxt + ' with prices rising.';
+    $('gWith').textContent = 'in today\'s money, about ' + money(target, yrs) + ' in ' + yTxt + ' if prices rise ' + (Math.round(v.infl * 10) / 10) + '% a year. You can change this under "Customize assumptions".';
     $('gNote').textContent = 'Saving it at home would take ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' EGP') + ' a month. Not a recommendation.';
     $('gIntro').textContent = 'The middle line is saving it as ' + cash.o.name.toLowerCase() + ': ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' EGP') + ' a month. Right of it: needs less each month. Left: needs more.';
     const diffs = rows.map(r => cash.need - r.need);
