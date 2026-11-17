@@ -1,0 +1,179 @@
+// ZD. Business HQ (built by Claude): private Google sign-in, D1 storage and Google Calendar.
+// All /hq routes fail closed unless an allowed Google account has authenticated.
+const CLIENT_ID = "322859135457-3prdc4b02hm4d1piguamdve1pbs2anf1.apps.googleusercontent.com";
+const OWNER = "amrelhadeka@gmail.com";
+const CALENDAR_MANAGER = "amr@amrelhadeka.com";
+const ALLOWED_ACCOUNTS = new Set([OWNER, CALENDAR_MANAGER]);
+const ORIGIN = "https://invest.amrelhadeka.com";
+const CALLBACK = ORIGIN + "/hq/auth/callback";
+const SESSION_NAME = "zd_hq_session";
+const OAUTH_NAME = "zd_hq_oauth";
+const te = new TextEncoder();
+const td = new TextDecoder();
+const b64 = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64 = value => Uint8Array.from(atob(value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=")), c => c.charCodeAt(0));
+const cookies = req => Object.fromEntries((req.headers.get("Cookie") || "").split(";").map(x => x.trim().split(/=(.*)/s).slice(0,2)).filter(x => x.length===2).map(([k,v])=>[k,decodeURIComponent(v)]));
+const cookie = (n,v,maxAge) => n+"="+encodeURIComponent(v)+"; Path=/hq; HttpOnly; Secure; SameSite=Lax; Max-Age="+maxAge;
+const htmlHeaders = {"Cache-Control":"private, no-store", "X-Robots-Tag":"noindex, nofollow", "X-Content-Type-Options":"nosniff", "Referrer-Policy":"no-referrer"};
+const redirect = (to,setCookies=[]) => {const h=new Headers({...htmlHeaders,Location:to});for(const v of setCookies)h.append("Set-Cookie",v);return new Response(null,{status:302,headers:h})};
+const json = (data,status=200) => new Response(JSON.stringify(data),{status,headers:{...htmlHeaders,"Content-Type":"application/json; charset=utf-8"}});
+async function hmac(value,secret) {
+  const key=await crypto.subtle.importKey("raw",te.encode("zd-hq-v1|"+secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  return b64(new Uint8Array(await crypto.subtle.sign("HMAC",key,te.encode(value))));
+}
+async function verifySig(value,sig,secret) {
+  if(!sig)return false;
+  const expected=await hmac(value,secret);
+  if(expected.length!==sig.length)return false;
+  let diff=0;for(let i=0;i<sig.length;i++)diff|=expected.charCodeAt(i)^sig.charCodeAt(i);
+  return diff===0;
+}
+async function signSession(sub,email,secret) {
+  const payload=b64(te.encode(JSON.stringify({sub,email,exp:Math.floor(Date.now()/1000)+604800})));
+  return payload+"."+await hmac("session|"+payload,secret);
+}
+async function sessionUser(req,env) {
+  const value=cookies(req)[SESSION_NAME]||"";
+  const i=value.lastIndexOf(".");if(i<0)return null;
+  const p=value.slice(0,i);
+  if(!await verifySig("session|"+p,value.slice(i+1),env.GOOGLE_CLIENT_SECRET||""))return null;
+  try {const data=JSON.parse(td.decode(unb64(p)));return data.exp>Date.now()/1000 && ALLOWED_ACCOUNTS.has(data.email) && data.sub ? data : null}catch{return null}
+}
+function params(mode,state) {
+  const q=new URLSearchParams({client_id:CLIENT_ID,redirect_uri:CALLBACK,response_type:"code",scope:mode==="calendar"?"openid email profile https://www.googleapis.com/auth/calendar":"openid email profile",state,access_type:"offline",prompt:mode==="calendar"?"consent select_account":"select_account"});
+  return "https://accounts.google.com/o/oauth2/v2/auth?"+q.toString();
+}
+async function startOAuth(mode,env) {
+  const state=b64(crypto.getRandomValues(new Uint8Array(24)));
+  const v=mode+"."+state;
+  const signed=v+"."+await hmac("oauth|"+v,env.GOOGLE_CLIENT_SECRET);
+  return redirect(params(mode,state),[cookie(OAUTH_NAME,signed,600)]);
+}
+async function exchange(code,env) {
+  const body=new URLSearchParams({grant_type:"authorization_code",client_id:CLIENT_ID,client_secret:env.GOOGLE_CLIENT_SECRET,redirect_uri:CALLBACK,code});
+  const r=await fetch("https://oauth2.googleapis.com/token",{method:"POST",body,headers:{"Content-Type":"application/x-www-form-urlencoded"}});
+  if(!r.ok)throw Error("Google token exchange failed: "+r.status);
+  return r.json();
+}
+async function googleProfile(access_token) {
+  const r=await fetch("https://openidconnect.googleapis.com/v1/userinfo",{headers:{Authorization:"Bearer "+access_token}});
+  if(!r.ok)throw Error("Google identity verification failed");
+  const u=await r.json();
+  if(!ALLOWED_ACCOUNTS.has(u.email) || u.email_verified!==true || !u.sub)throw Error("This Google account is not authorized");
+  return u;
+}
+async function aesKey(env) {
+  const dig=await crypto.subtle.digest("SHA-256",te.encode("zd-hq-calendar-tokens|"+env.GOOGLE_CLIENT_SECRET));
+  return crypto.subtle.importKey("raw",dig,{name:"AES-GCM"},false,["encrypt","decrypt"]);
+}
+async function seal(value,env) {
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},await aesKey(env),te.encode(JSON.stringify(value)));
+  return b64(iv)+"."+b64(new Uint8Array(cipher));
+}
+async function unseal(value,env) {
+  const [a,b]=value.split(".");return JSON.parse(td.decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(a)},await aesKey(env),unb64(b))));
+}
+async function calendarRow(env) {await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_google_tokens(account TEXT PRIMARY KEY,encrypted TEXT NOT NULL,calendar_id TEXT,updated_at TEXT)").run();return env.DB.prepare("SELECT encrypted, calendar_id FROM hq_google_tokens WHERE account=?").bind(CALENDAR_MANAGER).first()}
+async function calendarToken(env) {
+  const row=await calendarRow(env);if(!row)return null;
+  const tok=await unseal(row.encrypted,env);
+  if((tok.expires_at||0)>Date.now()+60000)return {access_token:tok.access_token,calendar_id:row.calendar_id};
+  if(!tok.refresh_token)throw Error("Calendar authorization expired, reconnect Google Calendar");
+  const r=await fetch("https://oauth2.googleapis.com/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({client_id:CLIENT_ID,client_secret:env.GOOGLE_CLIENT_SECRET,refresh_token:tok.refresh_token,grant_type:"refresh_token"})});
+  if(!r.ok)throw Error("Calendar token refresh failed, reconnect Google Calendar");
+  const value=await r.json();
+  tok.access_token=value.access_token;tok.expires_at=Date.now()+(value.expires_in||3600)*1000;
+  await env.DB.prepare("UPDATE hq_google_tokens SET encrypted=?, updated_at=datetime('now') WHERE account=?").bind(await seal(tok,env),CALENDAR_MANAGER).run();
+  return {access_token:tok.access_token,calendar_id:row.calendar_id};
+}
+async function gcal(token,path,method="GET",body) {
+  const r=await fetch("https://www.googleapis.com/calendar/v3"+path,{method,headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  if(!r.ok) {const data=await r.text();throw Error("Google Calendar "+r.status+": "+data.slice(0,240))}
+  if(r.status===204)return null;
+  return r.json();
+}
+const COLS=new Set(["settings","depts","actions","decisions","contacts","invoices","content","ideas","weekly","links"]);
+const ID=/^[A-Za-z0-9_-]{1,64}$/;
+async function ensureTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_docs(col TEXT NOT NULL,id TEXT NOT NULL,data TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(col,id))").run()}
+const rid=()=>b64(crypto.getRandomValues(new Uint8Array(12))).replace(/[^A-Za-z0-9]/g,"x");
+async function readBody(req,max){const t=await req.text();if(t.length>max)throw Object.assign(Error("Request too large"),{status:413});try{return JSON.parse(t)}catch{throw Object.assign(Error("Invalid JSON"),{status:400})}}
+async function allCalendars(token){let items=[],pageToken="";do{const s=pageToken?"&pageToken="+encodeURIComponent(pageToken):"";const p=await gcal(token,"/users/me/calendarList?maxResults=250"+s);items.push(...(p.items||[]));pageToken=p.nextPageToken||""}while(pageToken&&items.length<500);
+  return items.filter(x=>!x.deleted&&x.selected!==false).map(x=>({id:x.id,summary:x.summary||x.id,primary:!!x.primary,writable:["owner","writer"].includes(x.accessRole)}))}
+const DT=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
+function eventBody(b){if(typeof b.summary!=="string"||!b.summary.trim()||b.summary.length>300)throw Object.assign(Error("Invalid title"),{status:400});if(!DT.test(b.start||"")||!DT.test(b.end||""))throw Object.assign(Error("Invalid time"),{status:400});
+  const t=s=>s.length===16?s+":00":s;return {summary:b.summary.trim(),description:String(b.description||"").slice(0,4000),start:{dateTime:t(b.start),timeZone:"Africa/Cairo"},end:{dateTime:t(b.end),timeZone:"Africa/Cairo"}}}
+async function api(path,req,env,user){
+  const m=req.method;
+  if(path==="/hq/api/me"&&m==="GET")return json({email:user.email,calendarManager:CALENDAR_MANAGER});
+  if(path==="/hq/api/all"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs").all()).results||[];const out={};for(const x of r){(out[x.col]=out[x.col]||[]).push(Object.assign({id:x.id,_u:x.updated_at},JSON.parse(x.data)))}return json({docs:out,at:new Date().toISOString()})}
+  let mm=path.match(/^\/hq\/api\/doc\/([a-z]+)(?:\/([A-Za-z0-9_-]+))?$/);
+  if(mm){const [,col,id]=mm;if(!COLS.has(col))return json({error:"Unknown collection"},400);if(id&&!ID.test(id))return json({error:"Invalid id"},400);await ensureTable(env);
+    if(m==="DELETE"&&id){await env.DB.prepare("DELETE FROM hq_docs WHERE col=? AND id=?").bind(col,id).run();return json({deleted:true})}
+    if(m==="PUT"||m==="POST"){const data=await readBody(req,200000);if(!data||typeof data!=="object"||Array.isArray(data))return json({error:"Invalid document"},400);delete data.id;delete data._u;const key=id||rid();
+      await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(col,id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at").bind(col,key,JSON.stringify(data)).run();return json({id:key})}
+    return json({error:"Method not allowed"},405)}
+  if(path.startsWith("/hq/api/cal/")){
+    const s=await calendarToken(env);if(!s)return json({error:"Google Calendar is not connected",needsConnection:true},409);const tk=s.access_token;
+    if(path==="/hq/api/cal/list"&&m==="GET")return json({calendars:await allCalendars(tk)});
+    if(path==="/hq/api/cal/events"&&m==="GET"){const u=new URL(req.url);const st=u.searchParams.get("start"),en=u.searchParams.get("end");if(!DT.test(st||"")||!DT.test(en||""))return json({error:"Invalid range"},400);
+      const cals=await allCalendars(tk);const out=[];const errs=[];
+      await Promise.all(cals.map(async c=>{try{const p=await gcal(tk,"/calendars/"+encodeURIComponent(c.id)+"/events?singleEvents=true&orderBy=startTime&maxResults=250&timeZone=Africa%2FCairo&timeMin="+encodeURIComponent(st+"+02:00")+"&timeMax="+encodeURIComponent(en+"+02:00"));for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})}catch(e){errs.push(c.summary)}}));
+      return json({events:out,errors:errs})}
+    if(path==="/hq/api/cal/event"){const b=await readBody(req,20000);if(typeof b.calendarId!=="string"||b.calendarId.length>300)return json({error:"Invalid calendar"},400);const base="/calendars/"+encodeURIComponent(b.calendarId)+"/events";
+      if(m==="POST"){const ev=eventBody(b);if(b.eventId){if(!/^[a-v0-9]{5,1024}$/.test(b.eventId))return json({error:"Invalid event id"},400);ev.id=b.eventId}
+        try{const r=await gcal(tk,base+"?sendUpdates=none","POST",ev);return json({id:r.id})}
+        catch(e){if(b.eventId&&/Google Calendar 409/.test(String(e))){const r=await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","PATCH",Object.assign(ev,{status:"confirmed"}));return json({id:r.id,existing:true})}throw e}}
+      if(typeof b.eventId!=="string"||!b.eventId||b.eventId.length>1024)return json({error:"Invalid event"},400);
+      if(m==="PATCH"){const r=await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","PATCH",eventBody(b));return json({id:r.id})}
+      if(m==="DELETE"){try{await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","DELETE")}catch(e){if(!/Google Calendar (404|410):/.test(String(e)))throw e}return json({deleted:true})}
+    }
+    return json({error:"Unknown calendar route"},404)}
+  if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
+  return json({error:"Unknown HQ API route"},404);
+}
+async function callback(req,env) {
+  const url=new URL(req.url);
+  const v=cookies(req)[OAUTH_NAME]||"";
+  const [mode,state,sig]=v.split(".");
+  if(!["login","calendar"].includes(mode)||!state||url.searchParams.get("state")!==state||!await verifySig("oauth|"+mode+"."+state,sig,env.GOOGLE_CLIENT_SECRET))return new Response("Invalid or expired Google sign-in request",{status:403,headers:htmlHeaders});
+  if(!url.searchParams.has("code"))return new Response("Google authorization was cancelled",{status:400,headers:htmlHeaders});
+  try {
+    const tok=await exchange(url.searchParams.get("code"),env);
+    const profile=await googleProfile(tok.access_token);
+    if(mode==="calendar"){
+      if(profile.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
+      const prev=await calendarRow(env);
+      let prior={};if(prev)try{prior=await unseal(prev.encrypted,env)}catch{}
+      const stored={access_token:tok.access_token,refresh_token:tok.refresh_token||prior.refresh_token,expires_at:Date.now()+(tok.expires_in||3600)*1000};
+      if(!stored.refresh_token)throw Error("Google did not return Calendar refresh permission");
+      await env.DB.prepare("INSERT INTO hq_google_tokens(account,encrypted,calendar_id,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(account) DO UPDATE SET encrypted=excluded.encrypted,updated_at=excluded.updated_at").bind(CALENDAR_MANAGER,await seal(stored,env),null).run();
+    }
+    const ses=await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET);
+    return redirect(ORIGIN+"/hq/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
+  }catch(e){return new Response("ZD HQ Google login: "+String(e.message||e),{status:401,headers:{...htmlHeaders,"Content-Type":"text/plain; charset=utf-8"}})}
+}
+export async function onRequest(context) {
+  const {request:req,env}=context;
+  const url=new URL(req.url),path=url.pathname;
+  if(!(path==="/hq" || path.startsWith("/hq/")))return context.next();
+  if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
+  if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
+  if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
+  const user=await sessionUser(req,env);
+  if(!user){
+    if(path.startsWith("/hq/api/"))return json({error:"Unauthorized"},401);
+    return redirect(ORIGIN+"/hq/auth/login");
+  }
+  if(path==="/hq/auth/logout")return redirect(ORIGIN+"/hq/auth/login",[cookie(SESSION_NAME,"",0)]);
+  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/?calendar=owner-only");return startOAuth("calendar",env)}
+  if(path==="/hq")return redirect(ORIGIN+"/hq/");
+  if(path.startsWith("/hq/api/")){
+    if(req.method!=="GET" && ![ORIGIN,env.HQ_TEST_ORIGIN].includes(req.headers.get("Origin")))return json({error:"Origin rejected"},403);
+    try{return await api(path,req,env,user)}catch(e){return json({error:String(e.message||e)},e.status||502)}
+  }
+  const response=await context.next();
+  const headers=new Headers(response.headers);
+  for(const [k,v] of Object.entries(htmlHeaders))headers.set(k,v);
+  return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+}
