@@ -4,3 +4,5 @@
 /ar/grow/* /ar/calculator/:splat 301
 /ar/zd /zd/#/home?lang=ar 302
 /ar/zd/ /zd/#/home?lang=ar 302
+/hq / 301
+/hq/* / 301
