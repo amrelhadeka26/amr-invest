@@ -88,11 +88,18 @@ async function calendarToken(env) {
   return {access_token:tok.access_token,calendar_id:row.calendar_id};
 }
 async function gcal(token,path,method="GET",body) {
-  const r=await fetch("https://www.googleapis.com/calendar/v3"+path,{method,headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
-  if(!r.ok) {const data=await r.text();throw Error("Google Calendar "+r.status+": "+data.slice(0,240))}
-  if(r.status===204)return null;
-  return r.json();
+  // Google rate-limits bursts (429, or 403 "rateLimitExceeded") and has short 5xx blips: retry reads with backoff.
+  for(let attempt=0;;attempt++){
+    const r=await fetch("https://www.googleapis.com/calendar/v3"+path,{method,headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+    if(r.ok)return r.status===204?null:r.json();
+    const data=await r.text();
+    const retry=method==="GET"&&attempt<3&&(r.status===429||r.status>=500||(r.status===403&&/rateLimit|userRateLimit|quota/i.test(data)));
+    if(!retry)throw Object.assign(Error("Google Calendar "+r.status+": "+data.slice(0,240)),{gstatus:r.status,greason:(data.match(/"reason":\s*"([^"]+)"/)||[])[1]||""});
+    await new Promise(res=>setTimeout(res,400*2**attempt+Math.random()*300));
+  }
 }
+// Run fn over items, at most n at a time (Google dislikes many calendars fetched at once).
+async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length){const x=items[i++];await fn(x)}}))}
 const COLS=new Set(["settings","depts","actions","decisions","contacts","invoices","content","ideas","weekly","links"]);
 const ID=/^[A-Za-z0-9_-]{1,64}$/;
 async function ensureTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_docs(col TEXT NOT NULL,id TEXT NOT NULL,data TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(col,id))").run()}
@@ -118,7 +125,7 @@ async function api(path,req,env,user){
     if(path==="/hq/api/cal/list"&&m==="GET")return json({calendars:await allCalendars(tk)});
     if(path==="/hq/api/cal/events"&&m==="GET"){const u=new URL(req.url);const st=u.searchParams.get("start"),en=u.searchParams.get("end");if(!DT.test(st||"")||!DT.test(en||""))return json({error:"Invalid range"},400);
       const cals=await allCalendars(tk);const out=[];const errs=[];
-      await Promise.all(cals.map(async c=>{try{const p=await gcal(tk,"/calendars/"+encodeURIComponent(c.id)+"/events?singleEvents=true&orderBy=startTime&maxResults=250&timeZone=Africa%2FCairo&timeMin="+encodeURIComponent(st+"+02:00")+"&timeMax="+encodeURIComponent(en+"+02:00"));for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})}catch(e){errs.push(c.summary)}}));
+      await pool(cals,3,async c=>{try{const p=await gcal(tk,"/calendars/"+encodeURIComponent(c.id)+"/events?singleEvents=true&orderBy=startTime&maxResults=250&timeZone=Africa%2FCairo&timeMin="+encodeURIComponent(st+"+02:00")+"&timeMax="+encodeURIComponent(en+"+02:00"));for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})}catch(e){console.log("hq calendar read failed",c.summary,e.gstatus,e.greason);errs.push(c.summary+(e.gstatus?" ("+e.gstatus+(e.greason?" "+e.greason:"")+")":""))}});
       return json({events:out,errors:errs})}
     if(path==="/hq/api/cal/event"){const b=await readBody(req,20000);if(typeof b.calendarId!=="string"||b.calendarId.length>300)return json({error:"Invalid calendar"},400);const base="/calendars/"+encodeURIComponent(b.calendarId)+"/events";
       if(m==="POST"){const ev=eventBody(b);if(b.eventId){if(!/^[a-v0-9]{5,1024}$/.test(b.eventId))return json({error:"Invalid event id"},400);ev.id=b.eventId}
