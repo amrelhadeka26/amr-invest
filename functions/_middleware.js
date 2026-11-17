@@ -118,7 +118,7 @@ const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 async function fetchZernio(env,from){
   const H={Authorization:"Bearer "+env.ZERNIO_API_KEY};const B="https://zernio.com/api/v1";
   const fs=await getJSON(B+"/accounts/follower-stats?granularity=daily&fromDate="+from,H);
-  const accounts=(fs.accounts||[]).map(a=>({id:a._id,platform:a.platform,username:a.username,followers:num(a.currentFollowers),growth:num(a.growth),history:((fs.stats||{})[a._id]||[]).map(x=>({date:String(x.date).slice(0,10),followers:num(x.followers)}))}));
+  const accounts=(fs.accounts||[]).map(a=>({id:a._id,platform:a.platform,username:a.username,followers:num(a.currentFollowers),asOf:a.lastUpdated||null,growth:num(a.growth),history:((fs.stats||{})[a._id]||[]).map(x=>({date:String(x.date).slice(0,10),followers:num(x.followers)}))}));
   const profiles=[...new Set((fs.accounts||[]).map(a=>a.profileId).filter(Boolean))];
   let posts=[],overview=null;
   for(const pid of profiles){try{const an=await getJSON(B+"/analytics?profileId="+encodeURIComponent(pid)+"&fromDate="+from+"&limit=100",H);overview=an.overview||overview;
