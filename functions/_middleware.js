@@ -125,7 +125,14 @@ async function api(path,req,env,user){
     if(path==="/hq/api/cal/list"&&m==="GET")return json({calendars:await allCalendars(tk)});
     if(path==="/hq/api/cal/events"&&m==="GET"){const u=new URL(req.url);const st=u.searchParams.get("start"),en=u.searchParams.get("end");if(!DT.test(st||"")||!DT.test(en||""))return json({error:"Invalid range"},400);
       const cals=await allCalendars(tk);const out=[];const errs=[];
-      await pool(cals,3,async c=>{try{const p=await gcal(tk,"/calendars/"+encodeURIComponent(c.id)+"/events?singleEvents=true&orderBy=startTime&maxResults=250&timeZone=Africa%2FCairo&timeMin="+encodeURIComponent(st+"+02:00")+"&timeMax="+encodeURIComponent(en+"+02:00"));for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})}catch(e){console.log("hq calendar read failed",c.summary,e.gstatus,e.greason);errs.push(c.summary+(e.gstatus?" ("+e.gstatus+(e.greason?" "+e.greason:"")+")":""))}});
+      const sec=t=>t.length===16?t+":00":t;const base="&timeZone=Africa%2FCairo&timeMin="+encodeURIComponent(sec(st)+"+02:00")+"&timeMax="+encodeURIComponent(sec(en)+"+02:00");
+      await pool(cals,3,async c=>{const path="/calendars/"+encodeURIComponent(c.id)+"/events?singleEvents=true&maxResults=250";
+        let p;try{p=await gcal(tk,path+"&orderBy=startTime"+base)}catch(e){
+          // Some calendars (e.g. ones only shared to see free/busy) reject sorting; ask again unsorted.
+          if(e.gstatus!==400){console.log("hq calendar read failed",c.summary,e.message);errs.push(c.summary+" ("+e.gstatus+(e.greason?" "+e.greason:"")+")");return}
+          try{p=await gcal(tk,path+base)}catch(e2){console.log("hq calendar read failed",c.summary,e2.message);errs.push(c.summary+" ("+(e2.gstatus||"")+": "+((e2.message.match(/"message":\s*"([^"]+)"/)||[])[1]||e2.greason||"error")+")");return}}
+        for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})});
+      out.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
       return json({events:out,errors:errs})}
     if(path==="/hq/api/cal/event"){const b=await readBody(req,20000);if(typeof b.calendarId!=="string"||b.calendarId.length>300)return json({error:"Invalid calendar"},400);const base="/calendars/"+encodeURIComponent(b.calendarId)+"/events";
       if(m==="POST"){const ev=eventBody(b);if(b.eventId){if(!/^[a-v0-9]{5,1024}$/.test(b.eventId))return json({error:"Invalid event id"},400);ev.id=b.eventId}
