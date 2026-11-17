@@ -146,8 +146,10 @@ async function analytics(env0,force){
   const save=async(k,data,err)=>{await env.DB.prepare("INSERT INTO hq_metrics(source,data,fetched_at,error) VALUES(?,?,datetime('now'),?) ON CONFLICT(source) DO UPDATE SET data=COALESCE(excluded.data,hq_metrics.data),fetched_at=excluded.fetched_at,error=excluded.error").bind(k,data?JSON.stringify(data):null,err||null).run()};
   const out={};
   for(const [k,key,fn] of [["zernio","ZERNIO_API_KEY",()=>fetchZernio(env,from)],["brevo","BREVO_API_KEY",()=>fetchBrevo(env)]]){
-    if(!env[key]){out[k]={missing:true,seen:Object.keys(env0).filter(n=>/zernio|late|brevo|sendinblue/i.test(n)).map(n=>{const v=env0[n];return n+(typeof v!=="string"?" (not text: "+typeof v+")":v.trim()?"":" (empty)")})};continue}
     let r=get(k);
+    if(!env[key]){const seen=Object.keys(env0).filter(n=>/zernio|late|brevo|sendinblue/i.test(n)).map(n=>{const v=env0[n];return n+(typeof v!=="string"?" (not text: "+typeof v+")":v.trim()?"":" (empty)")});
+      if(force||!fresh(r)||!(r.error||"").startsWith("missing key"))await save(k,null,"missing key; site sees: "+(seen.join(", ")||"none"));
+      out[k]={missing:true,seen,data:r&&r.data?JSON.parse(r.data):null};continue}
     if(force||!fresh(r)){try{const d=await fn();await save(k,d,null);if(k==="brevo")await save("brevo:"+today,{subscribers:d.subscribers},null);r={data:JSON.stringify(d),fetched_at:new Date().toISOString().slice(0,19).replace("T"," "),error:null}}
       catch(e){await save(k,null,String(e.message||e).slice(0,300));r=Object.assign({},r||{},{error:String(e.message||e).slice(0,300)})}}
     out[k]={data:r&&r.data?JSON.parse(r.data):null,fetchedAt:r&&r.fetched_at?r.fetched_at.replace(" ","T")+"Z":null,error:r&&r.error||null};
@@ -221,6 +223,8 @@ export async function onRequest(context) {
   const url=new URL(req.url),path=url.pathname;
   if(!(path==="/hq" || path.startsWith("/hq/")))return context.next();
   if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
+  // Keep social and newsletter numbers synced in the background whenever the HQ is opened (at most every 6 hours per source).
+  if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil)context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));
   if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
   if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
   const user=await sessionUser(req,env);
