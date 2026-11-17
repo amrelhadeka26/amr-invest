@@ -122,7 +122,7 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 <script>
 const S={page:'today',mtab:'Content',weekOff:0,filt:{dept:'all',status:'open'},settings:null,depts:[],actions:[],decisions:[],contacts:[],invoices:[],content:[],ideas:[],weekly:[],links:[],cals:[],events:[],calErr:null,dbErr:null,calNeedsConnect:false,loaded:{},me:null,an:null,anLoading:false};
 let sig='';
-const COLS=['depts','actions','decisions','contacts','invoices','content','ideas','weekly','links','tools'];
+const COLS=['depts','actions','decisions','contacts','invoices','content','ideas','weekly','links','tools','skills'];
 const $=s=>document.querySelector(s);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -238,14 +238,14 @@ function renderSide(){
  h+=`<div class="grp">COMMAND</div>`+nb('today','Today',overdueActs().length?`<span class="ct">${overdueActs().length}</span>`:'')+nb('calendar','Calendar')+nb('actions','All actions')+nb('decisions','Decisions',waitingDec().length?`<span class="ct">${waitingDec().length}</span>`:'')+nb('review','Weekly review');
  GROUPS.forEach(g=>{const ds=d.filter(x=>x.group===g);if(!ds.length)return;h+=`<div class="grp">${g}</div>`+ds.map(x=>nb('d:'+x.id,x.name,`<span class="dot ${x.status==='active'?'':'q'}"></span>`)).join('')});
  const other=d.filter(x=>!GROUPS.includes(x.group));if(other.length)h+=`<div class="grp">OTHER</div>`+other.map(x=>nb('d:'+x.id,x.name,`<span class="dot q"></span>`)).join('');
- h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('tools','Tools')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
+ h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('tools','Tools')+nb('skills','Skills')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
  h+=`<p class="mut" style="margin:18px 10px 0"><span class="dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink);margin-right:6px"></span>active this quarter</p>`;
  $('#side').innerHTML=h;
 }
 function render(){renderSide();const p=S.page;let h='';
  if(S.dbErr)h+=`<div class="banner">${esc(S.dbErr)}</div>`;
  if(!S.settings&&!S.dbErr){$('#main').innerHTML='<p class="mut">Loading your HQ…</p>';return}
- const f={tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
+ const f={skills:pSkills,tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
  h+=f?f():(p.startsWith('d:')?pDept(p.slice(2)):pToday());
  $('#main').innerHTML=h;
 }
@@ -378,6 +378,17 @@ function pTools(){const ts=live(S.tools||[]);const f=S.tfilt||'all';const list=f
  `<div class="tabs">${['all',...TST].map(x=>`<button class="sm ${f===x?'on':''}" data-tfilt="${x}">${x==='all'?'All':x}</button>`).join('')}</div>`+
  cats.map(c=>{const it=list.filter(x=>(x.category||'Other')===c);if(!it.length)return '';return `<div class="card"><h2 style="margin-bottom:4px">${esc(c)}</h2>${it.sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(x=>`<div class="row"><div class="t"><div class="nm">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)} ↗</a>`:esc(x.name)}</div><div style="font-size:13px;margin-top:2px">${esc(x.purpose||'')}</div><div class="tags">${x.usedFor?`<span class="pill">${esc(x.usedFor)}</span>`:''}${x.owner?`<span class="pill">${esc(x.owner)}</span>`:''}<span class="pill ${x.status==='Active'?'ok':x.status==='To cancel'?'bad':x.status==='Trial'||x.status==='Planned'?'wa':''}">${esc(x.status||'Active')}</span>${x.monthly!==''&&x.monthly!=null?`<span class="pill">$${esc(x.monthly)}/mo</span>`:'<span class="pill">cost: fill in</span>'}${x.hq?'<span class="pill blk">feeds the HQ</span>':''}</div>${x.notes?`<div class="mut" style="margin-top:3px">${esc(x.notes)}</div>`:''}</div><button class="ic" data-act="editTool" data-id="${x.id}">Edit</button><button class="ic" data-act="del" data-col="tools" data-id="${x.id}">✕</button></div>`).join('')}</div>`}).join('')+
  (list.length?'':'<div class="card"><div class="empty">No tools here.</div></div>');}
+const SREL=['Using','Useful','Some useful','Not needed now','Not relevant'];
+function pSkills(){const gs=live(S.skills||[]).slice().sort((a,b)=>(+a.order||99)-(+b.order||99)||String(a.name).localeCompare(String(b.name)));const f=S.sfilt||'all';const q=(S.sq||'').toLowerCase();
+ const parse=g=>String(g.list||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const i=l.indexOf(' — ');return i>0?[l.slice(0,i),l.slice(i+3)]:[l,'']});
+ const total=gs.reduce((a,g)=>a+parse(g).length,0);
+ let h=head('Skills','Every installed Claude skill, by category · '+total+' skills in '+gs.length+' groups',`<button class="pri" data-act="newSkillGroup">+ Group</button>`);
+ h+=`<div class="fl" style="margin-bottom:12px"><input id="sq" placeholder="Search skills" value="${esc(S.sq||'')}" style="max-width:260px"><div class="tabs" style="margin:0">${['all',...SREL].map(x=>`<button class="sm ${f===x?'on':''}" data-sfilt="${x}">${x==='all'?'All':x}</button>`).join('')}</div></div>`;
+ const shown=gs.filter(g=>f==='all'||g.relevance===f);
+ h+=shown.map(g=>{let items=parse(g);if(q)items=items.filter(([n,d])=>(n+' '+d).toLowerCase().includes(q));if(q&&!items.length)return '';
+  return `<div class="card"><div class="ch"><div><h2>${esc(g.name)}</h2>${g.note?`<p class="mut" style="margin:2px 0 0">${esc(g.note)}</p>`:''}</div><div class="fl"><span class="pill ${g.relevance==='Using'?'blk':g.relevance==='Useful'?'ok':g.relevance==='Not relevant'?'bad':g.relevance==='Some useful'?'wa':''}">${esc(g.relevance||'')}</span><span class="pill">${parse(g).length}</span><button class="ic" data-act="editSkillGroup" data-id="${g.id}">Edit</button><button class="ic" data-act="del" data-col="skills" data-id="${g.id}">✕</button></div></div><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:6px 16px">${items.map(([n,d])=>`<div style="padding:5px 0;border-top:1px solid var(--line)"><code style="font-size:12.5px;font-weight:600">${esc(n)}</code>${d?`<div class="mut" style="font-size:12.5px">${esc(d)}</div>`:''}</div>`).join('')}</div></div>`}).join('')||'<div class="card"><div class="empty">No skills match.</div></div>';
+ return h;}
+function skillForm(g){form(g?'Edit skill group':'New skill group',[{k:'name',l:'Group',req:1},{k:'relevance',l:'Relevance',t:'sel',o:SREL,d:'Useful'},{k:'order',l:'Order',t:'number',d:50},{k:'note',l:'Note',full:1},{k:'list',l:'Skills, one per line: name — what it does',t:'ta'}],g,async o=>{await put('skills',g&&g.id,o)});setTimeout(()=>{const ta=$('#f_list');if(ta)ta.style.minHeight='260px'},30)}
 function toolForm(x){form(x?'Edit tool':'New tool',[{k:'name',l:'Tool',req:1},{k:'category',l:'Category',t:'sel',o:TCATS},{k:'purpose',l:'What it does for the business',full:1,req:1},{k:'usedFor',l:'Used for (department or area)'},{k:'owner',l:'Owner (you or an agent)'},{k:'status',l:'Status',t:'sel',o:TST,d:'Active'},{k:'monthly',l:'Monthly cost (USD)',t:'number'},{k:'url',l:'Link',full:1},{k:'account',l:'Login account (no passwords)'},{k:'hq',l:'Feeds this dashboard',t:'cb'},{k:'notes',l:'Notes',t:'ta'}],x,async o=>{await put('tools',x&&x.id,o)})}
 /* ---------- forms ---------- */
 function form(title,fields,vals,onSave,extraBtn){
@@ -444,6 +455,7 @@ async function toggleDone(id){const a=S.actions.find(x=>x.id===id);if(!a)return;
 }
 document.addEventListener('click',async e=>{
  const g=e.target.closest('[data-go]');if(g){S.page=g.dataset.go;$('#side').classList.remove('open');closeM();render();window.scrollTo(0,0);return}
+ const sf=e.target.closest('[data-sfilt]');if(sf){S.sfilt=sf.dataset.sfilt;render();return}
  const tf=e.target.closest('[data-tfilt]');if(tf){S.tfilt=tf.dataset.tfilt;render();return}
  const mt=e.target.closest('[data-mtab]');if(mt){S.mtab=mt.dataset.mtab;render();return}
  const b=e.target.closest('[data-act]');if(!b)return;const A=b.dataset.act,id=b.dataset.id;
@@ -470,6 +482,7 @@ document.addEventListener('click',async e=>{
  case 'newDept':deptForm();break;case 'editDept':deptForm(find('depts'));break;
  case 'editList':listForm(b.dataset.k);break;
  case 'wk':S.weekOff=+b.dataset.n===0?0:S.weekOff+(+b.dataset.n);render();loadEvents();break;
+ case 'newSkillGroup':skillForm();break;case 'editSkillGroup':skillForm(find('skills'));break;
  case 'newTool':toolForm();break;case 'editTool':toolForm(find('tools'));break;
  case 'anRefresh':loadAnalytics(true);break;
  case 'calRetry':S.calErr=null;await loadCals();loadEvents();break;
@@ -485,6 +498,7 @@ document.addEventListener('change',async e=>{const t=e.target;
  if(t.dataset.stage){await put('contacts',t.dataset.stage,{stage:t.value}).catch(()=>{})}
  if(t.dataset.cst){await put('content',t.dataset.cst,{status:t.value}).catch(()=>{})}
 });
+document.addEventListener('input',e=>{if(e.target.id==='sq'){S.sq=e.target.value;const pos=e.target.selectionStart;render();const el=$('#sq');if(el){el.focus();el.setSelectionRange(pos,pos)}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
 boot();
 </script>
