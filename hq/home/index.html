@@ -312,6 +312,7 @@ function pReview(){
  `<div class="card"><h2>Trends · last ${hist.length} weeks</h2>${hist.length?`<div class="grid g4" style="margin-top:10px"><div><div class="mut">Leads</div>${sp('leads')}</div><div><div class="mut">Reels</div>${sp('reels')}</div><div><div class="mut">Paid customers</div>${sp('paid')}</div><div><div class="mut">Revenue</div>${sp('revenue')}</div></div>`:'<div class="empty">Trends appear after your first saved review.</div>'}</div>`;
 }
 function deptActions(id){return `<div class="card"><div class="ch"><h2>Actions</h2><button class="sm pri" data-act="newAct" data-dept="${id}">+ Action</button></div>${actList(live(S.actions).filter(a=>a.dept===id&&(a.status!=='done'||(a.doneAt||'')>=weekKey(0))),false,'No actions in this department.')}</div>`}
+const consoleCard=()=>`<div class="card"><div class="ch"><h2>Claude Console · AI spend</h2><span class="mut">opens Anthropic's site; sign in there if asked</span></div><div class="fl"><a class="pill blk" style="padding:6px 12px;text-decoration:none" href="https://console.anthropic.com/settings/limits" target="_blank" rel="noopener">Spend limits ↗</a><a class="pill" style="padding:6px 12px;text-decoration:none" href="https://console.anthropic.com/usage" target="_blank" rel="noopener">Usage ↗</a><a class="pill" style="padding:6px 12px;text-decoration:none" href="https://console.anthropic.com/cost" target="_blank" rel="noopener">Cost ↗</a><a class="pill" style="padding:6px 12px;text-decoration:none" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener">Billing and credits ↗</a></div><p class="mut" style="margin-top:8px">ZD AI target: under $20 a month while it's free.</p></div>`;
 function pDept(id){
  const d=live(S.depts).find(x=>x.id===id);if(!d)return head('Not found','This department was removed.');
  const acts=live(S.actions).filter(a=>a.dept===id),open=acts.filter(a=>a.status!=='done');
@@ -320,6 +321,7 @@ function pDept(id){
  if(id==='sales')h+=pipeline();
  if(id==='mkt')h+=marketing();
  if(id==='edu')h+=education();
+ if(id==='prod'||id==='fin')h+=consoleCard();
  if(id==='fin')h+=finance();
  if(id==='strat')h+=`<div class="card"><div class="ch"><h2>Parked ideas</h2><button class="sm" data-go="ideas">Open</button></div>${live(S.ideas).slice(0,5).map(i=>`<div class="row"><div class="t">${esc(i.title)}</div><span class="mut">${esc(i.trigger)}</span></div>`).join('')||'<div class="empty">None.</div>'}</div>`;
  return h+deptActions(id);
