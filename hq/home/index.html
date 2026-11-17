@@ -50,6 +50,7 @@ h2{font-size:15px;font-weight:600;margin:0}
 .ch{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
 .grid{display:grid;gap:12px}
 .g4{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+.g2w{grid-template-columns:repeat(auto-fit,minmax(min(400px,100%),1fr))}
 .g2{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .kpi .l{font-size:12px;color:var(--ink2)}
@@ -83,6 +84,8 @@ h2{font-size:15px;font-weight:600;margin:0}
 .ev.act{background:var(--ink);color:var(--inv);border-color:var(--ink);cursor:pointer}
 .ev.due{border-style:dashed;cursor:pointer}
 .ev .tm{opacity:.7}
+button.sm.blk{background:var(--ink);color:var(--inv);border-color:var(--ink)}
+h3{font-size:13px;font-weight:600;margin:0 0 4px}
 .banner{background:var(--amberbg);color:var(--amber);border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
 .banner.bad{background:var(--redbg);color:var(--red)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:6vh 12px;z-index:50;overflow:auto}
@@ -216,6 +219,46 @@ const spark=(vals)=>{if(!vals||vals.length<2)return '';const mx=Math.max(...vals
 function mcRange(s,e){const ps=anPosts(s,e);if(ps){const ig=ps.filter(p=>p.platform==='instagram');return {reels:ig.length,reach:ps.reduce((a,p)=>a+(p.reach||0),0),auto:true}}let reels=0;live(S.content).forEach(c=>{if(c.channel==='Reel'&&c.status==='Published'&&c.date&&c.date>=s&&c.date<e)reels++});return {reels,reach:null,auto:false}}
 const latestWeekly=f=>{const w=live(S.weekly).filter(x=>x[f]!==''&&x[f]!=null).sort((a,b)=>b.id.localeCompare(a.id))[0];return w?w[f]:null};
 
+
+/* ---------- audience: website, newsletter, ZD AI (owner stats come from ZD AI's own admin API, same site) ---------- */
+async function loadAud(){const d=S.audDays||30;S.aud=Object.assign({},S.aud||{},{loading:true});render();
+ const zf=async u=>{const r=await fetch('/zd/api/admin/'+u,{credentials:'same-origin',headers:{Accept:'application/json'}});if(r.status===401||r.status===403||r.status===404)return {login:true};if(!r.ok)throw new Error('ZD AI '+r.status);return r.json()};
+ const [st,pe,si]=await Promise.allSettled([zf('stats?days='+d),zf('people'),api('site?days='+d)]);
+ const v=x=>x.status==='fulfilled'?x.value:{err:String(x.reason&&x.reason.message||x.reason)};
+ S.aud={loading:false,at:new Date().toISOString(),st:v(st),pe:v(pe),si:v(si)};if(S.page==='audience')render()}
+const AUDTOOL={calculate_compound_growth:'Compound growth calculator',calculate_goal:'Goal planner',analyze_portfolio:'Portfolio check',compare_options:'Compare options'};
+const tName=n=>AUDTOOL[n]||String(n).replace(/[_:]/g,' ').replace(/^./,c=>c.toUpperCase());
+function hbars(items,empty){items=(items||[]).filter(x=>x&&x.value>0);if(!items.length)return `<div class="empty">${esc(empty||'No data yet.')}</div>`;const mx=Math.max(...items.map(x=>x.value));
+ return items.map(x=>`<div style="margin:8px 0"><div class="fl" style="justify-content:space-between;font-size:13px"><span>${esc(x.label)}</span><b style="font-weight:500">${fmtN(x.value)}${x.sub?` <span class="mut">${esc(x.sub)}</span>`:''}</b></div><div class="bar" style="height:6px;margin-top:3px"><i style="width:${Math.max(2,x.value/mx*100)}%"></i></div></div>`).join('')}
+function pAudience(){const A=S.aud,d=S.audDays||30;
+ let h=`<div class="ch" style="margin-bottom:12px"><div><h1 style="margin:0">Audience</h1><p class="mut">Website visitors, newsletter, ZD AI guests and accounts. Your own visits and tests are left out.</p></div><div class="fl">${[7,30,90,365].map(n=>`<button class="sm ${d===n?'blk':''}" data-act="audDays" data-v="${n}">${n===365?'1 year':n+' days'}</button>`).join('')}<button class="sm" data-act="audRefresh">${A&&A.loading?'Loading…':'Refresh'}</button><a class="sm" href="/zd/admin" target="_blank" rel="noopener" style="text-decoration:none">ZD AI admin ↗</a></div></div>`;
+ if(!A||A.loading&&!A.st)return h+'<p class="mut">Loading audience data…</p>';
+ const st=A.st||{},pe=A.pe||{},si=A.si||{};
+ if(st.login)h+=`<div class="banner">ZD AI keeps visitor, sign-up and chat stats behind its own owner sign-in. <a href="/zd/" target="_blank" rel="noopener">Sign in to ZD AI</a> with your owner account in this browser, then press Refresh.</div>`;
+ else if(st.err)h+=`<div class="banner">Couldn't load ZD AI stats (${esc(st.err)}).</div>`;
+ const w=st.website||{},p=st.people||{},u=st.usage||{},nl=st.newsletter,ok=!st.login&&!st.err;
+ const goog=(w.sources||[]).find(x=>/^google/i.test(x.label));
+ if(ok)h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Website visitors',fmtN(w.visitors),fmtN(w.views)+' page views')}${kpi('From Google search',fmtN(goog?goog.value:0),w.visitors?pct((goog?goog.value:0)/w.visitors)+' of visitors':'')}${kpi('Newsletter',nl?fmtN(nl.total):'—',nl?'+'+fmtN(nl.inRange)+' in this range':'Brevo not linked to ZD AI')}${kpi('Guests (no sign-up)',fmtN(p.newGuests),p.guestToAccountPct!=null?p.guestToAccountPct+'% became accounts':'')}${kpi('New accounts',fmtN(p.newAccounts),fmtN(p.viaGoogle)+' with Google · '+fmtN(p.viaEmail)+' with email')}${kpi('ZD AI chats',fmtN(u.messages),fmtN(u.chatters)+' people · '+fmtN(u.returning)+' came back')}${kpi('Active people',fmtN(u.active7),'last 7 days · '+fmtN(u.activeToday)+' today')}${kpi('AI answer time',st.quality&&st.quality.answerMsMedian!=null?(st.quality.answerMsMedian/1000).toFixed(1)+'s':'—',st.quality?'median · '+fmtN(st.quality.limitHits)+' hit the daily limit':'')}</div>`;
+ if(ok){const f=st.funnel||[];const top=f[0]&&f[0].value||0;
+  h+=`<div class="card"><h2>Funnel</h2>${f.map(x=>`<div style="margin:8px 0"><div class="fl" style="justify-content:space-between;font-size:13px"><span>${esc(x.label)}</span><b style="font-weight:500">${fmtN(x.value)}${top&&x!==f[0]?` <span class="mut">${pct(x.value/top)}</span>`:''}</b></div><div class="bar" style="height:6px;margin-top:3px"><i style="width:${top?Math.max(1,x.value/top*100):0}%"></i></div></div>`).join('')}</div>`;
+  h+=`<div class="grid g2w"><div class="card"><h2>Where visitors come from</h2>${hbars(w.sources,'No visits yet.')}</div><div class="card"><h2>Top pages</h2>${hbars((w.pages||[]).slice(0,10))}</div><div class="card"><h2>Countries</h2>${hbars(w.countries)}</div><div class="card"><h2>Devices</h2>${hbars(w.devices)}</div></div>`;}
+ // calculator use from the website's own counters
+ const rows=si.rows||[],ev=(e)=>rows.filter(r=>r.event===e).map(r=>({label:r.value.replace(/^./,c=>c.toUpperCase()),value:r.n}));
+ const used=ev('use'),tabs=ev('tab');
+ h+=`<div class="grid g2w"><div class="card"><h2>ZD AI tools used most</h2>${ok?hbars((st.tools||[]).map(t=>({label:tName(t.name),value:t.uses,sub:t.people+' people'})),'No tool used yet.'):'<div class="empty">Sign in to ZD AI to see this.</div>'}</div><div class="card"><h2>Calculator tools used most</h2><p class="mut">Ran a result · opened the tab</p>${hbars(used.map(x=>({label:x.label,value:x.value,sub:'· '+fmtN((tabs.find(t=>t.label===x.label)||{}).value||0)+' opens'})),si.err?'Couldn\'t load site counters.':'No use yet.')}</div></div>`;
+ if(ok){const L=st.languages||{},ln={en:'English',ar:'Arabic',franco:'Franco-Arabic',mixed:'Mixed'};
+  const k=st.privacy&&st.privacy.minPeople||5;
+  h+=`<div class="grid g2w"><div class="card"><h2>Words people use most</h2><p class="mut">Only words that ${k}+ different people used, so no one can be identified. Chats themselves are never shown.</p>${hbars((st.words||[]).map(x=>({label:x.text,value:x.people,sub:'people'})),'Not enough people yet — words appear once '+k+'+ people use the same one.')}</div><div class="card"><h2>Phrases and rising topics</h2>${hbars((st.phrases||[]).map(x=>({label:x.text,value:x.people})),'No common phrases yet.')}${(st.rising||[]).length?'<h3 style="margin-top:12px">Rising</h3>'+(st.rising||[]).map(x=>`<span class="pill">${esc(x.text)} ${x.isNew?'new':x.before+'→'+x.people}</span>`).join(' '):''}</div><div class="card"><h2>Languages</h2>${hbars(Object.entries(L).map(([a,n])=>({label:ln[a]||a,value:n})),'No chats yet.')}</div><div class="card"><h2>What ZD AI couldn't answer</h2>${hbars((st.unanswered||[]).map(x=>({label:x.label,value:x.times,sub:x.people+' people'})),'Nothing turned away.')}</div></div>`;
+  if((st.campaigns||[]).length)h+=`<div class="card"><h2>Campaign links (?c=)</h2>${st.campaigns.map(c=>`<div class="row"><div class="t"><div class="nm">${esc(c.name)}</div></div><span class="mut">${fmtN(c.visitors)} visitors · ${fmtN(c.zd)} opened ZD AI · ${fmtN(c.guests)} guests · ${fmtN(c.accounts)} accounts · ${fmtN(c.newsletter)} newsletter</span></div>`).join('')}</div>`;}
+ // people
+ if(!pe.login&&!pe.err){const ac=pe.accounts||[],sb=pe.subscribers;
+  h+=`<div class="card"><details><summary style="cursor:pointer"><h2 style="display:inline">People</h2> <span class="mut">${ac.length} accounts${sb?' · '+sb.length+' newsletter subscribers':''} · hidden until opened, for screen sharing</span></summary>
+  <h3 style="margin-top:12px">ZD AI accounts</h3>${ac.map(a=>`<div class="row"><div class="t"><div class="nm">${esc(a.email)}</div><div class="tags"><span class="pill ${a.via==='Google'?'blk':''}">${esc(a.via)}</span>${a.fromGuest?'<span class="pill">was a guest</span>':''}${a.monthlyRecap?'<span class="pill ok">monthly recap</span>':''}${a.plusLaunch?'<span class="pill wa">wants Plus</span>':''}</div></div><span class="mut">joined ${esc(fmtD(a.joined.slice(0,10)))} · ${a.messages} msgs${a.lastActive?' · active '+esc(ago(a.lastActive)):''}</span></div>`).join('')||'<div class="empty">No accounts yet.</div>'}
+  <h3 style="margin-top:12px">Newsletter subscribers</h3>${sb?sb.map(x=>`<div class="row"><div class="t">${esc(x.email)}</div><span class="mut">${esc(fmtD(String(x.at).slice(0,10)))}</span></div>`).join('')||'<div class="empty">None yet.</div>':'<div class="empty">ZD AI isn\'t linked to Brevo.</div>'}
+  </details></div>`;}
+ if(ok&&st.privacy&&st.privacy.hiddenTeamPeople)h+=`<p class="mut">${st.privacy.hiddenTeamPeople} team or test people left out of these numbers.</p>`;
+ return h}
+
 /* ---------- computed ---------- */
 function paidInv(){return live(S.invoices).filter(i=>i.status==='paid')}
 function cash(){return paidInv().reduce((s,i)=>s+(+i.amount||0),0)}
@@ -235,7 +278,7 @@ function renderSide(){
  const d=live(S.depts).slice().sort((a,b)=>(a.order||0)-(b.order||0));
  let h=`<div class="logo"><b>ZD.</b><span>BUSINESS HQ</span></div>`;
  const nb=(k,l,extra)=>`<button class="nv ${S.page===k?'on':''}" data-go="${k}">${esc(l)}${extra||''}</button>`;
- h+=`<div class="grp">COMMAND</div>`+nb('today','Today',overdueActs().length?`<span class="ct">${overdueActs().length}</span>`:'')+nb('calendar','Calendar')+nb('actions','All actions')+nb('decisions','Decisions',waitingDec().length?`<span class="ct">${waitingDec().length}</span>`:'')+nb('review','Weekly review');
+ h+=`<div class="grp">COMMAND</div>`+nb('today','Today',overdueActs().length?`<span class="ct">${overdueActs().length}</span>`:'')+nb('calendar','Calendar')+nb('audience','Audience')+nb('actions','All actions')+nb('decisions','Decisions',waitingDec().length?`<span class="ct">${waitingDec().length}</span>`:'')+nb('review','Weekly review');
  GROUPS.forEach(g=>{const ds=d.filter(x=>x.group===g);if(!ds.length)return;h+=`<div class="grp">${g}</div>`+ds.map(x=>nb('d:'+x.id,x.name,`<span class="dot ${x.status==='active'?'':'q'}"></span>`)).join('')});
  const other=d.filter(x=>!GROUPS.includes(x.group));if(other.length)h+=`<div class="grp">OTHER</div>`+other.map(x=>nb('d:'+x.id,x.name,`<span class="dot q"></span>`)).join('');
  h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('tools','Tools')+nb('skills','Skills')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
@@ -245,7 +288,7 @@ function renderSide(){
 function render(){renderSide();const p=S.page;let h='';
  if(S.dbErr)h+=`<div class="banner">${esc(S.dbErr)}</div>`;
  if(!S.settings&&!S.dbErr){$('#main').innerHTML='<p class="mut">Loading your HQ…</p>';return}
- const f={skills:pSkills,tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
+ const f={audience:pAudience,skills:pSkills,tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
  h+=f?f():(p.startsWith('d:')?pDept(p.slice(2)):pToday());
  $('#main').innerHTML=h;
 }
@@ -477,7 +520,7 @@ async function toggleDone(id){const a=S.actions.find(x=>x.id===id);if(!a)return;
   const nid=await put('actions',null,n);if(n.cal){try{n.id=nid;n.eventId=await calCreate(n);delete n.id;await put('actions',nid,{eventId:n.eventId,evSeq:n.evSeq})}catch(e){}}setTimeout(loadEvents,800);toast('Done. Next one scheduled for '+fmtD(n.due))}else toast(done?'Done':'Reopened');
 }
 document.addEventListener('click',async e=>{
- const g=e.target.closest('[data-go]');if(g){S.page=g.dataset.go;$('#side').classList.remove('open');closeM();render();window.scrollTo(0,0);return}
+ const g=e.target.closest('[data-go]');if(g){S.page=g.dataset.go;if(S.page==='audience'&&!S.aud)loadAud();$('#side').classList.remove('open');closeM();render();window.scrollTo(0,0);return}
  const sf=e.target.closest('[data-sfilt]');if(sf){S.sfilt=sf.dataset.sfilt;render();return}
  const tf=e.target.closest('[data-tfilt]');if(tf){S.tfilt=tf.dataset.tfilt;render();return}
  const mt=e.target.closest('[data-mtab]');if(mt){S.mtab=mt.dataset.mtab;render();return}
@@ -510,6 +553,7 @@ document.addEventListener('click',async e=>{
  case 'newEv':evForm(null);break;
  case 'newTool':toolForm();break;case 'editTool':toolForm(find('tools'));break;
  case 'anRefresh':loadAnalytics(true);break;
+ case 'audDays':S.audDays=+b.dataset.v;loadAud();break;case 'audRefresh':loadAud();break;
  case 'calRetry':S.calErr=null;await loadCals();loadEvents();break;
  case 'saveGoal':await putSettings({goal:{title:$('#s_gt').value.trim(),target:+$('#s_tg').value||0,start:$('#s_st').value,end:$('#s_en').value},targets:{ws:+$('#s_tw').value||0,se:+$('#s_ts').value||0,reels:+$('#s_tr').value||0}});toast('Goal saved');break;
  case 'saveCals':{const m={};document.querySelectorAll('[data-dcal]').forEach(s=>m[s.dataset.dcal]=s.value);await putSettings({defaultCal:$('#s_dc').value,deptCal:m});toast('Calendars saved');break}

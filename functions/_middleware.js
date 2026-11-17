@@ -200,6 +200,8 @@ async function api(path,req,env,user){
     }
     return json({error:"Unknown calendar route"},404)}
   if(path==="/hq/api/analytics"&&m==="GET")return json(await analytics(env,new URL(req.url).searchParams.get("refresh")==="1"));
+  if(path==="/hq/api/site"&&m==="GET"){const d=Math.min(365,Math.max(1,parseInt(new URL(req.url).searchParams.get("days"))||30));const since=new Date(Date.now()-(d-1)*864e5).toISOString().slice(0,10);
+    const q=await env.DB.prepare("SELECT event,value,SUM(count) n FROM events WHERE day>=? GROUP BY event,value ORDER BY n DESC").bind(since).all();return json({since,days:d,rows:q.results||[]})}
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
   return json({error:"Unknown HQ API route"},404);
 }
