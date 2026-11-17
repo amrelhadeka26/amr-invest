@@ -108,8 +108,12 @@ async function readBody(req,max){const t=await req.text();if(t.length>max)throw 
 async function allCalendars(token){let items=[],pageToken="";do{const s=pageToken?"&pageToken="+encodeURIComponent(pageToken):"";const p=await gcal(token,"/users/me/calendarList?maxResults=250"+s);items.push(...(p.items||[]));pageToken=p.nextPageToken||""}while(pageToken&&items.length<500);
   return items.filter(x=>!x.deleted&&x.selected!==false).map(x=>({id:x.id,summary:x.summary||x.id,primary:!!x.primary,writable:["owner","writer"].includes(x.accessRole)}))}
 const DT=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
-function eventBody(b){if(typeof b.summary!=="string"||!b.summary.trim()||b.summary.length>300)throw Object.assign(Error("Invalid title"),{status:400});if(!DT.test(b.start||"")||!DT.test(b.end||""))throw Object.assign(Error("Invalid time"),{status:400});
-  const t=s=>s.length===16?s+":00":s;return {summary:b.summary.trim(),description:String(b.description||"").slice(0,4000),start:{dateTime:t(b.start),timeZone:"Africa/Cairo"},end:{dateTime:t(b.end),timeZone:"Africa/Cairo"}}}
+const DD=/^\d{4}-\d{2}-\d{2}$/;
+function eventBody(b){if(typeof b.summary!=="string"||!b.summary.trim()||b.summary.length>300)throw Object.assign(Error("Invalid title"),{status:400});
+  const t=s=>s.length===16?s+":00":s;const o={summary:b.summary.trim()};
+  if(b.allDay){if(!DD.test(String(b.start).slice(0,10))||!DD.test(String(b.end).slice(0,10)))throw Object.assign(Error("Invalid date"),{status:400});o.start={date:String(b.start).slice(0,10),dateTime:null};o.end={date:String(b.end).slice(0,10),dateTime:null}}
+  else{if(!DT.test(b.start||"")||!DT.test(b.end||""))throw Object.assign(Error("Invalid time"),{status:400});o.start={dateTime:t(b.start),timeZone:"Africa/Cairo",date:null};o.end={dateTime:t(b.end),timeZone:"Africa/Cairo",date:null}}
+  if(typeof b.description==="string")o.description=b.description.slice(0,4000);if(typeof b.location==="string")o.location=b.location.slice(0,300);return o}
 
 /* ---------- analytics: Zernio (Instagram, TikTok) and Brevo ---------- */
 async function metricsTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_metrics(source TEXT PRIMARY KEY,data TEXT,fetched_at TEXT,error TEXT)").run()}
@@ -178,7 +182,7 @@ async function api(path,req,env,user){
           // Some calendars (e.g. ones only shared to see free/busy) reject sorting; ask again unsorted.
           if(e.gstatus!==400){console.log("hq calendar read failed",c.summary,e.message);errs.push(c.summary+" ("+e.gstatus+(e.greason?" "+e.greason:"")+")");return}
           try{p=await gcal(tk,path+base)}catch(e2){console.log("hq calendar read failed",c.summary,e2.message);errs.push(c.summary+" ("+(e2.gstatus||"")+": "+((e2.message.match(/"message":\s*"([^"]+)"/)||[])[1]||e2.greason||"error")+")");return}}
-        for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||""})});
+        for(const e of p.items||[])if(e.status!=="cancelled")out.push({id:e.id,calendarId:c.id,calName:c.summary,writable:!!c.writable,summary:e.summary||"",start:e.start?.dateTime||e.start?.date||"",end:e.end?.dateTime||e.end?.date||"",allDay:!!(e.start&&e.start.date&&!e.start.dateTime),recurring:!!e.recurringEventId,description:String(e.description||"").slice(0,2000),location:String(e.location||"").slice(0,300),link:e.htmlLink||"",external:!!(e.organizer&&!e.organizer.self)})});
       out.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
       return json({events:out,errors:errs})}
     // Was this event deleted in Google Calendar? (deleted events answer 404/410, or come back with status "cancelled")
@@ -189,7 +193,9 @@ async function api(path,req,env,user){
         try{const r=await gcal(tk,base+"?sendUpdates=none","POST",ev);return json({id:r.id})}
         catch(e){if(b.eventId&&/Google Calendar 409/.test(String(e))){const r=await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","PATCH",Object.assign(ev,{status:"confirmed"}));return json({id:r.id,existing:true})}throw e}}
       if(typeof b.eventId!=="string"||!b.eventId||b.eventId.length>1024)return json({error:"Invalid event"},400);
-      if(m==="PATCH"){const r=await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","PATCH",eventBody(b));return json({id:r.id})}
+      if(m==="PATCH"){let cal=b.calendarId;
+        if(typeof b.toCalendarId==="string"&&b.toCalendarId&&b.toCalendarId!==b.calendarId){if(b.toCalendarId.length>300)return json({error:"Invalid calendar"},400);await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"/move?sendUpdates=none&destination="+encodeURIComponent(b.toCalendarId),"POST");cal=b.toCalendarId}
+        const r=await gcal(tk,"/calendars/"+encodeURIComponent(cal)+"/events/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","PATCH",eventBody(b));return json({id:r.id,calendarId:cal})}
       if(m==="DELETE"){try{await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","DELETE")}catch(e){if(!/Google Calendar (404|410):/.test(String(e)))throw e}return json({deleted:true})}
     }
     return json({error:"Unknown calendar route"},404)}
