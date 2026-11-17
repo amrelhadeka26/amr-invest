@@ -284,6 +284,7 @@ details.assume[open] > summary::after { transform: rotate(-135deg) translateY(-3
 .hero-today span { font-weight: 700; font-variant-numeric: tabular-nums; }
 .hero-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.35); }
 .hero-rows span { display: block; font-size: 13px; }
+.hero-rows small.assume { display: block; font-size: 11.5px; opacity: .85; margin-top: 2px; }
 .hero-rows b { font-size: 19px; font-variant-numeric: tabular-nums; }
 .hero-note { margin: 14px 0 0; font-size: 13px; }
 #bestTxt { color: #a1a1a6; }
@@ -834,7 +835,7 @@ h1, .pf h2 { line-height: 1.3; }
     $('heroSub').textContent = K.final > 0 ? 'اختيارات هتغلب زيادة الأسعار بالافتراضات دي، بعد المصاريف.' : 'اكتب مبلغ عشان تبدأ.';
     $('putVal').textContent = usdMode() ? '$' + fmt(putU) : money(K.put, 0);
     $('calcVal').textContent = money(K.final, v.years);
-    $('bestTxt').textContent = 'كل اختيار تحت، بنفس الترتيب كل مرة. دي افتراضات مش توقعات، ومش توصية.';
+    $('bestTxt').textContent = 'كل اختيار تحت، بنفس الترتيب كل مرة. دي افتراضات مش توقعات، ومش نصيحة إنك تختار واحد منهم.';
     renderToday(opts, K, v, deflate);
 
     $('tbody').innerHTML = opts.map(o =>
@@ -892,7 +893,7 @@ h1, .pf h2 { line-height: 1.3; }
     const yTxt = v.years + (v.years === 1 ? ' سنة' : ' سنين');
     const rows = TM_ORDER.map(k => opts.find(o => o.key === k)).filter(Boolean);
     const beatCount = rows.filter(o => o.key !== 'cash' && o.beyond >= 0).length;
-    $('aSub').textContent = 'لو كل اختيار جاتله أوحش سنة اتسجّلت في الآخر خالص، ده قد إيه من قيمته هيروح، بفلوس النهارده. ' + beatCount + ' من 5 اختيارات بتغلب زيادة الأسعار على ' + yTxt + '. أنهي يناسبك بيعتمد على ظروفك ووقتك وقد إيه تستحمل المخاطرة. مش توصية.';
+    $('aSub').textContent = 'لو كل اختيار جاتله أوحش سنة اتسجّلت في الآخر خالص، ده قد إيه من قيمته هيروح، بفلوس النهارده. ' + beatCount + ' من 5 اختيارات بتغلب زيادة الأسعار على ' + yTxt + '. أنهي يناسبك بيعتمد على ظروفك ووقتك وقد إيه تستحمل المخاطرة. ده مش نصيحة إنك تختار حاجة معينة.';
     const loss = o => o.real * Math.abs(Math.min(0, PF_WORST[o.key])) / 100;
     const maxL = Math.max(1, ...rows.map(loss));
     $('aList').innerHTML = rows.map(o => {
@@ -918,15 +919,15 @@ h1, .pf h2 { line-height: 1.3; }
     const yTxt = yrs + (yrs === 1 ? ' سنة' : ' سنين');
     const amt = n => usdMode() ? '$' + fmt(n) : fmt(n) + ' جنيه';
     $('gToday').textContent = money(G, 0);
-    $('gFutLbl').textContent = 'السعر بعد ' + yTxt;
+    $('gFutLbl').innerHTML = 'السعر بعد ' + yTxt + '<small class="assume">بتضخم ' + (Math.round(v.infl * 10) / 10) + '٪ في السنة</small>';
     $('gFuture').textContent = money(target, yrs);
     if (G <= 0) {
       $('gMonthly').textContent = 'اكتب هدفك'; $('gWith').textContent = 'اكتب هدفك بيتكلّف كام النهارده.'; $('gNote').textContent = ''; $('gIntro').textContent = ''; $('gList').innerHTML = ''; $('gBody').innerHTML = ''; return;
     }
     $('gEyebrow').textContent = 'هدفك';
     $('gMonthly').textContent = money(G, 0);
-    $('gWith').textContent = 'بفلوس النهارده، يعني حوالي ' + money(target, yrs) + ' بعد ' + yTxt + ' مع زيادة الأسعار.';
-    $('gNote').textContent = 'لو حوّشتها في البيت هتحتاج ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. مش توصية.';
+    $('gWith').textContent = 'بفلوس النهارده، يعني حوالي ' + money(target, yrs) + ' بعد ' + yTxt + ' لو الأسعار زادت ' + (Math.round(v.infl * 10) / 10) + '٪ في السنة. تقدر تغيّر الرقم ده من «عدّل الافتراضات».';
+    $('gNote').textContent = 'لو حوّشتها في البيت هتحتاج ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. ده حساب بس، مش نصيحة.';
     $('gIntro').textContent = 'الخط اللي في النص هو إنك تحوّشها ' + cash.o.name + ': ' + (usdMode() ? '$' + fmt(cash.need) : fmt(cash.need) + ' جنيه') + ' في الشهر. ناحية الشمال: محتاج أقل كل شهر. ناحية اليمين: محتاج أكتر.';
     const diffs = rows.map(r => cash.need - r.need);
     const maxD = Math.max(1, ...diffs.map(Math.abs));
