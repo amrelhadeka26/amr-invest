@@ -110,6 +110,48 @@ async function allCalendars(token){let items=[],pageToken="";do{const s=pageToke
 const DT=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
 function eventBody(b){if(typeof b.summary!=="string"||!b.summary.trim()||b.summary.length>300)throw Object.assign(Error("Invalid title"),{status:400});if(!DT.test(b.start||"")||!DT.test(b.end||""))throw Object.assign(Error("Invalid time"),{status:400});
   const t=s=>s.length===16?s+":00":s;return {summary:b.summary.trim(),description:String(b.description||"").slice(0,4000),start:{dateTime:t(b.start),timeZone:"Africa/Cairo"},end:{dateTime:t(b.end),timeZone:"Africa/Cairo"}}}
+
+/* ---------- analytics: Zernio (Instagram, TikTok) and Brevo ---------- */
+async function metricsTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_metrics(source TEXT PRIMARY KEY,data TEXT,fetched_at TEXT,error TEXT)").run()}
+async function getJSON(url,headers){const r=await fetch(url,{headers});const t=await r.text();if(!r.ok)throw Error(r.status+": "+t.slice(0,200));try{return JSON.parse(t)}catch{throw Error("Bad JSON from "+new URL(url).host)}}
+const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
+async function fetchZernio(env,from){
+  const H={Authorization:"Bearer "+env.ZERNIO_API_KEY};const B="https://zernio.com/api/v1";
+  const fs=await getJSON(B+"/accounts/follower-stats?granularity=daily&fromDate="+from,H);
+  const accounts=(fs.accounts||[]).map(a=>({id:a._id,platform:a.platform,username:a.username,followers:num(a.currentFollowers),growth:num(a.growth),history:((fs.stats||{})[a._id]||[]).map(x=>({date:String(x.date).slice(0,10),followers:num(x.followers)}))}));
+  const profiles=[...new Set((fs.accounts||[]).map(a=>a.profileId).filter(Boolean))];
+  let posts=[],overview=null;
+  for(const pid of profiles){try{const an=await getJSON(B+"/analytics?profileId="+encodeURIComponent(pid)+"&fromDate="+from+"&limit=100",H);overview=an.overview||overview;
+    for(const p of an.posts||[]){const m=p.analytics||{};posts.push({id:p._id,platform:p.platform,publishedAt:p.publishedAt,url:p.platformPostUrl||"",text:String(p.content||"").slice(0,140),views:num(m.views),reach:num(m.reach),impressions:num(m.impressions),likes:num(m.likes),comments:num(m.comments),shares:num(m.shares),saves:num(m.saves)})}}catch(e){if(!posts.length)throw e}}
+  return {accounts,posts,overview};
+}
+async function fetchBrevo(env){
+  const H={"api-key":env.BREVO_API_KEY,accept:"application/json"};const B="https://api.brevo.com/v3";
+  const c=await getJSON(B+"/contacts?limit=1",H);
+  let campaigns=[];try{const e=await getJSON(B+"/emailCampaigns?status=sent&limit=10&sort=desc&statistics=globalStats",H);
+    campaigns=(e.campaigns||[]).map(x=>{const g=(x.statistics&&x.statistics.globalStats)||{};const d=num(g.delivered)||num(g.sent);return {name:x.name,sentDate:x.sentDate||"",delivered:d,opens:num(g.uniqueViews),clicks:num(g.uniqueClicks),openRate:d?num(g.uniqueViews)/d:null,clickRate:d?num(g.uniqueClicks)/d:null}})}catch(e){}
+  return {subscribers:num(c.count),campaigns};
+}
+async function analytics(env,force){
+  await metricsTable(env);
+  const rows=(await env.DB.prepare("SELECT source,data,fetched_at,error FROM hq_metrics").all()).results||[];
+  const get=k=>rows.find(r=>r.source===k);
+  const fresh=r=>r&&r.fetched_at&&(Date.now()-Date.parse(r.fetched_at+"Z"))<6*3600*1000;
+  const goalRow=await env.DB.prepare("SELECT data FROM hq_docs WHERE col='settings' AND id='main'").first().catch(()=>null);
+  let from="2026-11-01";try{from=JSON.parse(goalRow.data).goal.start||from}catch{}
+  const today=new Date().toISOString().slice(0,10);
+  const save=async(k,data,err)=>{await env.DB.prepare("INSERT INTO hq_metrics(source,data,fetched_at,error) VALUES(?,?,datetime('now'),?) ON CONFLICT(source) DO UPDATE SET data=COALESCE(excluded.data,hq_metrics.data),fetched_at=excluded.fetched_at,error=excluded.error").bind(k,data?JSON.stringify(data):null,err||null).run()};
+  const out={};
+  for(const [k,key,fn] of [["zernio","ZERNIO_API_KEY",()=>fetchZernio(env,from)],["brevo","BREVO_API_KEY",()=>fetchBrevo(env)]]){
+    if(!env[key]){out[k]={missing:true};continue}
+    let r=get(k);
+    if(force||!fresh(r)){try{const d=await fn();await save(k,d,null);if(k==="brevo")await save("brevo:"+today,{subscribers:d.subscribers},null);r={data:JSON.stringify(d),fetched_at:new Date().toISOString().slice(0,19).replace("T"," "),error:null}}
+      catch(e){await save(k,null,String(e.message||e).slice(0,300));r=Object.assign({},r||{},{error:String(e.message||e).slice(0,300)})}}
+    out[k]={data:r&&r.data?JSON.parse(r.data):null,fetchedAt:r&&r.fetched_at?r.fetched_at.replace(" ","T")+"Z":null,error:r&&r.error||null};
+  }
+  out.brevoHistory=rows.filter(r=>r.source.startsWith("brevo:")).map(r=>({date:r.source.slice(6),subscribers:num(JSON.parse(r.data||"{}").subscribers)})).sort((a,b)=>a.date.localeCompare(b.date));
+  return out;
+}
 async function api(path,req,env,user){
   const m=req.method;
   if(path==="/hq/api/me"&&m==="GET")return json({email:user.email,calendarManager:CALENDAR_MANAGER});
@@ -143,6 +185,7 @@ async function api(path,req,env,user){
       if(m==="DELETE"){try{await gcal(tk,base+"/"+encodeURIComponent(b.eventId)+"?sendUpdates=none","DELETE")}catch(e){if(!/Google Calendar (404|410):/.test(String(e)))throw e}return json({deleted:true})}
     }
     return json({error:"Unknown calendar route"},404)}
+  if(path==="/hq/api/analytics"&&m==="GET")return json(await analytics(env,new URL(req.url).searchParams.get("refresh")==="1"));
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
   return json({error:"Unknown HQ API route"},404);
 }
