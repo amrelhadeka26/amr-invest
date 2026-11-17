@@ -142,7 +142,7 @@ async function callback(req,env) {
     const tok=await exchange(url.searchParams.get("code"),env);
     const profile=await googleProfile(tok.access_token);
     if(mode==="calendar"){
-      if(profile.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
+      if(profile.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/home/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
       const prev=await calendarRow(env);
       let prior={};if(prev)try{prior=await unseal(prev.encrypted,env)}catch{}
       const stored={access_token:tok.access_token,refresh_token:tok.refresh_token||prior.refresh_token,expires_at:Date.now()+(tok.expires_in||3600)*1000};
@@ -150,7 +150,7 @@ async function callback(req,env) {
       await env.DB.prepare("INSERT INTO hq_google_tokens(account,encrypted,calendar_id,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(account) DO UPDATE SET encrypted=excluded.encrypted,updated_at=excluded.updated_at").bind(CALENDAR_MANAGER,await seal(stored,env),null).run();
     }
     const ses=await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET);
-    return redirect(ORIGIN+"/hq/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
+    return redirect(ORIGIN+"/hq/home/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
   }catch(e){return new Response("ZD HQ Google login: "+String(e.message||e),{status:401,headers:{...htmlHeaders,"Content-Type":"text/plain; charset=utf-8"}})}
 }
 export async function onRequest(context) {
@@ -166,8 +166,8 @@ export async function onRequest(context) {
     return redirect(ORIGIN+"/hq/auth/login");
   }
   if(path==="/hq/auth/logout")return redirect(ORIGIN+"/hq/auth/login",[cookie(SESSION_NAME,"",0)]);
-  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/?calendar=owner-only");return startOAuth("calendar",env)}
-  if(path==="/hq")return redirect(ORIGIN+"/hq/");
+  if(path==="/hq/auth/calendar" && req.method==="GET"){if(user.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/home/?calendar=owner-only");return startOAuth("calendar",env)}
+  if(path==="/hq"||path==="/hq/"||path==="/hq/index.html")return redirect(ORIGIN+"/hq/home/");
   if(path.startsWith("/hq/api/")){
     if(req.method!=="GET" && ![ORIGIN,env.HQ_TEST_ORIGIN].includes(req.headers.get("Origin")))return json({error:"Origin rejected"},403);
     try{return await api(path,req,env,user)}catch(e){return json({error:String(e.message||e)},e.status||502)}
