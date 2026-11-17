@@ -167,9 +167,11 @@ function calMsg(e){if(e&&e.needsConnection){S.calNeedsConnect=true;return 'Googl
 async function loadCals(){try{const j=await api('cal/list');S.cals=j.calendars||[];S.calNeedsConnect=false;S.calErr=null;render()}catch(e){if(e.code!=='auth'){S.calErr=calMsg(e);render()}}}
 function weekStart(off){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay()+7*(off||0));return d}
 async function loadEvents(){if(S.calNeedsConnect)return;const s=weekStart(S.weekOff-1),e=weekStart(S.weekOff+2);
- try{const j=await api('cal/events?start='+encodeURIComponent(loc(s).slice(0,16))+'&end='+encodeURIComponent(loc(e).slice(0,16)));const seen=new Set();S.events=(j.events||[]).filter(x=>{const k=x.calendarId+'|'+x.id;if(seen.has(k))return false;seen.add(k);return true});S.calErr=(j.errors&&j.errors.length)?'Couldn\'t read: '+j.errors.join(', '):null;syncFromCalendar();render()}
+ try{const j=await api('cal/events?start='+encodeURIComponent(loc(s).slice(0,16))+'&end='+encodeURIComponent(loc(e).slice(0,16)));const seen=new Set();S.events=(j.events||[]).filter(x=>{const k=x.calendarId+'|'+x.id;if(seen.has(k))return false;seen.add(k);return true});S.calErr=(j.errors&&j.errors.length)?'Couldn\'t read: '+j.errors.join(', '):null;syncFromCalendar();retryCalDeletes();render()}
  catch(x){if(x.code!=='auth'){S.calErr=calMsg(x);render()}}}
 const evStart=e=>e.start||'';const evEnd=e=>e.end||'';
+let retrying=false;
+async function retryCalDeletes(){if(retrying)return;retrying=true;try{for(const a of S.actions.filter(x=>x.calPendingDelete&&x.eventId)){try{await api('cal/event',{method:'DELETE',body:{calendarId:a.calId,eventId:a.eventId}});await put('actions',a.id,{eventId:null,calPendingDelete:false})}catch(e){}}}finally{retrying=false}}
 async function syncFromCalendar(){
  for(const a of live(S.actions)){if(!a.eventId||a.status==='done')continue;const ev=S.events.find(x=>x.id===a.eventId&&x.calendarId===a.calId);if(!ev||String(evStart(ev)).length<=10)continue;const st=parseL(evStart(ev));if(!st)continue;const nd=loc(st).slice(0,16);if(a.due&&nd!==a.due&&!a._syncing){a._syncing=1;await put('actions',a.id,{due:nd}).catch(()=>{})}}
 }
@@ -384,12 +386,14 @@ function listForm(key){const list=(S.settings[key]||[]).slice();const isP=key===
 
 /* ---------- actions ---------- */
 async function softDel(col,id){const x=S[col].find(y=>y.id===id);if(!x)return;
- if(col==='actions'&&x.eventId){try{await api('cal/event',{method:'DELETE',body:{calendarId:x.calId,eventId:x.eventId}})}catch(e){}}
- await put(col,id,{deletedAt:new Date().toISOString(),eventId:col==='actions'?null:(x.eventId||null)});closeM();
- toast('Moved to the bin',async()=>{await restore(col,id)});
+ let calFail=null;
+ if(col==='actions'&&x.eventId){try{await api('cal/event',{method:'DELETE',body:{calendarId:x.calId,eventId:x.eventId}})}catch(e){if(e.code==='auth')return;calFail=calMsg(e)}}
+ const patch={deletedAt:new Date().toISOString()};if(col==='actions'){if(calFail){patch.calPendingDelete=true}else{patch.eventId=null;patch.calPendingDelete=false}}
+ await put(col,id,patch);closeM();
+ if(calFail)toast('Moved to the bin, but it\'s still in Google Calendar: '+calFail+' The HQ will retry.');else toast('Moved to the bin',async()=>{await restore(col,id)});
 }
 async function restore(col,id){const x=S[col].find(y=>y.id===id);if(!x)return;const n={deletedAt:null};
- if(col==='actions'&&x.cal&&x.due){try{const c=Object.assign({},x);n.eventId=await calCreate(c);n.evSeq=c.evSeq}catch(e){toast('Restored, but not re-added to the calendar.')}}
+ if(col==='actions'&&x.calPendingDelete&&x.eventId){n.calPendingDelete=false}else if(col==='actions'&&x.cal&&x.due){try{const c=Object.assign({},x);n.eventId=await calCreate(c);n.evSeq=c.evSeq}catch(e){toast('Restored, but not re-added to the calendar.')}}
  await put(col,id,n);}
 async function toggleDone(id){const a=S.actions.find(x=>x.id===id);if(!a)return;const done=a.status!=='done';
  await put('actions',id,{status:done?'done':'open',doneAt:done?today():null,star:done?false:a.star});
