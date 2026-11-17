@@ -100,7 +100,7 @@ async function gcal(token,path,method="GET",body) {
 }
 // Run fn over items, at most n at a time (Google dislikes many calendars fetched at once).
 async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length){const x=items[i++];await fn(x)}}))}
-const COLS=new Set(["settings","depts","actions","decisions","contacts","invoices","content","ideas","weekly","links"]);
+const COLS=new Set(["settings","depts","actions","decisions","contacts","invoices","content","ideas","weekly","links","tools"]);
 const ID=/^[A-Za-z0-9_-]{1,64}$/;
 async function ensureTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_docs(col TEXT NOT NULL,id TEXT NOT NULL,data TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(col,id))").run()}
 const rid=()=>b64(crypto.getRandomValues(new Uint8Array(12))).replace(/[^A-Za-z0-9]/g,"x");
