@@ -168,12 +168,27 @@ function calMsg(e){if(e&&e.needsConnection){S.calNeedsConnect=true;return 'Googl
 async function loadCals(){try{const j=await api('cal/list');S.cals=j.calendars||[];S.calNeedsConnect=false;S.calErr=null;render()}catch(e){if(e.code!=='auth'){S.calErr=calMsg(e);render()}}}
 function weekStart(off){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay()+7*(off||0));return d}
 async function loadEvents(){if(S.calNeedsConnect)return;const s=weekStart(S.weekOff-1),e=weekStart(S.weekOff+2);
- try{const j=await api('cal/events?start='+encodeURIComponent(loc(s).slice(0,16))+'&end='+encodeURIComponent(loc(e).slice(0,16)));const seen=new Set();S.events=(j.events||[]).filter(x=>{const k=x.calendarId+'|'+x.id;if(seen.has(k))return false;seen.add(k);return true});S.calErr=(j.errors&&j.errors.length)?'Couldn\'t read: '+j.errors.join(', '):null;syncFromCalendar();retryCalDeletes();render()}
+ try{const j=await api('cal/events?start='+encodeURIComponent(loc(s).slice(0,16))+'&end='+encodeURIComponent(loc(e).slice(0,16)));const seen=new Set();S.events=(j.events||[]).filter(x=>{const k=x.calendarId+'|'+x.id;if(seen.has(k))return false;seen.add(k);return true});S.evRange=[loc(s).slice(0,16),loc(e).slice(0,16)];S.calErrNames=(j.errors||[]).map(x=>String(x).replace(/ \(.*$/,''));S.calErr=(j.errors&&j.errors.length)?'Couldn\'t read: '+j.errors.join(', '):null;syncFromCalendar();retryCalDeletes();render()}
  catch(x){if(x.code!=='auth'){S.calErr=calMsg(x);render()}}}
 const evStart=e=>e.start||'';const evEnd=e=>e.end||'';
 let retrying=false;
 async function retryCalDeletes(){if(retrying)return;retrying=true;try{for(const a of S.actions.filter(x=>x.calPendingDelete&&x.eventId)){try{await api('cal/event',{method:'DELETE',body:{calendarId:a.calId,eventId:a.eventId}});await put('actions',a.id,{eventId:null,calPendingDelete:false})}catch(e){}}}finally{retrying=false}}
+// An HQ action whose calendar event was deleted in Google Calendar (e.g. on the phone) is deleted here too.
+// Only when Google itself confirms the event is gone, never just because it's missing from a list.
+const goneChecked=new Set();
+async function dropDeletedInCalendar(){
+ if(!S.evRange)return;const bad=new Set((S.calErrNames||[]));let n=0;
+ for(const a of live(S.actions)){
+  if(!a.eventId||a.calPendingDelete||!a.calId||!a.due||a.due<S.evRange[0]||a.due>=S.evRange[1])continue;
+  if(S.events.some(x=>x.id===a.eventId&&x.calendarId===a.calId))continue;
+  if(bad.has(calName(a.calId))||goneChecked.has(a.eventId))continue;goneChecked.add(a.eventId);
+  try{const r=await api('cal/event-status?calendarId='+encodeURIComponent(a.calId)+'&eventId='+encodeURIComponent(a.eventId));
+   if(r.gone){await put('actions',a.id,{deletedAt:new Date().toISOString(),eventId:null,calPendingDelete:false,deletedFrom:'calendar'});n++}}catch(e){}
+ }
+ if(n){toast(n===1?'Removed 1 action you deleted in Google Calendar':'Removed '+n+' actions you deleted in Google Calendar');render()}
+}
 async function syncFromCalendar(){
+ dropDeletedInCalendar();
  for(const a of live(S.actions)){if(!a.eventId||a.status==='done')continue;const ev=S.events.find(x=>x.id===a.eventId&&x.calendarId===a.calId);if(!ev||String(evStart(ev)).length<=10)continue;const st=parseL(evStart(ev));if(!st)continue;const nd=loc(st).slice(0,16);if(a.due&&nd!==a.due&&!a._syncing){a._syncing=1;await put('actions',a.id,{due:nd}).catch(()=>{})}}
 }
 const calDefault=dept=>{const s=S.settings||{};return (s.deptCal&&s.deptCal[dept])||s.defaultCal||'primary'};
