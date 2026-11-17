@@ -122,7 +122,7 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 <script>
 const S={page:'today',mtab:'Content',weekOff:0,filt:{dept:'all',status:'open'},settings:null,depts:[],actions:[],decisions:[],contacts:[],invoices:[],content:[],ideas:[],weekly:[],links:[],cals:[],events:[],calErr:null,dbErr:null,calNeedsConnect:false,loaded:{},me:null,an:null,anLoading:false};
 let sig='';
-const COLS=['depts','actions','decisions','contacts','invoices','content','ideas','weekly','links'];
+const COLS=['depts','actions','decisions','contacts','invoices','content','ideas','weekly','links','tools'];
 const $=s=>document.querySelector(s);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -238,14 +238,14 @@ function renderSide(){
  h+=`<div class="grp">COMMAND</div>`+nb('today','Today',overdueActs().length?`<span class="ct">${overdueActs().length}</span>`:'')+nb('calendar','Calendar')+nb('actions','All actions')+nb('decisions','Decisions',waitingDec().length?`<span class="ct">${waitingDec().length}</span>`:'')+nb('review','Weekly review');
  GROUPS.forEach(g=>{const ds=d.filter(x=>x.group===g);if(!ds.length)return;h+=`<div class="grp">${g}</div>`+ds.map(x=>nb('d:'+x.id,x.name,`<span class="dot ${x.status==='active'?'':'q'}"></span>`)).join('')});
  const other=d.filter(x=>!GROUPS.includes(x.group));if(other.length)h+=`<div class="grp">OTHER</div>`+other.map(x=>nb('d:'+x.id,x.name,`<span class="dot q"></span>`)).join('');
- h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
+ h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('tools','Tools')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
  h+=`<p class="mut" style="margin:18px 10px 0"><span class="dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink);margin-right:6px"></span>active this quarter</p>`;
  $('#side').innerHTML=h;
 }
 function render(){renderSide();const p=S.page;let h='';
  if(S.dbErr)h+=`<div class="banner">${esc(S.dbErr)}</div>`;
  if(!S.settings&&!S.dbErr){$('#main').innerHTML='<p class="mut">Loading your HQ…</p>';return}
- const f={today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
+ const f={tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
  h+=f?f():(p.startsWith('d:')?pDept(p.slice(2)):pToday());
  $('#main').innerHTML=h;
 }
@@ -366,6 +366,17 @@ function pSettings(){const s=S.settings,g=goal(),t=s.targets||{};const co=S.cals
  <div class="card"><h2 style="margin-bottom:10px">Calendars</h2><div class="fg"><label class="full">Default calendar for new actions<select id="s_dc">${sel(s.defaultCal||'primary')}</select></label>${live(S.depts).map(d=>`<label>${esc(d.name)}<select data-dcal="${d.id}">${sel(calDefault(d.id))}</select></label>`).join('')}</div><button class="pri" style="margin-top:10px" data-act="saveCals">Save calendars</button></div>
  <div class="card"><div class="ch"><h2>Departments</h2><button class="sm pri" data-act="newDept">+ Department</button></div>${live(S.depts).sort((a,b)=>(a.order||0)-(b.order||0)).map(d=>`<div class="row"><div class="t"><div class="nm">${esc(d.name)}</div><div class="mut">${esc(d.group)} · ${d.status==='active'?'Active':'Supporting'}</div></div><button class="ic" data-act="editDept" data-id="${d.id}">Edit</button><button class="ic" data-act="del" data-col="depts" data-id="${d.id}">✕</button></div>`).join('')}</div>`}
 
+const TCATS=['AI and strategy','Website and infrastructure','Workspace and productivity','Marketing and social','Content production','Sales and payments','Product'];
+const TST=['Active','Trial','Planned','To cancel','Cancelled'];
+function pTools(){const ts=live(S.tools||[]);const f=S.tfilt||'all';const list=f==='all'?ts:ts.filter(x=>x.status===f);
+ const cost=ts.filter(x=>['Active','Trial'].includes(x.status)).reduce((a,x)=>a+(+x.monthly||0),0),unknown=ts.filter(x=>['Active','Trial'].includes(x.status)&&(x.monthly===''||x.monthly==null)).length;
+ const cats=[...TCATS,...new Set(list.map(x=>x.category).filter(c=>!TCATS.includes(c)))];
+ return head('Tools','Every tool the business runs on, what it does and what it costs',`<button class="pri" data-act="newTool">+ Tool</button>`)+
+ `<div class="grid g4" style="margin-bottom:14px">${kpi('Tools in use',ts.filter(x=>['Active','Trial'].includes(x.status)).length)}${kpi('Known monthly cost','$'+cost.toLocaleString(),unknown?unknown+' without a cost yet':'all costs filled in')}${kpi('To cancel',ts.filter(x=>x.status==='To cancel').length)}</div>`+
+ `<div class="tabs">${['all',...TST].map(x=>`<button class="sm ${f===x?'on':''}" data-tfilt="${x}">${x==='all'?'All':x}</button>`).join('')}</div>`+
+ cats.map(c=>{const it=list.filter(x=>(x.category||'Other')===c);if(!it.length)return '';return `<div class="card"><h2 style="margin-bottom:4px">${esc(c)}</h2>${it.sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(x=>`<div class="row"><div class="t"><div class="nm">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)} ↗</a>`:esc(x.name)}</div><div style="font-size:13px;margin-top:2px">${esc(x.purpose||'')}</div><div class="tags">${x.usedFor?`<span class="pill">${esc(x.usedFor)}</span>`:''}${x.owner?`<span class="pill">${esc(x.owner)}</span>`:''}<span class="pill ${x.status==='Active'?'ok':x.status==='To cancel'?'bad':x.status==='Trial'||x.status==='Planned'?'wa':''}">${esc(x.status||'Active')}</span>${x.monthly!==''&&x.monthly!=null?`<span class="pill">$${esc(x.monthly)}/mo</span>`:'<span class="pill">cost: fill in</span>'}${x.hq?'<span class="pill blk">feeds the HQ</span>':''}</div>${x.notes?`<div class="mut" style="margin-top:3px">${esc(x.notes)}</div>`:''}</div><button class="ic" data-act="editTool" data-id="${x.id}">Edit</button><button class="ic" data-act="del" data-col="tools" data-id="${x.id}">✕</button></div>`).join('')}</div>`}).join('')+
+ (list.length?'':'<div class="card"><div class="empty">No tools here.</div></div>');}
+function toolForm(x){form(x?'Edit tool':'New tool',[{k:'name',l:'Tool',req:1},{k:'category',l:'Category',t:'sel',o:TCATS},{k:'purpose',l:'What it does for the business',full:1,req:1},{k:'usedFor',l:'Used for (department or area)'},{k:'owner',l:'Owner (you or an agent)'},{k:'status',l:'Status',t:'sel',o:TST,d:'Active'},{k:'monthly',l:'Monthly cost (USD)',t:'number'},{k:'url',l:'Link',full:1},{k:'account',l:'Login account (no passwords)'},{k:'hq',l:'Feeds this dashboard',t:'cb'},{k:'notes',l:'Notes',t:'ta'}],x,async o=>{await put('tools',x&&x.id,o)})}
 /* ---------- forms ---------- */
 function form(title,fields,vals,onSave,extraBtn){
  const v=vals||{};
@@ -431,6 +442,7 @@ async function toggleDone(id){const a=S.actions.find(x=>x.id===id);if(!a)return;
 }
 document.addEventListener('click',async e=>{
  const g=e.target.closest('[data-go]');if(g){S.page=g.dataset.go;$('#side').classList.remove('open');closeM();render();window.scrollTo(0,0);return}
+ const tf=e.target.closest('[data-tfilt]');if(tf){S.tfilt=tf.dataset.tfilt;render();return}
  const mt=e.target.closest('[data-mtab]');if(mt){S.mtab=mt.dataset.mtab;render();return}
  const b=e.target.closest('[data-act]');if(!b)return;const A=b.dataset.act,id=b.dataset.id;
  const find=(c)=>S[c].find(x=>x.id===id);
@@ -456,6 +468,7 @@ document.addEventListener('click',async e=>{
  case 'newDept':deptForm();break;case 'editDept':deptForm(find('depts'));break;
  case 'editList':listForm(b.dataset.k);break;
  case 'wk':S.weekOff=+b.dataset.n===0?0:S.weekOff+(+b.dataset.n);render();loadEvents();break;
+ case 'newTool':toolForm();break;case 'editTool':toolForm(find('tools'));break;
  case 'anRefresh':loadAnalytics(true);break;
  case 'calRetry':S.calErr=null;await loadCals();loadEvents();break;
  case 'saveGoal':await putSettings({goal:{title:$('#s_gt').value.trim(),target:+$('#s_tg').value||0,start:$('#s_st').value,end:$('#s_en').value},targets:{ws:+$('#s_tw').value||0,se:+$('#s_ts').value||0,reels:+$('#s_tr').value||0}});toast('Goal saved');break;
