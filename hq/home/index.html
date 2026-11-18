@@ -149,7 +149,7 @@ function toast(msg,undo){const t=$('#toast');t.innerHTML=`<div class="toast">${e
 /* ---------- data ---------- */
 async function api(path,opt){const o=Object.assign({headers:{'Content-Type':'application/json'},credentials:'same-origin'},opt||{});if(o.body&&typeof o.body!=='string')o.body=JSON.stringify(o.body);
  const r=await fetch('/hq/api/'+path,o);if(r.status===401){location.href='/hq/auth/login';throw {code:'auth'}}let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw Object.assign({},j,{code:r.status,msg:j.error||('Error '+r.status)});return j}
-async function pull(force){try{const j=await api('all');const str=JSON.stringify(j.docs);if(!force&&str===sig)return;sig=str;
+async function pull(force){try{const j=await api('all');const str=JSON.stringify(j.docs);if(!force&&str===sig){if(S.dbErr){S.dbErr=null;render()}return}sig=str;
   COLS.forEach(c=>{S[c]=j.docs[c]||[];S.loaded[c]=1});S.settings=((j.docs.settings||[]).find(x=>x.id==='main'))||{};S.dbErr=null;
   const ae=document.activeElement,busy=ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName)&&$('#main').contains(ae);if(!busy)render();maybePurge()}
  catch(e){if(e.code!=='auth'){S.dbErr='Your data couldn\'t be reached ('+(e.msg||'offline')+'). Showing the last copy.';if(!S.settings)S.settings={};render()}}}
