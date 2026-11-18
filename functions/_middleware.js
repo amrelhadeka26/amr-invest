@@ -154,10 +154,12 @@ async function syncContacts(env,brevoKey){
   const rows=(await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts'").all()).results||[];
   const byEmail=new Map();for(const r of rows){let d={};try{d=JSON.parse(r.data)}catch{}if(d.email)byEmail.set(emailKey(d.email),{id:r.id,d})}
   const incoming=new Map();
-  const add=(list,src)=>{for(const x of list||[]){const k=x.email;if(!k)continue;const cur=incoming.get(k)||{email:k,name:"",src:{},bookings:[]};if(!cur.name&&x.name)cur.name=x.name;
+  const add=(list,src)=>{for(const x of list||[]){const k=x.email;if(!k||OWNER_EMAILS.has(emailKey(k)))continue;const cur=incoming.get(k)||{email:k,name:"",src:{},bookings:[]};if(!cur.name&&x.name)cur.name=x.name;
     if(src==="calendly"){cur.bookings.push(x);if(!cur.src.calendly||x.since<cur.src.calendly)cur.src.calendly=x.since;if(x.phone&&!cur.phone)cur.phone=x.phone}else cur.src[src]=x.since||"";if(x.agreed)cur.agreed=x.agreed;incoming.set(k,cur)}};
   add(zd,"zd");add(nl,"newsletter");add(cal,"calendly");
   const bookLog=x=>x.bookings.map(b=>({at:b.since,text:"Booked on Calendly: "+b.event+(b.start?" for "+b.start.slice(0,10)+" "+b.start.slice(11,16)+" UTC":"")+(b.answers?" · "+b.answers:""),key:"cal:"+b.start}));
+  // A booked call that has happened gets a follow-up date (the day after), unless one is set or the deal moved on.
+  const afterCall=(d,x)=>{const last=x.bookings.map(b=>b.start||"").filter(Boolean).sort().pop();if(!last||last>=now||d.next||d.stage!=="Call booked")return;const t=new Date(Date.parse(last)+864e5).toISOString().slice(0,10);d.next=t};
   let added=0,updated=0;const now=new Date().toISOString();
   for(const [k,x] of incoming){const hit=byEmail.get(k);
     if(hit){const d=hit.d,before=JSON.stringify(d);
@@ -167,11 +169,11 @@ async function syncContacts(env,brevoKey){
       if(zd){if(x.agreed&&x.agreed.length)d.agreed=x.agreed;else delete d.agreed}
       if(cal&&x.bookings.length){d.calendlySince=x.src.calendly;if(!d.phone&&x.phone)d.phone=x.phone;
         const have=new Set((d.log||[]).map(l=>l.key).filter(Boolean));const fresh=bookLog(x).filter(l=>!have.has(l.key));if(fresh.length)d.log=(d.log||[]).concat(fresh);
-        if(!d.type||d.type==="Audience")d.type="Session lead";if(fresh.length&&["New","To contact","Contacted","Replied",undefined,""].includes(d.stage))d.stage="Call booked"}
+        if(!d.type||d.type==="Audience")d.type="Session lead";if(fresh.length&&["New","To contact","Contacted","Replied",undefined,""].includes(d.stage))d.stage="Call booked";afterCall(d,x)}
       if(JSON.stringify(d)!==before){d.syncedAt=now;await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),hit.id).run();updated++}}
     else{const id=await contactId(k);const booked=x.bookings.length>0;const d={name:x.name,email:k,type:booked?"Session lead":"Audience",stage:booked?"Call booked":"New",createdAt:now,deletedAt:null,createdBy:"sync",syncedAt:now};
       if("zd" in x.src)d.zdSince=x.src.zd;if("newsletter" in x.src)d.newsletterSince=x.src.newsletter;if(x.agreed&&x.agreed.length)d.agreed=x.agreed;
-      if(booked){d.calendlySince=x.src.calendly;if(x.phone)d.phone=x.phone;d.log=bookLog(x)}
+      if(booked){d.calendlySince=x.src.calendly;if(x.phone)d.phone=x.phone;d.log=bookLog(x);afterCall(d,x)}
       const ins=await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
       if(ins&&ins.meta&&ins.meta.changes){await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++}}}
   // People who left both sources stay as contacts (your notes are kept); their source dates are cleared above.
