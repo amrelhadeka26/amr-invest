@@ -100,7 +100,7 @@ async function gcal(token,path,method="GET",body) {
 }
 // Run fn over items, at most n at a time (Google dislikes many calendars fetched at once).
 async function pool(items,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length){const x=items[i++];await fn(x)}}))}
-const COLS=new Set(["settings","depts","actions","decisions","contacts","invoices","content","ideas","weekly","links","tools","skills"]);
+const COLS=new Set(["settings","depts","actions","decisions","contacts","invoices","money","content","ideas","weekly","links","tools","skills"]);
 const ID=/^[A-Za-z0-9_-]{1,64}$/;
 async function ensureTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_docs(col TEXT NOT NULL,id TEXT NOT NULL,data TEXT NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(col,id))").run()}
 const rid=()=>b64(crypto.getRandomValues(new Uint8Array(12))).replace(/[^A-Za-z0-9]/g,"x");
@@ -114,6 +114,78 @@ function eventBody(b){if(typeof b.summary!=="string"||!b.summary.trim()||b.summa
   if(b.allDay){if(!DD.test(String(b.start).slice(0,10))||!DD.test(String(b.end).slice(0,10)))throw Object.assign(Error("Invalid date"),{status:400});o.start={date:String(b.start).slice(0,10),dateTime:null};o.end={date:String(b.end).slice(0,10),dateTime:null}}
   else{if(!DT.test(b.start||"")||!DT.test(b.end||""))throw Object.assign(Error("Invalid time"),{status:400});o.start={dateTime:t(b.start),timeZone:"Africa/Cairo",date:null};o.end={dateTime:t(b.end),timeZone:"Africa/Cairo",date:null}}
   if(typeof b.description==="string")o.description=b.description.slice(0,4000);if(typeof b.location==="string")o.location=b.location.slice(0,300);return o}
+
+/* ---------- audit trail: every change to HQ data, who and when ---------- */
+async function audit(env,who,col,id,action,label){try{await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_audit(at TEXT NOT NULL,who TEXT,col TEXT,doc TEXT,action TEXT,label TEXT)").run();
+  await env.DB.prepare("INSERT INTO hq_audit(at,who,col,doc,action,label) VALUES(datetime('now'),?,?,?,?,?)").bind(who||"system",col,id,action,label||"").run()}catch(e){console.log("hq audit failed",String(e.message||e))}}
+
+/* ---------- contacts: ZD AI accounts and newsletter subscribers merged into HQ contacts by email ---------- */
+const OWNER_EMAILS=new Set([OWNER,CALENDAR_MANAGER]);
+const emailKey=e=>String(e||"").trim().toLowerCase();
+async function contactId(email){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",te.encode("hq-contact|"+emailKey(email))));return "c"+b64(h.slice(0,9)).replace(/[^A-Za-z0-9]/g,"x")}
+async function zdAccounts(env){if(!env.ZD_DB)return null;
+  const r=await env.ZD_DB.prepare("SELECT email,display_name,created_at FROM users WHERE email NOT LIKE '%@guest.zd.app' AND is_demo=0").all();
+  return (r.results||[]).filter(u=>!OWNER_EMAILS.has(emailKey(u.email))).map(u=>{const n=String(u.display_name||"").trim();return {email:emailKey(u.email),name:n&&n.toLowerCase()!==emailKey(u.email).split("@")[0]&&!/^guest$/i.test(n)?n.slice(0,80):"",since:String(u.created_at||"").slice(0,10)}})}
+async function brevoSubscribers(env,key){if(!key)return null;const H={"api-key":key,accept:"application/json"};const list=Number(env.NEWSLETTER_LIST_ID||2);const out=[];
+  for(let off=0;off<10000;off+=500){const j=await getJSON("https://api.brevo.com/v3/contacts/lists/"+list+"/contacts?limit=500&offset="+off+"&sort=desc",H);const cs=j.contacts||[];
+    for(const c of cs){if(c.emailBlacklisted||!c.email)continue;const a=c.attributes||{};out.push({email:emailKey(c.email),name:[a.FIRSTNAME,a.LASTNAME].filter(x=>typeof x==="string"&&x.trim()).join(" ").trim().slice(0,80),since:String(c.createdAt||"").slice(0,10)})}
+    if(cs.length<500)break}
+  return out}
+async function syncContacts(env,brevoKey){
+  await ensureTable(env);
+  const errors=[];let zd=null,nl=null;
+  try{zd=await zdAccounts(env);if(!zd)errors.push("ZD AI: not connected")}catch(e){errors.push("ZD AI: "+String(e.message||e).slice(0,160))}
+  try{nl=await brevoSubscribers(env,brevoKey);if(!nl)errors.push("Newsletter: Brevo key missing")}catch(e){errors.push("Newsletter: "+String(e.message||e).slice(0,160))}
+  const rows=(await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts'").all()).results||[];
+  const byEmail=new Map();for(const r of rows){let d={};try{d=JSON.parse(r.data)}catch{}if(d.email)byEmail.set(emailKey(d.email),{id:r.id,d})}
+  const incoming=new Map();
+  const add=(list,src)=>{for(const x of list||[]){const k=x.email;if(!k)continue;const cur=incoming.get(k)||{email:k,name:"",src:{}};if(!cur.name&&x.name)cur.name=x.name;cur.src[src]=x.since||"";incoming.set(k,cur)}};
+  add(zd,"zd");add(nl,"newsletter");
+  let added=0,updated=0;const now=new Date().toISOString();
+  for(const [k,x] of incoming){const hit=byEmail.get(k);
+    if(hit){const d=hit.d,before=JSON.stringify(d);
+      if(!d.name&&x.name)d.name=x.name;
+      if(zd&&"zd" in x.src)d.zdSince=x.src.zd;else if(zd)delete d.zdSince;
+      if(nl&&"newsletter" in x.src)d.newsletterSince=x.src.newsletter;else if(nl)delete d.newsletterSince;
+      if(JSON.stringify(d)!==before){d.syncedAt=now;await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),hit.id).run();updated++}}
+    else{const id=await contactId(k);const d={name:x.name,email:k,type:"Audience",stage:"New",createdAt:now,deletedAt:null,createdBy:"sync",syncedAt:now};
+      if("zd" in x.src)d.zdSince=x.src.zd;if("newsletter" in x.src)d.newsletterSince=x.src.newsletter;
+      await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
+      await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++}}
+  // People who left both sources stay as contacts (your notes are kept); their source dates are cleared above.
+  return {added,updated,zdAccounts:zd?zd.length:null,subscribers:nl?nl.length:null,errors}}
+
+/* ---------- daily copy of all HQ data, kept 30 days ---------- */
+async function dailyBackup(env){await ensureTable(env);await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_backups(day TEXT PRIMARY KEY,data TEXT NOT NULL,at TEXT NOT NULL)").run();
+  const day=new Date().toISOString().slice(0,10);if(await env.DB.prepare("SELECT 1 FROM hq_backups WHERE day=?").bind(day).first())return;
+  const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs").all()).results||[];const data=JSON.stringify(r);
+  if(data.length>1800000){console.log("hq backup too large for one row",data.length);return}
+  await env.DB.prepare("INSERT INTO hq_backups(day,data,at) VALUES(?,?,datetime('now')) ON CONFLICT(day) DO NOTHING").bind(day,data).run();
+  await env.DB.prepare("DELETE FROM hq_backups WHERE day<date('now','-30 days')").run()}
+
+/* ---------- ZD AI numbers for the HQ (counts only: no chat contents) ---------- */
+async function zdSummary(env){if(!env.ZD_DB)return {connected:false};
+  const one=async(sql,...b)=>{const r=await env.ZD_DB.prepare(sql).bind(...b).first();return r?Object.values(r)[0]:0};
+  const d7=new Date(Date.now()-7*864e5).toISOString(),d30=new Date(Date.now()-30*864e5).toISOString();
+  const real="email NOT LIKE '%@guest.zd.app' AND is_demo=0 AND lower(email) NOT IN ("+[...OWNER_EMAILS].map(e=>"'"+e.replace(/'/g,"")+"'").join(",")+")";
+  return {connected:true,
+    accounts:await one(`SELECT COUNT(*) FROM users WHERE ${real}`),
+    newAccounts30:await one(`SELECT COUNT(*) FROM users WHERE ${real} AND created_at>=?`,d30),
+    guests30:await one("SELECT COUNT(*) FROM audit_log WHERE action='guest.start' AND created_at>=? AND (meta IS NULL OR json_extract(meta,'$.qa') IS NOT 1)",d30),
+    active7:await one("SELECT COUNT(DISTINCT user_id) FROM audit_log WHERE action='chat.message' AND created_at>=?",d7),
+    messages7:await one("SELECT COUNT(*) FROM audit_log WHERE action='chat.message' AND created_at>=?",d7),
+    aiAnswers7:await one("SELECT COUNT(*) FROM audit_log WHERE action='ai.answer' AND created_at>=?",d7),
+    visits30:await one("SELECT COUNT(*) FROM audit_log WHERE action='web.view' AND created_at>=?",d30)}}
+
+/* ---------- status: every connection, its last sync and its last error ---------- */
+async function statusReport(env){await metricsTable(env);
+  const rows=(await env.DB.prepare("SELECT source,fetched_at,error FROM hq_metrics WHERE source NOT LIKE 'brevo:%'").all()).results||[];
+  const at=r=>r&&r.fetched_at?r.fetched_at.replace(" ","T")+"Z":null;const get=k=>rows.find(r=>r.source===k);
+  const cal=await calendarRow(env).catch(()=>null);
+  let rates=null;if(env.RATES){try{const l=await env.RATES.get("latest","json"),a=await env.RATES.get("auto","json");rates={latest:l&&l.latest,lastAttempt:l&&l.lastAttempt,errors:(l&&l.errors)||[],autoCheckedAt:a&&a.checkedAt,decision:a&&a.decision&&a.decision.status}}catch(e){rates={error:String(e.message||e)}}}
+  const audits=await env.DB.prepare("SELECT at,who,col,doc,action,label FROM hq_audit ORDER BY at DESC LIMIT 50").all().then(r=>r.results||[]).catch(()=>[]);
+  return {calendar:{connected:!!cal},zernio:{at:at(get("zernio")),error:get("zernio")?get("zernio").error:"never synced"},brevo:{at:at(get("brevo")),error:get("brevo")?get("brevo").error:"never synced"},
+    contacts:{at:at(get("contacts")),error:get("contacts")?get("contacts").error:"never synced"},zd:{connected:!!env.ZD_DB},rates,audits}}
 
 /* ---------- analytics: Zernio (Instagram, TikTok) and Brevo ---------- */
 async function metricsTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_metrics(source TEXT PRIMARY KEY,data TEXT,fetched_at TEXT,error TEXT)").run()}
@@ -158,6 +230,7 @@ async function analytics(env0,force){
       catch(e){await save(k,null,String(e.message||e).slice(0,300));r=Object.assign({},r||{},{error:String(e.message||e).slice(0,300)})}}
     out[k]={data:r&&r.data?JSON.parse(r.data):null,fetchedAt:r&&r.fetched_at?r.fetched_at.replace(" ","T")+"Z":null,error:r&&r.error||null};
   }
+  {let r=get("contacts");if(force||!fresh(r)){try{const c=await syncContacts(env,env.BREVO_API_KEY);await save("contacts",c,c.errors.length?c.errors.join("; "):null);out.contacts=c}catch(e){await save("contacts",null,String(e.message||e).slice(0,300));out.contacts={error:String(e.message||e)}}}}
   out.brevoHistory=rows.filter(r=>r.source.startsWith("brevo:")).map(r=>({date:r.source.slice(6),subscribers:num(JSON.parse(r.data||"{}").subscribers)})).sort((a,b)=>a.date.localeCompare(b.date));
   return out;
 }
@@ -167,9 +240,10 @@ async function api(path,req,env,user){
   if(path==="/hq/api/all"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs").all()).results||[];const out={};for(const x of r){(out[x.col]=out[x.col]||[]).push(Object.assign({id:x.id,_u:x.updated_at},JSON.parse(x.data)))}return json({docs:out,at:new Date().toISOString()})}
   let mm=path.match(/^\/hq\/api\/doc\/([a-z]+)(?:\/([A-Za-z0-9_-]+))?$/);
   if(mm){const [,col,id]=mm;if(!COLS.has(col))return json({error:"Unknown collection"},400);if(id&&!ID.test(id))return json({error:"Invalid id"},400);await ensureTable(env);
-    if(m==="DELETE"&&id){await env.DB.prepare("DELETE FROM hq_docs WHERE col=? AND id=?").bind(col,id).run();return json({deleted:true})}
+    if(m==="DELETE"&&id){await env.DB.prepare("DELETE FROM hq_docs WHERE col=? AND id=?").bind(col,id).run();await audit(env,user.email,col,id,"deleted for good");return json({deleted:true})}
     if(m==="PUT"||m==="POST"){const data=await readBody(req,200000);if(!data||typeof data!=="object"||Array.isArray(data))return json({error:"Invalid document"},400);delete data.id;delete data._u;const key=id||rid();
-      await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(col,id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at").bind(col,key,JSON.stringify(data)).run();return json({id:key})}
+      await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(col,id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at").bind(col,key,JSON.stringify(data)).run();
+      await audit(env,user.email,col,key,id?(data.deletedAt?"moved to Bin":"edited"):"created",String(data.title||data.name||data.client||data.note||"").slice(0,80));return json({id:key})}
     return json({error:"Method not allowed"},405)}
   if(path.startsWith("/hq/api/cal/")){
     const s=await calendarToken(env);if(!s)return json({error:"Google Calendar is not connected",needsConnection:true},409);const tk=s.access_token;
@@ -202,6 +276,10 @@ async function api(path,req,env,user){
   if(path==="/hq/api/analytics"&&m==="GET")return json(await analytics(env,new URL(req.url).searchParams.get("refresh")==="1"));
   if(path==="/hq/api/site"&&m==="GET"){const d=Math.min(365,Math.max(1,parseInt(new URL(req.url).searchParams.get("days"))||30));const since=new Date(Date.now()-(d-1)*864e5).toISOString().slice(0,10);
     const q=await env.DB.prepare("SELECT event,value,SUM(count) n FROM events WHERE day>=? GROUP BY event,value ORDER BY n DESC").bind(since).all();return json({since,days:d,rows:q.results||[]})}
+  if(path==="/hq/api/zd"&&m==="GET")return json(await zdSummary(env));
+  if(path==="/hq/api/status"&&m==="GET")return json(await statusReport(env));
+  if(path==="/hq/api/export"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs ORDER BY col,id").all()).results||[];await audit(env,user.email,"all","export","exported everything");
+    return new Response(JSON.stringify({exportedAt:new Date().toISOString(),docs:r.map(x=>({col:x.col,id:x.id,updatedAt:x.updated_at,data:JSON.parse(x.data)}))},null,1),{headers:{...htmlHeaders,"Content-Type":"application/json; charset=utf-8","Content-Disposition":`attachment; filename="zd-hq-export-${new Date().toISOString().slice(0,10)}.json"`}})}
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
   return json({error:"Unknown HQ API route"},404);
 }
@@ -232,7 +310,7 @@ export async function onRequest(context) {
   if(!(path==="/hq" || path.startsWith("/hq/")))return context.next();
   if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
   // Keep social and newsletter numbers synced in the background whenever the HQ is opened (at most every 6 hours per source).
-  if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil)context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));
+  if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil){context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));context.waitUntil(dailyBackup(env).catch(e=>console.log("hq backup failed",String(e&&e.message||e))))}
   if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
   if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
   const user=await sessionUser(req,env);
