@@ -158,7 +158,7 @@ async function boot(){
  await pull(true);
  setInterval(()=>{if(document.visibilityState==='visible'&&!$('#modal').innerHTML)pull()},30000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull()});
- loadAnalytics().then(loadStatus);loadZd();await loadCals();loadEvents();
+ loadAnalytics().then(loadStatus);loadZd();loadBrief(false);await loadCals();loadEvents();
 }
 async function loadAnalytics(force){S.anLoading=true;render();try{S.an=await api('analytics'+(force?'?refresh=1':''))}catch(e){if(e.code!=='auth')S.an=Object.assign({},S.an||{},{err:e.msg||'offline'})}S.anLoading=false;render()}
 function localSet(col,id,o){const arr=S[col]||(S[col]=[]);const i=arr.findIndex(x=>x.id===id);const v=Object.assign({id},o);if(i>=0)arr[i]=v;else arr.push(v);sig='';render()}
@@ -306,6 +306,11 @@ function healthChecks(){const g=goal(),t=today();const days=Math.max(1,(parseL(g
   [st?!bad.length&&!S.calNeedsConnect:true,!st?'Connections: checking…':bad.length||S.calNeedsConnect?'A connection needs attention':'All connections syncing']]}
 
 /* ---------- loaders for the new pages ---------- */
+function mdLite(t){const lines=esc(t||'').split('\n');let h='',list='';const close=()=>{if(list){h+=`</${list}>`;list=''}};
+ for(let l of lines){l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');const b=l.match(/^\s*[-•*]\s+(.*)/),n=l.match(/^\s*\d+[.)]\s+(.*)/);
+  if(b||n){const k=b?'ul':'ol';if(list!==k){close();h+=`<${k} style="margin:4px 0 8px;padding-left:20px">`;list=k}h+=`<li style="margin:2px 0">${(b||n)[1]}</li>`}else{close();if(l.trim())h+=`<p style="margin:6px 0">${l}</p>`}}
+ close();return h}
+async function loadBrief(refresh){S.brief=Object.assign({},S.brief||{},{busy:true});render();try{S.brief=await api('briefing',refresh?{method:'POST'}:undefined)}catch(e){S.brief={error:e.msg||'offline'}}render()}
 async function loadZd(){try{S.zd=await api('zd')}catch(e){S.zd={err:e.msg||'offline'}}render()}
 async function loadStatus(){try{S.st=await api('status')}catch(e){S.st=null;S.stErr=e.msg||'offline'}render()}
 
@@ -394,6 +399,8 @@ function pToday(){
  const hr=new Date().getHours(),greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
  const st=starred(),od=overdueActs(),td=todayActs(),oi=live(S.invoices).filter(isOver),fu=followUps(),wd=waitingDec();
  let h=head(greet+', Amr',new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+' · '+dl+' days to goal',`<button class="pri" data-act="newAct">+ Action</button><button data-act="newMoneyIn">+ Money in</button>`);
+ {const B=S.brief;h+=`<div class="card"><div class="ch"><h2>Morning briefing</h2><div class="fl"><span class="mut">${B&&B.at?'AI · written '+esc(new Date(B.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})):'AI · from your HQ data only'}</span><button class="sm" data-act="briefRefresh" ${B&&B.busy?'disabled':''}>${B&&B.busy?'Writing…':'Refresh'}</button></div></div>${!B||B.busy&&!B.text?'<p class="mut">Writing your briefing…</p>':B.error?`<div class="banner">Couldn't write the briefing: ${esc(B.error)}</div>`:`<div style="font-size:14.5px;line-height:1.55">${mdLite(B.text)}</div>`}
+  <div class="fl" style="margin-top:10px"><input id="askq" placeholder="Ask about your business, e.g. Who should I follow up with?" style="flex:1" value="${esc(S.askq||'')}"><button class="sm pri" data-act="askHQ" ${S.asking?'disabled':''}>${S.asking?'Thinking…':'Ask'}</button></div>${S.ans?`<div style="margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px">${S.ans.error?esc(S.ans.error):mdLite(S.ans.text)+`<p class="mut" style="margin:4px 0 0">${S.ans.left} questions left today · facts come from your HQ; recommendations are labelled</p>`}</div>`:''}</div>`}
  {const na=nextAction(),hc=healthChecks(),score=hc.filter(x=>x[0]).length*20,mk=today().slice(0,7),i0=moneyIn(mk+'-01',monthEnd(mk)),o0=moneyOut(mk+'-01',monthEnd(mk));
   const pipeVal=live(S.contacts).filter(c=>c.type!=='Client'&&c.type!=='Audience'&&!['Won','Lost'].includes(c.stage)).reduce((s,c)=>s+(+c.value||0),0);
   const subs=bd()?bd().subscribers:null,fol=anFollowers();
@@ -482,8 +489,13 @@ function finance(noKpis){
 }
 
 /* ---------- Sales: one contact list, the pipeline, clients ---------- */
-const SRC_PILLS=c=>(c.zdSince?'<span class="pill">ZD AI</span>':'')+(c.newsletterSince?'<span class="pill">Newsletter</span>':'');
-const added=c=>String(c.createdAt||c.zdSince||c.newsletterSince||'').slice(0,10);
+const SRC_PILLS=c=>(c.zdSince?'<span class="pill">ZD AI</span>':'')+(c.newsletterSince?'<span class="pill">Newsletter</span>':'')+(c.calendlySince?'<span class="pill">Calendly</span>':'');
+const added=c=>String(c.createdAt||c.zdSince||c.newsletterSince||c.calendlySince||'').slice(0,10);
+const agreedTo=c=>[c.newsletterSince&&'Newsletter'].concat(c.agreed||[]).filter(Boolean);
+function csvContacts(){const cell=v=>{let t=String(v==null?'':v);if(/^[=+\-@]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"'};
+ const rows=live(S.contacts).slice().sort((a,b)=>added(b).localeCompare(added(a)));
+ const lines=[['Name','Email','Phone','Company','Type','Stage','Came from','Agreed to','Added','ZD AI since','Newsletter since','Booked on Calendly','Deal value (EGP)','Next follow-up','Notes'].map(cell).join(',')].concat(rows.map(c=>[c.name,c.email,c.phone,c.company,c.type,c.stage,[c.zdSince&&'ZD AI',c.newsletterSince&&'Newsletter',c.calendlySince&&'Calendly'].filter(Boolean).join(' + ')||'Added by you',agreedTo(c).join(' + '),added(c),c.zdSince,c.newsletterSince,c.calendlySince,c.value,c.next,c.notes].map(cell).join(',')));
+ const url=URL.createObjectURL(new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=Object.assign(document.createElement('a'),{href:url,download:'hq-contacts-'+today()+'.csv'});document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function pSales(){const t={contacts:'Contacts',clients:'Clients'}[S.page]||'Pipeline';const all=live(S.contacts);const pipe=all.filter(c=>c.type!=='Client'&&c.type!=='Audience'&&c.type!=='Partner');
  const open=pipe.filter(c=>!['Won','Lost'].includes(c.stage)),val=open.reduce((s,c)=>s+(+c.value||0),0);
  const m0=today().slice(0,7)+'-01',d30=ymd(new Date(Date.now()-30*864e5));
@@ -492,12 +504,12 @@ function pSales(){const t={contacts:'Contacts',clients:'Clients'}[S.page]||'Pipe
  if(t==='Pipeline')h+=pipeline();
  if(t==='Clients')h+=clients();
  if(t==='Contacts'){const f=S.cf||'all',q=(S.cq||'').toLowerCase();
-  let list=all.filter(c=>f==='all'||(f==='zd'&&c.zdSince)||(f==='nl'&&c.newsletterSince)||(f==='leads'&&c.type!=='Audience'&&c.type!=='Client')||(f==='clients'&&c.type==='Client'));
+  let list=all.filter(c=>f==='all'||(f==='zd'&&c.zdSince)||(f==='nl'&&c.newsletterSince)||(f==='cal'&&c.calendlySince)||(f==='leads'&&c.type!=='Audience'&&c.type!=='Client')||(f==='clients'&&c.type==='Client'));
   if(q)list=list.filter(c=>[c.name,c.email,c.company].some(x=>String(x||'').toLowerCase().includes(q)));
   list.sort((a,b)=>added(b).localeCompare(added(a)));
-  h+=`<div class="card"><div class="ch"><h2>Contacts (${list.length})</h2><div class="fl"><input id="cq" placeholder="Search name or email" value="${esc(S.cq||'')}" style="max-width:220px">${[['all','All'],['zd','ZD AI'],['nl','Newsletter'],['leads','Leads'],['clients','Clients']].map(([k,l])=>`<button class="sm ${f===k?'on':''}" data-cf="${k}">${l}</button>`).join('')}</div></div>
-  <p class="mut" style="margin:0 0 8px">ZD AI sign-ups and newsletter subscribers arrive here by themselves every few hours. Email people only about what they signed up for.</p>
-  ${list.length?`<table><tr><th>Name</th><th>Email</th><th>From</th><th>Type</th><th>Added</th><th></th></tr>${list.slice(0,300).map(c=>`<tr><td><button class="lk" data-act="viewContact" data-id="${c.id}">${esc(c.name||c.email||'—')}</button><div class="mut">${esc(c.company||'')}</div></td><td>${esc(c.email||'')}</td><td>${SRC_PILLS(c)||'<span class="mut">added by you</span>'}</td><td>${esc(c.type||'')}</td><td>${esc(fmtD(added(c)))}</td><td style="white-space:nowrap"><button class="ic" data-act="editContact" data-id="${c.id}">Edit</button></td></tr>`).join('')}</table>`:'<div class="empty">No contacts match.</div>'}</div>`}
+  h+=`<div class="card"><div class="ch"><h2>Contacts (${list.length})</h2><div class="fl"><input id="cq" placeholder="Search name or email" value="${esc(S.cq||'')}" style="max-width:220px">${[['all','All'],['zd','ZD AI'],['nl','Newsletter'],['cal','Calendly'],['leads','Leads'],['clients','Clients']].map(([k,l])=>`<button class="sm ${f===k?'on':''}" data-cf="${k}">${l}</button>`).join('')}</div></div>
+  <div class="fl" style="justify-content:space-between;margin:0 0 8px"><p class="mut" style="margin:0">ZD AI sign-ups, newsletter subscribers and Calendly bookings arrive here by themselves every few hours. Email people only about what they agreed to.</p><button class="sm" data-act="csvContacts">Download CSV</button></div>
+  ${list.length?`<table><tr><th>Name</th><th>Email</th><th>From</th><th>Agreed to</th><th>Type</th><th>Added</th><th></th></tr>${list.slice(0,300).map(c=>`<tr><td><button class="lk" data-act="viewContact" data-id="${c.id}">${esc(c.name||c.email||'—')}</button><div class="mut">${esc(c.company||'')}</div></td><td>${esc(c.email||'')}</td><td>${SRC_PILLS(c)||'<span class="mut">added by you</span>'}</td><td class="mut">${esc(agreedTo(c).join(', ')||'—')}</td><td>${esc(c.type||'')}</td><td>${esc(fmtD(added(c)))}</td><td style="white-space:nowrap"><button class="ic" data-act="editContact" data-id="${c.id}">Edit</button></td></tr>`).join('')}</table>`:'<div class="empty">No contacts match.</div>'}</div>`}
  return h}
 function contactView(c){const nm=String(c.name||'').toLowerCase(),em=String(c.email||'').toLowerCase();
  const mine=x=>{const v=String(x||'').toLowerCase();return v&&(v===nm||v===em)};
@@ -506,7 +518,7 @@ function contactView(c){const nm=String(c.name||'').toLowerCase(),em=String(c.em
  $('#modal').innerHTML=`<div class="modal" id="mdl"><div class="mb" role="dialog" aria-label="${esc(c.name||c.email)}"><div class="ch"><h2>${esc(c.name||c.email)}</h2><span class="pill">${esc(c.type||'')}</span></div>
  <p class="mut" style="margin:0 0 10px">${esc(c.email||'')}${c.phone?' · '+esc(c.phone):''}${c.company?' · '+esc(c.company):''}</p>
  <div class="grid g4" style="margin-bottom:10px">${kpi('Stage',esc(c.stage||'—'))}${kpi('Deal value',c.value?money(c.value):'—')}${kpi('Paid you',money(sumA(pays.filter(m=>m.kind==='in'))))}${kpi('Next follow-up',c.next?esc(fmtD(c.next)):'—')}</div>
- ${c.notes?`<p style="white-space:pre-wrap">${esc(c.notes)}</p>`:''}
+ ${agreedTo(c).length?`<p class="mut" style="margin:0 0 8px">Agreed to: ${esc(agreedTo(c).join(', '))}</p>`:''}${c.notes?`<p style="white-space:pre-wrap">${esc(c.notes)}</p>`:''}
  <h2 style="font-size:14px;margin:12px 0 4px">History</h2>${hist.length?hist.map(x=>`<div class="row"><span class="mut" style="min-width:90px">${esc(fmtD(String(x[0]).slice(0,10)))}</span><div class="t">${esc(x[1])}</div></div>`).join(''):'<div class="empty">Nothing yet.</div>'}
  <div class="fl" style="margin-top:10px"><input id="cnote" placeholder="Add a note (call, message, meeting)" style="flex:1"><button class="sm" data-act="addNote" data-id="${c.id}">Add</button></div>
  <div class="fl" style="justify-content:flex-end;margin-top:10px"><button data-act="close">Close</button><button class="pri" data-act="editContact" data-id="${c.id}">Edit</button></div></div></div>`;
@@ -523,7 +535,7 @@ function pCalendly(){const link='https://calendly.com/amr-amrelhadeka/1-hour-inv
  let h=head('Calendly','1-on-1 session bookings',`<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="https://calendly.com/app/scheduled_events/user/me" target="_blank" rel="noopener">Open Calendly ↗</a>`);
  h+=`<div class="card"><div class="ch"><h2>Your booking link</h2><button class="sm" data-act="copyText" data-text="${esc(link)}">Copy</button></div><p style="word-break:break-all"><a href="${esc(link)}" target="_blank" rel="noopener">${esc(link)}</a></p><p class="mut">On the website's session pages and in your reels.</p></div>`;
  h+=`<div class="card"><h2>Upcoming sessions</h2>${up.length?up.map(e=>`<div class="row"><span class="mut" style="min-width:110px">${esc(fmtD(e.start.slice(0,10)))} ${esc((e.start||'').slice(11,16))}</span><div class="t">${esc(e.summary)}</div></div>`).join(''):'<div class="empty">No session in your Google Calendar this week or next.</div>'}<p class="mut" style="margin-top:6px">From your Google Calendar, where Calendly adds each booking.</p></div>`;
- h+=`<div class="banner">Bookings don't reach Sales by themselves yet. That needs a Calendly API token pasted into Cloudflare as a Secret named <b>CALENDLY_TOKEN</b>.</div>`;
+ h+=S.st&&S.st.calendly&&S.st.calendly.connected?`<div class="card"><div class="ch"><h2>Booked through Calendly</h2><button class="sm" data-go="contacts">All contacts</button></div>${live(S.contacts).filter(c=>c.calendlySince).sort((a,b)=>String(b.calendlySince).localeCompare(String(a.calendlySince))).slice(0,20).map(c=>`<div class="row"><span class="mut" style="min-width:90px">${esc(fmtD(c.calendlySince))}</span><div class="t"><button class="lk" data-act="viewContact" data-id="${c.id}">${esc(c.name||c.email)}</button> <span class="mut">${esc(c.stage||'')}</span></div></div>`).join('')||'<div class="empty">No bookings yet. New ones arrive in Sales every few hours.</div>'}</div>`:`<div class="banner">Bookings don't reach Sales by themselves yet. That needs a Calendly API token pasted into Cloudflare as a Secret named <b>CALENDLY_TOKEN</b>.</div>`;
  return h}
 
 /* ---------- Partnerships: partners (nsave, sponsors, affiliates) in their own pipeline ---------- */
@@ -560,7 +572,7 @@ function pStatus(){const st=S.st;let h=head('Status','Every connection, when it 
  const r=st.rates||{},rl=r.latest||{};const rOk=r.lastAttempt&&Date.now()-Date.parse(r.lastAttempt)<26*36e5&&!(r.errors||[]).length;
  const rows=[['Google Calendar',!S.calNeedsConnect&&st.calendar.connected,st.calendar.connected?'two-way':'not connected',st.calendar.connected?'':'Connect it from Settings'],
   ['Instagram + TikTok (Zernio)',!st.zernio.error,ago(st.zernio.at),st.zernio.error||''],['Newsletter (Brevo)',!st.brevo.error,ago(st.brevo.at),st.brevo.error||''],
-  ['Contacts from ZD AI and newsletter',!st.contacts.error,ago(st.contacts.at),st.contacts.error||''],['ZD AI numbers',st.zd.connected,st.zd.connected?'live':'not connected',''],
+  ['Contacts from ZD AI, newsletter and Calendly',!st.contacts.error,ago(st.contacts.at),st.contacts.error||''],['Calendly',!!(st.calendly&&st.calendly.connected)&&!/Calendly/.test(st.contacts.error||''),st.calendly&&st.calendly.connected?ago(st.contacts.at):'no token',''],['AI briefing',!!(st.ai&&st.ai.connected),st.ai&&st.ai.connected?'ready':'no key',S.brief&&S.brief.error?S.brief.error:''],['ZD AI numbers',st.zd.connected,st.zd.connected?'live':'not connected',''],
   ['Dollar and gold',!!rOk,ago(r.lastAttempt),(r.errors||[]).join('; ')+(rl.usdegp?` · USD ${rl.usdegp.value}, gold 21K ${fmtN(rl.gold21&&rl.gold21.value)}`:'')],
   ['Inflation check',!!r.autoCheckedAt,ago(r.autoCheckedAt),rl.inflation?`${rl.inflation.value}% for ${rl.inflation.period}`+(r.decision==='pending'?' · a new figure waits for you in ZD AI → Data':''):'']];
  h+=`<div class="card"><h2>Connections</h2><table><tr><th>Connection</th><th>Status</th><th>Last sync</th><th>Detail</th></tr>${rows.map(x=>`<tr><td>${esc(x[0])}</td><td>${x[1]?'<span class="pill ok">✓ Working</span>':'<span class="pill bad">⚠ Needs attention</span>'}</td><td>${esc(x[2])}</td><td class="mut">${esc(x[3])}</td></tr>`).join('')}</table><p class="mut" style="margin-top:6px">Social, newsletter and contacts sync every 6 hours while you use the HQ, and when you press Sync now. A daily copy of your HQ data is kept for 30 days.</p></div>`;
@@ -682,6 +694,9 @@ document.addEventListener('click',async e=>{
  try{switch(A){
  case 'menu':$('#side').classList.toggle('open');break;
  case 'quickAdd':quickAdd();break;
+ case 'briefRefresh':loadBrief(true);break;
+ case 'askHQ':{const q=($('#askq').value||'').trim();if(!q)break;S.askq=q;S.asking=true;render();try{S.ans=await api('ask',{method:'POST',body:{q}})}catch(x){S.ans={error:x.msg||'offline'}}S.asking=false;render();break}
+ case 'csvContacts':csvContacts();break;
  case 'newMoney':moneyForm(null,b.dataset.kind);break;case 'newMoneyIn':moneyForm(null,'in');break;case 'newMoneyOut':moneyForm(null,'out');break;case 'editMoney':moneyForm(find('money'));break;
  case 'setOpening':{const v=prompt('Cash you had on the start date (EGP)',S.settings.openingCash||0);if(v!==null&&!isNaN(+v)){await putSettings({openingCash:+v});toast('Opening cash saved')}break}
  case 'viewContact':contactView(find('contacts'));break;
@@ -727,7 +742,9 @@ document.addEventListener('change',async e=>{const t=e.target;
  if(t.dataset.stage){await put('contacts',t.dataset.stage,{stage:t.value}).catch(()=>{})}
  if(t.dataset.cst){await put('content',t.dataset.cst,{status:t.value}).catch(()=>{})}
 });
-document.addEventListener('input',e=>{for(const [id,k,pg] of [['gq','gq','search'],['cq','cq',null]])if(e.target.id===id){S[k]=e.target.value;if(pg&&S.page!==pg&&S[k])S.page=pg;const pos=e.target.selectionStart;render();const el=$('#'+id);if(el){el.focus();el.setSelectionRange(pos,pos)}return}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='askq'){e.preventDefault();const b=document.querySelector('[data-act="askHQ"]');if(b&&!b.disabled)b.click()}});
+document.addEventListener('input',e=>{if(e.target.id==='askq'){S.askq=e.target.value;return}
+ for(const [id,k,pg] of [['gq','gq','search'],['cq','cq',null]])if(e.target.id===id){S[k]=e.target.value;if(pg&&S.page!==pg&&S[k])S.page=pg;const pos=e.target.selectionStart;render();const el=$('#'+id);if(el){el.focus();el.setSelectionRange(pos,pos)}return}
  if(e.target.id==='sq'){S.sq=e.target.value;const pos=e.target.selectionStart;render();const el=$('#sq');if(el){el.focus();el.setSelectionRange(pos,pos)}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
 boot();

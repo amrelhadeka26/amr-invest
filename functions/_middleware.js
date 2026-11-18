@@ -124,8 +124,22 @@ const OWNER_EMAILS=new Set([OWNER,CALENDAR_MANAGER]);
 const emailKey=e=>String(e||"").trim().toLowerCase();
 async function contactId(email){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",te.encode("hq-contact|"+emailKey(email))));return "c"+b64(h.slice(0,9)).replace(/[^A-Za-z0-9]/g,"x")}
 async function zdAccounts(env){if(!env.ZD_DB)return null;
-  const r=await env.ZD_DB.prepare("SELECT email,display_name,created_at FROM users WHERE email NOT LIKE '%@guest.zd.app' AND is_demo=0").all();
-  return (r.results||[]).filter(u=>!OWNER_EMAILS.has(emailKey(u.email))).map(u=>{const n=String(u.display_name||"").trim();return {email:emailKey(u.email),name:n&&n.toLowerCase()!==emailKey(u.email).split("@")[0]&&!/^guest$/i.test(n)?n.slice(0,80):"",since:String(u.created_at||"").slice(0,10)}})}
+  const r=await env.ZD_DB.prepare("SELECT id,email,display_name,created_at FROM users WHERE email NOT LIKE '%@guest.zd.app' AND is_demo=0").all();
+  const granted=async kind=>{const x=await env.ZD_DB.prepare("SELECT c.user_id,c.granted FROM consents c JOIN (SELECT user_id,MAX(created_at) AS m FROM consents WHERE kind=? GROUP BY user_id) l ON l.user_id=c.user_id AND l.m=c.created_at WHERE c.kind=?").bind(kind,kind).all().catch(()=>({results:[]}));return new Set((x.results||[]).filter(y=>Number(y.granted)===1).map(y=>String(y.user_id)))};
+  const recap=await granted("monthly_recap"),plus=await granted("plus_notify");
+  return (r.results||[]).filter(u=>!OWNER_EMAILS.has(emailKey(u.email))).map(u=>{const n=String(u.display_name||"").trim();return {email:emailKey(u.email),name:n&&n.toLowerCase()!==emailKey(u.email).split("@")[0]&&!/^guest$/i.test(n)?n.slice(0,80):"",since:String(u.created_at||"").slice(0,10),agreed:[recap.has(u.id)&&"Monthly recap",plus.has(u.id)&&"Plus launch news"].filter(Boolean)}})}
+
+/* Calendly: everyone who booked a session (last 12 months and upcoming), with the event and their answers */
+async function calendlyBookings(env){const key=env.CALENDLY_TOKEN;if(!key)return null;const H={Authorization:"Bearer "+key,accept:"application/json"};
+  const me=await getJSON("https://api.calendly.com/users/me",H);const user=me.resource&&me.resource.uri;if(!user)throw Error("Calendly: no user");
+  const out=[];let url="https://api.calendly.com/scheduled_events?user="+encodeURIComponent(user)+"&status=active&count=100&sort=start_time:desc&min_start_time="+encodeURIComponent(new Date(Date.now()-365*864e5).toISOString());
+  for(let page=0;url&&page<5;page++){const j=await getJSON(url,H);
+    for(const ev of j.collection||[]){const uuid=String(ev.uri||"").split("/").pop();if(!uuid)continue;
+      const inv=await getJSON("https://api.calendly.com/scheduled_events/"+uuid+"/invitees?count=100&status=active",H);
+      for(const p of inv.collection||[]){if(!p.email)continue;const qa=(p.questions_and_answers||[]).map(x=>(x.question||"")+": "+(x.answer||"")).join(" · ").slice(0,500);
+        out.push({email:emailKey(p.email),name:String(p.name||"").slice(0,80),since:String(p.created_at||"").slice(0,10),event:String(ev.name||"Session").slice(0,80),start:String(ev.start_time||""),answers:qa,phone:String(p.text_reminder_number||"").slice(0,30)})}}
+    url=j.pagination&&j.pagination.next_page}
+  return out}
 async function brevoSubscribers(env,key){if(!key)return null;const H={"api-key":key,accept:"application/json"};const list=Number(env.NEWSLETTER_LIST_ID||2);const out=[];
   for(let off=0;off<10000;off+=500){const j=await getJSON("https://api.brevo.com/v3/contacts/lists/"+list+"/contacts?limit=500&offset="+off+"&sort=desc",H);const cs=j.contacts||[];
     for(const c of cs){if(c.emailBlacklisted||!c.email)continue;const a=c.attributes||{};out.push({email:emailKey(c.email),name:[a.FIRSTNAME,a.LASTNAME].filter(x=>typeof x==="string"&&x.trim()).join(" ").trim().slice(0,80),since:String(c.createdAt||"").slice(0,10)})}
@@ -133,27 +147,35 @@ async function brevoSubscribers(env,key){if(!key)return null;const H={"api-key":
   return out}
 async function syncContacts(env,brevoKey){
   await ensureTable(env);
-  const errors=[];let zd=null,nl=null;
+  const errors=[];let zd=null,nl=null,cal=null;
+  try{cal=await calendlyBookings(env);if(!cal)errors.push("Calendly: token missing")}catch(e){errors.push("Calendly: "+String(e.message||e).slice(0,160))}
   try{zd=await zdAccounts(env);if(!zd)errors.push("ZD AI: not connected")}catch(e){errors.push("ZD AI: "+String(e.message||e).slice(0,160))}
   try{nl=await brevoSubscribers(env,brevoKey);if(!nl)errors.push("Newsletter: Brevo key missing")}catch(e){errors.push("Newsletter: "+String(e.message||e).slice(0,160))}
   const rows=(await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts'").all()).results||[];
   const byEmail=new Map();for(const r of rows){let d={};try{d=JSON.parse(r.data)}catch{}if(d.email)byEmail.set(emailKey(d.email),{id:r.id,d})}
   const incoming=new Map();
-  const add=(list,src)=>{for(const x of list||[]){const k=x.email;if(!k)continue;const cur=incoming.get(k)||{email:k,name:"",src:{}};if(!cur.name&&x.name)cur.name=x.name;cur.src[src]=x.since||"";incoming.set(k,cur)}};
-  add(zd,"zd");add(nl,"newsletter");
+  const add=(list,src)=>{for(const x of list||[]){const k=x.email;if(!k)continue;const cur=incoming.get(k)||{email:k,name:"",src:{},bookings:[]};if(!cur.name&&x.name)cur.name=x.name;
+    if(src==="calendly"){cur.bookings.push(x);if(!cur.src.calendly||x.since<cur.src.calendly)cur.src.calendly=x.since;if(x.phone&&!cur.phone)cur.phone=x.phone}else cur.src[src]=x.since||"";if(x.agreed)cur.agreed=x.agreed;incoming.set(k,cur)}};
+  add(zd,"zd");add(nl,"newsletter");add(cal,"calendly");
+  const bookLog=x=>x.bookings.map(b=>({at:b.since,text:"Booked on Calendly: "+b.event+(b.start?" for "+b.start.slice(0,10)+" "+b.start.slice(11,16)+" UTC":"")+(b.answers?" · "+b.answers:""),key:"cal:"+b.start}));
   let added=0,updated=0;const now=new Date().toISOString();
   for(const [k,x] of incoming){const hit=byEmail.get(k);
     if(hit){const d=hit.d,before=JSON.stringify(d);
       if(!d.name&&x.name)d.name=x.name;
       if(zd&&"zd" in x.src)d.zdSince=x.src.zd;else if(zd)delete d.zdSince;
       if(nl&&"newsletter" in x.src)d.newsletterSince=x.src.newsletter;else if(nl)delete d.newsletterSince;
+      if(zd){if(x.agreed&&x.agreed.length)d.agreed=x.agreed;else delete d.agreed}
+      if(cal&&x.bookings.length){d.calendlySince=x.src.calendly;if(!d.phone&&x.phone)d.phone=x.phone;
+        const have=new Set((d.log||[]).map(l=>l.key).filter(Boolean));const fresh=bookLog(x).filter(l=>!have.has(l.key));if(fresh.length)d.log=(d.log||[]).concat(fresh);
+        if(!d.type||d.type==="Audience")d.type="Session lead";if(fresh.length&&["New","To contact","Contacted","Replied",undefined,""].includes(d.stage))d.stage="Call booked"}
       if(JSON.stringify(d)!==before){d.syncedAt=now;await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),hit.id).run();updated++}}
-    else{const id=await contactId(k);const d={name:x.name,email:k,type:"Audience",stage:"New",createdAt:now,deletedAt:null,createdBy:"sync",syncedAt:now};
-      if("zd" in x.src)d.zdSince=x.src.zd;if("newsletter" in x.src)d.newsletterSince=x.src.newsletter;
+    else{const id=await contactId(k);const booked=x.bookings.length>0;const d={name:x.name,email:k,type:booked?"Session lead":"Audience",stage:booked?"Call booked":"New",createdAt:now,deletedAt:null,createdBy:"sync",syncedAt:now};
+      if("zd" in x.src)d.zdSince=x.src.zd;if("newsletter" in x.src)d.newsletterSince=x.src.newsletter;if(x.agreed&&x.agreed.length)d.agreed=x.agreed;
+      if(booked){d.calendlySince=x.src.calendly;if(x.phone)d.phone=x.phone;d.log=bookLog(x)}
       const ins=await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
       if(ins&&ins.meta&&ins.meta.changes){await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++}}}
   // People who left both sources stay as contacts (your notes are kept); their source dates are cleared above.
-  return {added,updated,zdAccounts:zd?zd.length:null,subscribers:nl?nl.length:null,errors}}
+  return {added,updated,zdAccounts:zd?zd.length:null,subscribers:nl?nl.length:null,bookings:cal?cal.length:null,errors}}
 
 /* ---------- daily copy of all HQ data, kept 30 days ---------- */
 async function dailyBackup(env){await ensureTable(env);await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_backups(day TEXT PRIMARY KEY,data TEXT NOT NULL,at TEXT NOT NULL)").run();
@@ -177,6 +199,50 @@ async function zdSummary(env){if(!env.ZD_DB)return {connected:false};
     aiAnswers7:await one("SELECT COUNT(*) FROM audit_log WHERE action='ai.answer' AND created_at>=?",d7),
     visits30:await one("SELECT COUNT(*) FROM audit_log WHERE action='web.view' AND created_at>=?",d30)}}
 
+/* ---------- AI briefing: read-only, from HQ records only; one per day, questions capped ---------- */
+const AI_MODEL="claude-haiku-5-5",ASK_PER_DAY=20;
+const cairoDay=()=>new Date(Date.now()+2*36e5).toISOString().slice(0,10);
+async function hqContext(env){await ensureTable(env);const rows=(await env.DB.prepare("SELECT col,id,data FROM hq_docs WHERE col IN ('actions','decisions','contacts','invoices','money','settings','content')").all()).results||[];
+  const by={};for(const r of rows){let d={};try{d=JSON.parse(r.data)}catch{}if(d.deletedAt)continue;(by[r.col]=by[r.col]||[]).push({id:r.id,...d})}
+  const t=cairoDay(),mk=t.slice(0,7),set=(by.settings||[])[0]||{},g=set.goal||{};
+  const acts=(by.actions||[]).filter(a=>a.status!=="done"),money=by.money||[],sum=l=>l.reduce((s,m)=>s+(+m.amount||0),0);
+  const cs=by.contacts||[],open=cs.filter(c=>!["Client","Audience"].includes(c.type)&&!["Won","Lost"].includes(c.stage));
+  const zd=await zdSummary(env).catch(()=>null);const m=await env.DB.prepare("SELECT source,data FROM hq_metrics WHERE source IN ('zernio','brevo')").all().then(r=>r.results||[]).catch(()=>[]);
+  const soc=m.map(x=>{try{const d=JSON.parse(x.data||"{}");return x.source==="zernio"?{followers:(d.accounts||[]).map(a=>({platform:a.platform,followers:a.followers}))}:{newsletterSubscribers:d.subscribers}}catch{return null}}).filter(Boolean);
+  return {today:t,goal:{title:g.title,targetEGP:g.target,start:g.start,end:g.end,moneyInSinceStart:sum(money.filter(x=>x.kind==="in"&&(x.date||"")>=(g.start||"0")))},
+    moneyThisMonth:{in:sum(money.filter(x=>x.kind==="in"&&(x.date||"").startsWith(mk))),out:sum(money.filter(x=>x.kind==="out"&&(x.date||"").startsWith(mk))),rows:money.filter(x=>(x.date||"").startsWith(mk)).map(x=>({date:x.date,kind:x.kind,amount:x.amount,for:x.category}))},
+    unpaidInvoices:(by.invoices||[]).filter(i=>i.status!=="paid").map(i=>({client:i.client,amount:i.amount,due:i.due||null})),
+    openActions:acts.map(a=>({title:a.title,priority:({High:"P1",Medium:"P2",Low:"P3"})[a.prio]||a.prio||"P2",due:a.due||null,overdue:!!a.due&&a.due<t,top3:!!a.star,waitsFor:a.blockedBy?((by.actions||[]).find(x=>x.id===a.blockedBy)||{}).title||null:null,area:a.dept})).slice(0,60),
+    decisionsWaiting:(by.decisions||[]).filter(d=>d.status==="waiting").map(d=>({title:d.title,detail:String(d.options||d.context||"").slice(0,300)})).slice(0,20),
+    pipeline:open.map(c=>({name:c.name||c.email,type:c.type,stage:c.stage,valueEGP:c.value||0,nextFollowUp:c.next||null})).slice(0,40),
+    followUpsDue:cs.filter(c=>c.next&&c.next<=t&&!["Won","Lost"].includes(c.stage)).map(c=>c.name||c.email),
+    audience:{contacts:cs.length,newContacts30:cs.filter(c=>(c.createdAt||"")>=new Date(Date.now()-30*864e5).toISOString()).length,social:soc,zdAI:zd},
+    contentPlanned:(by.content||[]).filter(c=>c.status!=="Published").map(c=>({title:c.title,channel:c.channel,date:c.date||null,status:c.status})).slice(0,20)}}
+async function askClaude(env,system,user,maxTokens){const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":env.ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01"},body:JSON.stringify({model:AI_MODEL,max_tokens:maxTokens,system,messages:[{role:"user",content:user}]})});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error("Claude "+r.status+": "+String((j.error&&j.error.message)||"").slice(0,200));return (j.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim()}
+const BRIEF_SYSTEM=`You are the chief of staff for Amr, a solo founder in Egypt (financial education: corporate workshops, 1-on-1 sessions, the ZD AI app). You write his morning briefing from the JSON he gives you.
+Rules: use ONLY facts in the JSON; never invent numbers, names or dates; if something is missing, say "not recorded". Money is EGP. Every recommendation is clearly a recommendation, never a fact. Direct and short, plain English, no hype, no emoji.
+Format exactly:
+**How the business is doing**
+2-3 sentences with the key numbers.
+**Needs you today**
+Up to 4 bullets: overdue actions, follow-ups due, decisions waiting, unpaid invoices. "Nothing urgent." if none.
+**Do next (recommendations)**
+3 numbered lines, highest business impact first, each naming the action or person from the data.`;
+async function briefing(env,refresh){await metricsTable(env);const key="briefing:"+cairoDay();
+  const row=await env.DB.prepare("SELECT data,fetched_at FROM hq_metrics WHERE source=?").bind(key).first();
+  if(row&&!refresh){try{return {text:JSON.parse(row.data).text,at:row.fetched_at.replace(" ","T")+"Z",cached:true}}catch{}}
+  if(!env.ANTHROPIC_API_KEY)return {error:"The Anthropic key isn't set."};
+  const text=await askClaude(env,BRIEF_SYSTEM,"HQ data:\n"+JSON.stringify(await hqContext(env)),700);
+  await env.DB.prepare("INSERT INTO hq_metrics(source,data,error,fetched_at) VALUES(?,?,NULL,datetime('now')) ON CONFLICT(source) DO UPDATE SET data=excluded.data,error=NULL,fetched_at=excluded.fetched_at").bind(key,JSON.stringify({text})).run();
+  return {text,at:new Date().toISOString(),cached:false}}
+async function askHQ(env,q){await metricsTable(env);const key="asks:"+cairoDay();
+  const row=await env.DB.prepare("SELECT data FROM hq_metrics WHERE source=?").bind(key).first();let n=0;try{n=row?JSON.parse(row.data).n||0:0}catch{}
+  if(n>=ASK_PER_DAY)return {error:`That's today's ${ASK_PER_DAY} questions. More tomorrow.`};if(!env.ANTHROPIC_API_KEY)return {error:"The Anthropic key isn't set."};
+  await env.DB.prepare("INSERT INTO hq_metrics(source,data,error,fetched_at) VALUES(?,?,NULL,datetime('now')) ON CONFLICT(source) DO UPDATE SET data=excluded.data,fetched_at=excluded.fetched_at").bind(key,JSON.stringify({n:n+1})).run();
+  const text=await askClaude(env,`You answer Amr's questions about his business using ONLY the HQ data JSON. If the data can't answer, say what is missing. Keep facts (from the data) separate from your recommendation and label the recommendation. You can't send, pay, delete or change anything; if asked, say he must do it himself. Short, plain English. Money is EGP.`,"HQ data:\n"+JSON.stringify(await hqContext(env))+"\n\nQuestion: "+q,600);
+  return {text,left:ASK_PER_DAY-n-1}}
+
 /* ---------- status: every connection, its last sync and its last error ---------- */
 async function statusReport(env){await metricsTable(env);
   const rows=(await env.DB.prepare("SELECT source,fetched_at,error FROM hq_metrics WHERE source NOT LIKE 'brevo:%'").all()).results||[];
@@ -185,7 +251,7 @@ async function statusReport(env){await metricsTable(env);
   let rates=null;if(env.RATES){try{const l=await env.RATES.get("latest","json"),a=await env.RATES.get("auto","json");rates={latest:l&&l.latest,lastAttempt:l&&l.lastAttempt,errors:(l&&l.errors)||[],autoCheckedAt:a&&a.checkedAt,decision:a&&a.decision&&a.decision.status}}catch(e){rates={error:String(e.message||e)}}}
   const audits=await env.DB.prepare("SELECT at,who,col,doc,action,label FROM hq_audit ORDER BY at DESC LIMIT 50").all().then(r=>r.results||[]).catch(()=>[]);
   return {calendar:{connected:!!cal},zernio:{at:at(get("zernio")),error:get("zernio")?get("zernio").error:"never synced"},brevo:{at:at(get("brevo")),error:get("brevo")?get("brevo").error:"never synced"},
-    contacts:{at:at(get("contacts")),error:get("contacts")?get("contacts").error:"never synced"},zd:{connected:!!env.ZD_DB},rates,audits}}
+    contacts:{at:at(get("contacts")),error:get("contacts")?get("contacts").error:"never synced"},zd:{connected:!!env.ZD_DB},calendly:{connected:!!env.CALENDLY_TOKEN},ai:{connected:!!env.ANTHROPIC_API_KEY},rates,audits}}
 
 /* ---------- analytics: Zernio (Instagram, TikTok) and Brevo ---------- */
 async function metricsTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_metrics(source TEXT PRIMARY KEY,data TEXT,fetched_at TEXT,error TEXT)").run()}
@@ -278,6 +344,8 @@ async function api(path,req,env,user){
     const q=await env.DB.prepare("SELECT event,value,SUM(count) n FROM events WHERE day>=? GROUP BY event,value ORDER BY n DESC").bind(since).all();return json({since,days:d,rows:q.results||[]})}
   if(path==="/hq/api/zd"&&m==="GET")return json(await zdSummary(env));
   if(path==="/hq/api/status"&&m==="GET")return json(await statusReport(env));
+  if(path==="/hq/api/briefing"&&(m==="GET"||m==="POST")){try{return json(await briefing(env,m==="POST"))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
+  if(path==="/hq/api/ask"&&m==="POST"){const b=await req.json().catch(()=>({}));const q=String(b.q||"").trim().slice(0,500);if(!q)return json({error:"Type a question."},400);try{return json(await askHQ(env,q))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/export"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs ORDER BY col,id").all()).results||[];await audit(env,user.email,"all","export","exported everything");
     return new Response(JSON.stringify({exportedAt:new Date().toISOString(),docs:r.map(x=>({col:x.col,id:x.id,updatedAt:x.updated_at,data:JSON.parse(x.data)}))},null,1),{headers:{...htmlHeaders,"Content-Type":"application/json; charset=utf-8","Content-Disposition":`attachment; filename="zd-hq-export-${new Date().toISOString().slice(0,10)}.json"`}})}
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
