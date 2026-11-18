@@ -311,7 +311,7 @@ async function api(path,req,env,user){
     if(m==="DELETE"&&id){await env.DB.prepare("DELETE FROM hq_docs WHERE col=? AND id=?").bind(col,id).run();await audit(env,user.email,col,id,"deleted for good");return json({deleted:true})}
     if(m==="PUT"||m==="POST"){const data=await readBody(req,200000);if(!data||typeof data!=="object"||Array.isArray(data))return json({error:"Invalid document"},400);delete data.id;delete data._u;const key=id||rid();
       await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES(?,?,?,datetime('now')) ON CONFLICT(col,id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at").bind(col,key,JSON.stringify(data)).run();
-      await audit(env,user.email,col,key,id?(data.deletedAt?"moved to Bin":"edited"):"created",String(data.title||data.name||data.client||data.note||"").slice(0,80));return json({id:key})}
+      await audit(env,user.email,col,key,id?(data.deletedAt?"moved to Bin":"edited"):"created",String(data.name||data.title||data.client||data.note||"").slice(0,80));return json({id:key})}
     return json({error:"Method not allowed"},405)}
   if(path.startsWith("/hq/api/cal/")){
     const s=await calendarToken(env);if(!s)return json({error:"Google Calendar is not connected",needsConnection:true},409);const tk=s.access_token;
