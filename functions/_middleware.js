@@ -150,8 +150,8 @@ async function syncContacts(env,brevoKey){
       if(JSON.stringify(d)!==before){d.syncedAt=now;await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),hit.id).run();updated++}}
     else{const id=await contactId(k);const d={name:x.name,email:k,type:"Audience",stage:"New",createdAt:now,deletedAt:null,createdBy:"sync",syncedAt:now};
       if("zd" in x.src)d.zdSince=x.src.zd;if("newsletter" in x.src)d.newsletterSince=x.src.newsletter;
-      await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
-      await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++}}
+      const ins=await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
+      if(ins&&ins.meta&&ins.meta.changes){await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++}}}
   // People who left both sources stay as contacts (your notes are kept); their source dates are cleared above.
   return {added,updated,zdAccounts:zd?zd.length:null,subscribers:nl?nl.length:null,errors}}
 
