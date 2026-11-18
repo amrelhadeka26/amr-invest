@@ -310,30 +310,42 @@ async function loadZd(){try{S.zd=await api('zd')}catch(e){S.zd={err:e.msg||'offl
 async function loadStatus(){try{S.st=await api('status')}catch(e){S.st=null;S.stErr=e.msg||'offline'}render()}
 
 
-/* ---------- navigation ---------- */
-const NAV=[['COMMAND',[['today','Today','home'],['calendar','Calendar','calendar'],['actions','All actions','list'],['decisions','Decisions','decisions'],['review','Weekly review','review']]]];
+/* ---------- navigation: one menu item per area; related pages become tabs inside it ---------- */
+const AREAS={sales:[['sales','Pipeline'],['contacts','Contacts'],['clients','Clients'],['d:sales','Goal and actions']],
+ marketing:[['d:mkt','Plan and actions'],['audience','Audience']],
+ zd:[['products','Numbers'],['d:prod','Goal and actions']],
+ money:[['money','Money'],['d:fin','Goal and actions']],
+ work:[['actions','Actions'],['decisions','Decisions'],['review','Weekly review']],
+ tech:[['d:ops','Tech and operations'],['status','Status']]};
+const MERGED=new Set(['sales','mkt','fin','edu','prod','ops','strat','legal']);
+const areaOf=p=>Object.keys(AREAS).find(k=>AREAS[k].some(t=>t[0]===p));
 const GROUPS=['GROW REVENUE','DELIVER','RUN THE BUSINESS'];
 function renderSide(){
- const d=live(S.depts).slice().sort((a,b)=>(a.order||0)-(b.order||0));
+ const d=live(S.depts).slice().sort((a,b)=>(a.order||0)-(b.order||0));const cur=areaOf(S.page);
  let h=`<div class="logo"><b>ZD.</b><span>BUSINESS HQ</span></div>`;
- const nb=(k,l,extra)=>`<button class="nv ${S.page===k?'on':''}" data-go="${k}">${esc(l)}${extra||''}</button>`;
+ const nb=(k,l,extra,area)=>`<button class="nv ${S.page===k||(area&&cur===area)?'on':''}" data-go="${k}">${esc(l)}${extra||''}</button>`;
+ const ct=n=>n?`<span class="ct">${n}</span>`:'';const dn=(id,fb)=>(d.find(x=>x.id===id)||{}).name||fb;
+ const partnersDue=live(S.contacts).filter(c=>c.type==='Partner'&&c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage)).length;
  h+=`<div class="fl" style="margin:0 6px 10px"><input id="gq" placeholder="Search everything" value="${esc(S.gq||'')}" aria-label="Search everything" style="flex:1;min-width:0"><button class="sm pri" data-act="quickAdd" aria-label="Quick add">+</button></div>`;
- h+=`<div class="grp">COMMAND</div>`+nb('today','Today',overdueActs().length?`<span class="ct">${overdueActs().length}</span>`:'')+nb('sales','Sales',followUps().length?`<span class="ct">${followUps().length}</span>`:'')+nb('money','Money')+nb('d:mkt','Marketing')+nb('actions','Work')+nb('products','Products')+nb('status','Status',S.st&&['zernio','brevo','contacts'].some(k=>S.st[k]&&S.st[k].error)?'<span class="ct">!</span>':'')+nb('calendar','Calendar')+nb('audience','Audience')+nb('decisions','Decisions',waitingDec().length?`<span class="ct">${waitingDec().length}</span>`:'')+nb('review','Weekly review');
- GROUPS.forEach(g=>{const ds=d.filter(x=>x.group===g);if(!ds.length)return;h+=`<div class="grp">${g}</div>`+ds.map(x=>nb('d:'+x.id,x.name,`<span class="dot ${x.status==='active'?'':'q'}"></span>`)).join('')});
- const other=d.filter(x=>!GROUPS.includes(x.group));if(other.length)h+=`<div class="grp">OTHER</div>`+other.map(x=>nb('d:'+x.id,x.name,`<span class="dot q"></span>`)).join('');
+ h+=`<div class="grp">COMMAND</div>`+nb('today','Today',ct(overdueActs().length))+nb('calendar','Calendar');
+ h+=`<div class="grp">GROW REVENUE</div>`+nb('sales','Sales',ct(followUps().filter(c=>c.type!=='Partner').length),'sales')+nb('partners','Partnerships',ct(partnersDue))+nb('d:mkt','Marketing','','marketing');
+ h+=`<div class="grp">MARKETING TOOLS</div>`+nb('zernio','Zernio')+nb('brevo','Brevo')+nb('calendly','Calendly');
+ h+=`<div class="grp">DELIVER</div>`+nb('d:edu',dn('edu','Courses and workshops'))+nb('products','ZD AI','','zd');
+ h+=`<div class="grp">RUN THE BUSINESS</div>`+nb('money','Money','','money')+nb('actions','Work',ct(waitingDec().length),'work')+nb('d:strat',dn('strat','Strategy'))+nb('d:ops','Tech and status',S.st&&['zernio','brevo','contacts'].some(k=>S.st[k]&&S.st[k].error)?'<span class="ct">!</span>':'','tech')+nb('d:legal',dn('legal','Legal and compliance'));
+ const other=d.filter(x=>!MERGED.has(x.id));if(other.length)h+=`<div class="grp">OTHER</div>`+other.map(x=>nb('d:'+x.id,x.name)).join('');
  h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('tools','Tools')+nb('skills','Skills')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
- h+=`<p class="mut" style="margin:18px 10px 0"><span class="dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink);margin-right:6px"></span>active this quarter</p>`;
  $('#side').innerHTML=h;
- $('#tabbar').innerHTML=[['today','Today'],['sales','Sales'],['money','Money'],['actions','Work']].map(([k,l])=>`<button class="${S.page===k?'on':''}" data-go="${k}">${l}</button>`).join('')+'<button data-act="menu">More</button>';
+ $('#tabbar').innerHTML=[['today','Today',''],['sales','Sales','sales'],['money','Money','money'],['actions','Work','work']].map(([k,l,a])=>`<button class="${S.page===k||(a&&cur===a)?'on':''}" data-go="${k}">${l}</button>`).join('')+'<button data-act="menu">More</button>';
 }
 function render(){renderSide();const p=S.page;let h='';
  if(S.dbErr)h+=`<div class="banner">${esc(S.dbErr)}</div>`;
  if(!S.settings&&!S.dbErr){$('#main').innerHTML='<p class="mut">Loading your HQ…</p>';return}
- const f={search:pSearch,sales:pSales,money:pMoney,products:pProducts,status:pStatus,audience:pAudience,skills:pSkills,tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
+ const f={search:pSearch,partners:pPartners,zernio:pZernio,brevo:pBrevo,calendly:pCalendly,sales:pSales,contacts:pSales,clients:pSales,money:pMoney,products:pProducts,status:pStatus,audience:pAudience,skills:pSkills,tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
  h+=f?f():(p.startsWith('d:')?pDept(p.slice(2)):pToday());
+ const a=areaOf(p);if(a){const strip=`<div class="tabs" role="tablist" style="margin-bottom:14px">${AREAS[a].map(([k,l])=>`<button class="sm ${k===p?'on':''}" role="tab" aria-selected="${k===p}" data-go="${k}">${esc(l)}</button>`).join('')}</div>`;h=h.replace('<!--/head-->',strip)}
  $('#main').innerHTML=h;
 }
-const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}</div></div>`;
+const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}</div></div><!--/head-->`;
 
 /* ---------- shared blocks ---------- */
 function actRow(a,showDept){
@@ -387,7 +399,7 @@ function pToday(){
   const subs=bd()?bd().subscribers:null,fol=anFollowers();
   h+=`<div class="grid g2"><div class="card"><div class="ch"><h2>Do this next</h2>${na?`<span class="pill ${prioOf(na)==='P0'?'bad':prioOf(na)==='P1'?'wa':''}">${esc(prioOf(na))}</span>`:''}</div>${na?`<div style="font-size:17px;font-weight:600;margin:4px 0 6px">${esc(na.title)}</div><div class="mut">${esc(deptName(na.dept))}${na.due?' · '+esc(fmtD(na.due)):''}</div><div class="fl" style="margin-top:10px"><button class="pri sm" data-act="done" data-id="${na.id}">Done</button><button class="sm" data-act="editAct" data-id="${na.id}">Open</button></div>`:'<div class="empty">Nothing open. Add the next action.</div>'}</div>
   <div class="card"><div class="ch"><h2>Business health</h2><span style="font-size:22px;font-weight:600">${score}<span class="mut">/100</span></span></div>${hc.map(x=>`<div class="row" style="padding:5px 0"><span class="${x[0]?'':'rd'}">${x[0]?'✓':'✗'}</span><div class="t">${esc(x[1])}</div></div>`).join('')}</div></div>`;
-  h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Money this month',money(i0),'in · '+money(o0)+' out · <button class="lk" data-go="money">Money</button>')}${kpi('Open pipeline',money(pipeVal),followUps().length+' follow-ups due · <button class="lk" data-go="sales">Sales</button>')}${kpi('Audience',fmtN((fol||0)+(subs||0)+((S.zd&&S.zd.accounts)||0)),'followers + subscribers + ZD AI accounts')}${kpi('ZD AI, 7 days',S.zd&&S.zd.connected?fmtN(S.zd.active7)+' active':'—',S.zd&&S.zd.connected?fmtN(S.zd.aiAnswers7)+' AI answers · <button class="lk" data-go="products">Products</button>':'')}</div>`}
+  h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Money this month',money(i0),'in · '+money(o0)+' out · <button class="lk" data-go="money">Money</button>')}${kpi('Open pipeline',money(pipeVal),followUps().length+' follow-ups due · <button class="lk" data-go="sales">Sales</button>')}${kpi('Audience',fmtN((fol||0)+(subs||0)+((S.zd&&S.zd.accounts)||0)),'followers + subscribers + ZD AI accounts')}${kpi('ZD AI, 7 days',S.zd&&S.zd.connected?fmtN(S.zd.active7)+' active':'—',S.zd&&S.zd.connected?fmtN(S.zd.aiAnswers7)+' AI answers · <button class="lk" data-go="products">ZD AI</button>':'')}</div>`}
  h+=`<div class="card"><div class="ch"><div><h2>${esc(g.title||'90-day goal')}</h2><p class="mut">${esc(fmtD(g.start))} → ${esc(fmtD(g.end))}</p></div><div style="text-align:right"><div style="font-size:22px;font-weight:600">${money(c)} <span class="mut">/ ${money(g.target)}</span></div><div class="mut">${Math.round(pct)}% · money in since the start</div></div></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
  const g0=goal();const mr0=mcRange(g0.start,'9999');const mc={reels:mr0.reels,auto:mr0.auto,fol:anFollowers()!=null?anFollowers():latestWeekly('followers'),folAuto:anFollowers()!=null};
  h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Workshops paid',cn.ws+' / '+((S.settings.targets||{}).ws||2))}${kpi('Sessions paid',cn.se+' / '+((S.settings.targets||{}).se||15))}${kpi('Reels published',mc.reels+' / '+((S.settings.targets||{}).reels||36),mc.auto?'Instagram · Zernio':'content marked Published')}${kpi('Followers',mc.fol!=null?(+mc.fol).toLocaleString():'—',mc.folAuto?'Instagram + TikTok · Zernio':'from your weekly review')}</div>`;
@@ -431,24 +443,22 @@ function pDept(id){
  const acts=live(S.actions).filter(a=>a.dept===id),open=acts.filter(a=>a.status!=='done');
  let h=head(esc(d.name),'Goal: '+esc(d.goal||'Set a goal'),`<span class="pill ${d.status==='active'?'blk':''}">${d.status==='active'?'Active priority':'Supporting'}</span>${d.agent?`<span class="mut">Agent: ${esc(d.agent)}</span>`:''}<button class="sm" data-act="editDept" data-id="${id}">Edit</button>`);
  h+=`<div class="card" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><div class="mut">Next action</div><div style="font-weight:600">${esc(open.sort((a,b)=>(b.star?1:0)-(a.star?1:0)||String(a.due||'9').localeCompare(String(b.due||'9')))[0]?.title||'Add an action')}</div></div><div class="fl"><span class="pill">${open.length} open</span>${open.filter(a=>a.due&&a.due.slice(0,10)<today()).length?`<span class="pill bad">${open.filter(a=>a.due&&a.due.slice(0,10)<today()).length} overdue</span>`:''}${d.sourceUrl?`<a href="${esc(d.sourceUrl)}" target="_blank" rel="noopener">${esc(d.source||'Source')} ↗</a>`:''}</div></div>`;
- if(id==='sales')h+=pipeline();
  if(id==='mkt')h+=marketing();
  if(id==='edu')h+=education();
  if(id==='prod'||id==='fin')h+=consoleCard();
- if(id==='fin')h+=finance();
  if(id==='strat')h+=`<div class="card"><div class="ch"><h2>Parked ideas</h2><button class="sm" data-go="ideas">Open</button></div>${live(S.ideas).slice(0,5).map(i=>`<div class="row"><div class="t">${esc(i.title)}</div><span class="mut">${esc(i.trigger)}</span></div>`).join('')||'<div class="empty">None.</div>'}</div>`;
  return h+deptActions(id);
 }
 const STAGES=['New','To contact','Contacted','Replied','Call booked','Proposal sent','Won','Lost'];
-function pipeline(){
- const cs=live(S.contacts).filter(c=>c.type!=='Client'&&c.type!=='Audience');const n=s=>cs.filter(c=>c.stage===s).length;
- return `<div class="grid g4" style="margin-bottom:14px">${kpi('Contacted',cs.filter(c=>c.stage!=='To contact').length+' / '+cs.length)}${kpi('Replied',n('Replied')+n('Call booked')+n('Proposal sent')+n('Won'))}${kpi('Calls booked',n('Call booked')+n('Proposal sent')+n('Won'))}${kpi('Won',n('Won'))}</div><div class="card"><div class="ch"><h2>Pipeline</h2><button class="sm pri" data-act="newContact" data-type="Workshop lead">+ Contact</button></div>${cs.length?`<table><tr><th>Name</th><th>Type</th><th>Stage</th><th>Next follow-up</th><th></th></tr>${cs.sort((a,b)=>STAGES.indexOf(a.stage)-STAGES.indexOf(b.stage)).map(c=>`<tr><td><b style="font-weight:500">${esc(c.name)}</b><div class="mut">${esc(c.company||'')}</div></td><td>${esc(c.type)}</td><td><select data-stage="${c.id}" style="padding:3px 6px">${STAGES.map(s=>`<option ${c.stage===s?'selected':''}>${s}</option>`).join('')}</select></td><td>${c.next?`<span class="pill ${c.next<=today()?'wa':''}">${esc(fmtD(c.next))}</span>`:'<span class="mut">—</span>'}</td><td style="white-space:nowrap"><button class="ic" data-act="editContact" data-id="${c.id}">Edit</button><button class="ic" data-act="del" data-col="contacts" data-id="${c.id}">✕</button></td></tr>`).join('')}</table>`:'<div class="empty">Add your 20 HR contacts here. Each one gets a stage and a follow-up date.</div>'}</div>`;
+function pipeline(partners){
+ const cs=live(S.contacts).filter(c=>partners?c.type==='Partner':c.type!=='Client'&&c.type!=='Audience'&&c.type!=='Partner');const n=s=>cs.filter(c=>c.stage===s).length;
+ return `<div class="grid g4" style="margin-bottom:14px">${kpi('Contacted',cs.filter(c=>c.stage!=='To contact').length+' / '+cs.length)}${kpi('Replied',n('Replied')+n('Call booked')+n('Proposal sent')+n('Won'))}${kpi('Calls booked',n('Call booked')+n('Proposal sent')+n('Won'))}${kpi('Won',n('Won'))}</div><div class="card"><div class="ch"><h2>${partners?'Partners':'Pipeline'}</h2><button class="sm pri" data-act="newContact" data-type="${partners?'Partner':'Workshop lead'}">+ ${partners?'Partner':'Contact'}</button></div>${cs.length?`<table><tr><th>Name</th><th>Type</th><th>Stage</th><th>Next follow-up</th><th></th></tr>${cs.sort((a,b)=>STAGES.indexOf(a.stage)-STAGES.indexOf(b.stage)).map(c=>`<tr><td><b style="font-weight:500">${esc(c.name)}</b><div class="mut">${esc(c.company||'')}</div></td><td>${esc(c.type)}</td><td><select data-stage="${c.id}" style="padding:3px 6px">${STAGES.map(s=>`<option ${c.stage===s?'selected':''}>${s}</option>`).join('')}</select></td><td>${c.next?`<span class="pill ${c.next<=today()?'wa':''}">${esc(fmtD(c.next))}</span>`:'<span class="mut">—</span>'}</td><td style="white-space:nowrap"><button class="ic" data-act="editContact" data-id="${c.id}">Edit</button><button class="ic" data-act="del" data-col="contacts" data-id="${c.id}">✕</button></td></tr>`).join('')}</table>`:'<div class="empty">Add your 20 HR contacts here. Each one gets a stage and a follow-up date.</div>'}</div>`;
 }
 function clients(){const cs=live(S.contacts).filter(c=>c.type==='Client');return `<div class="card"><div class="ch"><h2>Clients</h2><button class="sm pri" data-act="newContact" data-type="Client">+ Client</button></div>${cs.length?`<table><tr><th>Client</th><th>What they need</th><th>Follow-up</th><th>Testimonial</th><th>Referral</th><th></th></tr>${cs.map(c=>`<tr><td><b style="font-weight:500">${esc(c.name)}</b><div class="mut">${esc(fmtD(c.since)||'')}</div></td><td>${esc(c.notes||'')}</td><td>${c.next?`<span class="pill ${c.next<=today()?'wa':''}">${esc(fmtD(c.next))}</span>`:'—'}</td><td><span class="pill ${c.testimonial==='Received'?'ok':''}">${esc(c.testimonial||'Not asked')}</span></td><td>${esc(c.referral||'—')}</td><td style="white-space:nowrap"><button class="ic" data-act="editContact" data-id="${c.id}">Edit</button><button class="ic" data-act="del" data-col="contacts" data-id="${c.id}">✕</button></td></tr>`).join('')}</table>`:'<div class="empty">Every session or workshop client goes here, with a follow-up date and a testimonial request.</div>'}</div>`}
 function education(){const p=(S.settings.prices)||[];return `<div class="card"><div class="ch"><h2>Offers and prices</h2><button class="sm" data-go="d:fin">Edit in Finance</button></div>${p.map(x=>`<div class="row"><div class="t">${esc(x.name)}</div><b style="font-weight:500">${money(x.amount)}${x.unit?' '+esc(x.unit):''}</b><span class="pill ${x.status==='Approved'?'ok':'wa'}">${esc(x.status)}</span></div>`).join('')||'<div class="empty">No offers yet.</div>'}</div>`+clients()+libBlock('edu','Decks and materials')}
 const CH=['Reel','Carousel','LinkedIn','Newsletter','Website lesson','Other'],CST=['Idea','Scripted','Filmed','Ready','Published'];
 function marketing(){
- const tabs=['Overview','Content','Social','Newsletter','Website & SEO'];const t=S.mtab;
+ const tabs=['Overview','Content','Website & SEO'];const t=tabs.includes(S.mtab)||S.mtabForce?S.mtab:'Overview';
  let h=`<div class="tabs">${tabs.map(x=>`<button class="sm ${x===t?'on':''}" data-mtab="${x}">${x}</button>`).join('')}</div>`;
  const items=live(S.content);
  const lst=(f,label,ch)=>`<div class="card"><div class="ch"><h2>${label}</h2><button class="sm pri" data-act="newContent" data-ch="${ch||''}">+ Item</button></div>${items.filter(f).sort((a,b)=>String(a.date||'9').localeCompare(String(b.date||'9'))).map(c=>`<div class="row"><div class="t"><div class="nm">${esc(c.title)}</div><div class="tags"><span class="pill">${esc(c.channel)}</span>${c.date?`<span class="pill">${esc(fmtD(c.date))}</span>`:''}${c.character?`<span class="pill">${esc(c.character)}</span>`:''}</div></div><select data-cst="${c.id}" style="width:auto;padding:3px 6px">${CST.map(s=>`<option ${c.status===s?'selected':''}>${s}</option>`).join('')}</select><button class="ic" data-act="editContent" data-id="${c.id}">Edit</button><button class="ic" data-act="del" data-col="content" data-id="${c.id}">✕</button></div>`).join('')||'<div class="empty">Nothing here yet.</div>'}</div>`;
@@ -474,12 +484,11 @@ function finance(noKpis){
 /* ---------- Sales: one contact list, the pipeline, clients ---------- */
 const SRC_PILLS=c=>(c.zdSince?'<span class="pill">ZD AI</span>':'')+(c.newsletterSince?'<span class="pill">Newsletter</span>':'');
 const added=c=>String(c.createdAt||c.zdSince||c.newsletterSince||'').slice(0,10);
-function pSales(){const t=S.stab||'Pipeline';const all=live(S.contacts);const pipe=all.filter(c=>c.type!=='Client'&&c.type!=='Audience');
+function pSales(){const t={contacts:'Contacts',clients:'Clients'}[S.page]||'Pipeline';const all=live(S.contacts);const pipe=all.filter(c=>c.type!=='Client'&&c.type!=='Audience'&&c.type!=='Partner');
  const open=pipe.filter(c=>!['Won','Lost'].includes(c.stage)),val=open.reduce((s,c)=>s+(+c.value||0),0);
  const m0=today().slice(0,7)+'-01',d30=ymd(new Date(Date.now()-30*864e5));
  let h=head('Sales','Everyone who gave you their email, your pipeline and your clients',`<button class="pri" data-act="newContact" data-type="Workshop lead">+ Contact</button>`);
  h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Open pipeline',money(val),open.length+' open deal'+(open.length===1?'':'s'))}${kpi('Follow-ups due',followUps().length,followUps().length?'see Needs attention':'none due')}${kpi('Won this month',pipe.filter(c=>c.stage==='Won'&&(c.wonAt||'')>=m0).length)}${kpi('Contacts',all.length,all.filter(c=>added(c)>=d30).length+' new in 30 days')}</div>`;
- h+=`<div class="tabs">${['Pipeline','Contacts','Clients'].map(x=>`<button class="sm ${x===t?'on':''}" data-stab="${x}">${x}</button>`).join('')}</div>`;
  if(t==='Pipeline')h+=pipeline();
  if(t==='Clients')h+=clients();
  if(t==='Contacts'){const f=S.cf||'all',q=(S.cq||'').toLowerCase();
@@ -503,6 +512,26 @@ function contactView(c){const nm=String(c.name||'').toLowerCase(),em=String(c.em
  <div class="fl" style="justify-content:flex-end;margin-top:10px"><button data-act="close">Close</button><button class="pri" data-act="editContact" data-id="${c.id}">Edit</button></div></div></div>`;
  $('#mdl').addEventListener('click',e=>{if(e.target.id==='mdl')closeM()})}
 
+/* ---------- Marketing tools: Zernio, Brevo, Calendly ---------- */
+const toolUrl=(name,fb)=>{const t=live(S.tools).find(x=>String(x.name||'').toLowerCase().includes(name));return (t&&t.url)||fb};
+function mkTab(t){const o=S.mtab;S.mtab=t;S.mtabForce=1;const h=marketing();S.mtab=o;S.mtabForce=0;return h.replace(/^<div class="tabs">[\s\S]*?<\/div>/,'')}
+function pZernio(){const z=zd();let h=head('Zernio','Instagram and TikTok: posts, followers and views',`<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="${esc(toolUrl('zernio','https://zernio.com'))}" target="_blank" rel="noopener">Open Zernio ↗</a>`);
+ if(z&&z.accounts&&z.accounts.length)h+=`<div class="grid g4" style="margin-bottom:14px">${z.accounts.map(x=>kpi((x.platform==='instagram'?'Instagram':x.platform==='tiktok'?'TikTok':x.platform)+' followers',fmtN(x.followers),'@'+esc(x.username||''))).join('')}</div>`;
+ return h+mkTab('Social')}
+function pBrevo(){return head('Brevo','Newsletter: subscribers, campaigns and issues',`<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="https://app.brevo.com" target="_blank" rel="noopener">Open Brevo ↗</a>`)+mkTab('Newsletter')}
+function pCalendly(){const link='https://calendly.com/amr-amrelhadeka/1-hour-investing-consultation';const t=today();const up=(S.events||[]).filter(e=>/consult|session|calendly/i.test(e.summary||'')&&(e.start||'').slice(0,10)>=t).slice(0,10);
+ let h=head('Calendly','1-on-1 session bookings',`<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="https://calendly.com/app/scheduled_events/user/me" target="_blank" rel="noopener">Open Calendly ↗</a>`);
+ h+=`<div class="card"><div class="ch"><h2>Your booking link</h2><button class="sm" data-act="copyText" data-text="${esc(link)}">Copy</button></div><p style="word-break:break-all"><a href="${esc(link)}" target="_blank" rel="noopener">${esc(link)}</a></p><p class="mut">On the website's session pages and in your reels.</p></div>`;
+ h+=`<div class="card"><h2>Upcoming sessions</h2>${up.length?up.map(e=>`<div class="row"><span class="mut" style="min-width:110px">${esc(fmtD(e.start.slice(0,10)))} ${esc((e.start||'').slice(11,16))}</span><div class="t">${esc(e.summary)}</div></div>`).join(''):'<div class="empty">No session in your Google Calendar this week or next.</div>'}<p class="mut" style="margin-top:6px">From your Google Calendar, where Calendly adds each booking.</p></div>`;
+ h+=`<div class="banner">Bookings don't reach Sales by themselves yet. That needs a Calendly API token pasted into Cloudflare as a Secret named <b>CALENDLY_TOKEN</b>.</div>`;
+ return h}
+
+/* ---------- Partnerships: partners (nsave, sponsors, affiliates) in their own pipeline ---------- */
+function pPartners(){const ps=live(S.contacts).filter(c=>c.type==='Partner');const open=ps.filter(c=>!['Won','Lost'].includes(c.stage));const due=ps.filter(c=>c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage));
+ let h=head('Partnerships','Partners, sponsors and affiliates, each with a stage and a next follow-up');
+ h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Active talks',open.length)}${kpi('Follow-ups due',due.length,due.length?'<span class="rd">today or late</span>':'none due')}${kpi('Signed',ps.filter(c=>c.stage==='Won').length)}${kpi('Value in talks',money(open.reduce((s,c)=>s+(+c.value||0),0)))}</div>`;
+ return h+pipeline(true).replace(/^<div class="grid g4"[\s\S]*?<\/div><div class="card">/,'<div class="card">')}
+
 /* ---------- Money: ledger, P&L by month, cash ---------- */
 const OUT_CATS=['Tools and software','AI','Ads','Freelancers','Bank and payment fees','Equipment','Other'];
 function moneyForm(m,kind){kind=(m&&m.kind)||kind||'in';const offers=((S.settings.prices)||[]).map(p=>p.name);
@@ -514,14 +543,15 @@ function pMoney(){const t=today(),mk=t.slice(0,7),i0=moneyIn(mk+'-01',monthEnd(m
  h+=`<div class="card"><h2>Profit and loss by month</h2><table><tr><th>Month</th><th>In</th><th>Out</th><th>Profit</th></tr>${months.slice().reverse().map(k=>{const a=moneyIn(k+'-01',monthEnd(k)),b=moneyOut(k+'-01',monthEnd(k));return `<tr><td>${esc(new Date(k+'-01T00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}))}</td><td>${money(a)}</td><td>${money(b)}</td><td class="${a-b<0?'rd':''}">${a-b<0?'▼ ':a-b>0?'▲ ':''}${money(a-b)}</td></tr>`}).join('')}</table><p class="mut" style="margin-top:6px">Actual money only, from the rows below. No estimates.</p></div>`;
  const rows=live(S.money).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
  h+=`<div class="card"><div class="ch"><h2>Ledger</h2><span class="mut">${rows.length} rows</span></div>${rows.length?`<table><tr><th>Date</th><th>In / out</th><th>Amount</th><th>For</th><th>Who</th><th>Source</th><th></th></tr>${rows.slice(0,200).map(m=>`<tr><td>${esc(fmtD(m.date))}</td><td>${m.kind==='in'?'<span class="pill ok">▲ In</span>':'<span class="pill bad">▼ Out</span>'}</td><td>${money(m.amount)}</td><td>${esc(m.category||'')}<div class="mut">${esc(m.note||'')}</div></td><td>${esc(m.contact||'')}</td><td>${m.source==='invoice'?'Invoice':'Typed'}${m.ref?'<div class="mut">'+esc(m.ref)+'</div>':''}</td><td><button class="ic" data-act="editMoney" data-id="${m.id}">Edit</button></td></tr>`).join('')}</table>`:'<div class="empty">No money recorded yet. Add each InstaPay or bank payment here, or mark an invoice paid.</div>'}</div>`;
+ {const offers=((S.settings.prices)||[]).map(p=>p.name);const ins=live(S.money).filter(m=>m.kind==='in');const cats=[...new Set(offers.concat(ins.map(m=>m.category||'Other')))];const mk=today().slice(0,7);
+ h+=`<div class="card"><h2>Sales per offer</h2><table><tr><th>Offer</th><th>This month</th><th>All time</th><th>Payments</th></tr>${cats.map(c=>{const l=ins.filter(m=>(m.category||'Other')===c);return `<tr><td>${esc(c)}</td><td>${money(sumA(l.filter(m=>(m.date||'').slice(0,7)===mk)))}</td><td>${money(sumA(l))}</td><td>${l.length}</td></tr>`}).join('')||'<tr><td colspan="4" class="mut">No offers yet.</td></tr>'}</table><p class="mut" style="margin-top:6px">From the ledger above.</p></div>`}
  return h+finance(true)}
 
 /* ---------- Products: ZD AI numbers and sales per offer ---------- */
-function pProducts(){const z=S.zd;let h=head('Products','What you sell and how each one is doing');
+function pProducts(){const z=S.zd;let h=head('ZD AI','How people use ZD AI: counts only, never chats');
  h+=`<div class="card"><div class="ch"><h2>ZD AI</h2><a class="sm" href="/zd/#/admin" target="_blank" rel="noopener">Full ZD AI dashboard ↗</a></div>${!z?'<p class="mut">Loading…</p>':z.err?`<div class="banner">Couldn't load ZD AI numbers (${esc(z.err)}).</div>`:!z.connected?'<div class="empty">ZD AI data isn\'t connected to the HQ yet.</div>':`<div class="grid g4">${kpi('Accounts',fmtN(z.accounts),'+'+fmtN(z.newAccounts30)+' in 30 days')}${kpi('Guests, 30 days',fmtN(z.guests30),'tried without an account')}${kpi('Active, 7 days',fmtN(z.active7),fmtN(z.messages7)+' messages')}${kpi('AI answers, 7 days',fmtN(z.aiAnswers7))}${kpi('Website visits, 30 days',fmtN(z.visits30))}</div>`}</div>`;
- const offers=((S.settings.prices)||[]).map(p=>p.name);const ins=live(S.money).filter(m=>m.kind==='in');const cats=[...new Set(offers.concat(ins.map(m=>m.category||'Other')))];const mk=today().slice(0,7);
- h+=`<div class="card"><h2>Sales per offer</h2><table><tr><th>Offer</th><th>This month</th><th>All time</th><th>Payments</th></tr>${cats.map(c=>{const l=ins.filter(m=>(m.category||'Other')===c);return `<tr><td>${esc(c)}</td><td>${money(sumA(l.filter(m=>(m.date||'').slice(0,7)===mk)))}</td><td>${money(sumA(l))}</td><td>${l.length}</td></tr>`}).join('')||'<tr><td colspan="4" class="mut">No offers yet.</td></tr>'}</table><p class="mut" style="margin-top:6px">From the Money ledger.</p></div>`;
- return h+education()}
+
+ return h}
 
 /* ---------- Status: connections, backups, recent changes ---------- */
 function pStatus(){const st=S.st;let h=head('Status','Every connection, when it last worked, and every change made',`<button data-act="syncNow">Sync now</button><a class="pill blk" style="padding:6px 12px;text-decoration:none" href="/hq/api/export">Export everything</a>`);
@@ -672,6 +702,7 @@ document.addEventListener('click',async e=>{
  case 'paid':await put('invoices',id,{status:'paid',paidDate:today()});await syncInvoiceMoney(id);toast('Marked paid and added to Money');break;
  case 'newContent':contentForm(null,b.dataset.ch);break;case 'editContent':contentForm(find('content'));break;
  case 'newLink':linkForm(null,b.dataset.kind,b.dataset.area);break;case 'editLink':linkForm(find('links'));break;
+ case 'copyText':{try{await navigator.clipboard.writeText(b.dataset.text);toast('Copied')}catch(x){toast('Couldn\'t copy. Select the text instead.')}break}
  case 'copy':{const l=find('links');try{await navigator.clipboard.writeText(l.value||l.url||l.title);toast('Copied')}catch(x){toast('Couldn\'t copy. Select the text instead.')}break}
  case 'newIdea':ideaForm();break;case 'editIdea':ideaForm(find('ideas'));break;
  case 'newDept':deptForm();break;case 'editDept':deptForm(find('depts'));break;
