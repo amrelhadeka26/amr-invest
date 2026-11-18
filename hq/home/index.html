@@ -131,6 +131,7 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 <div id="toast"></div>
 <script>
 const S={page:'today',mtab:'Content',weekOff:0,filt:{dept:'all',status:'open'},settings:null,depts:[],actions:[],decisions:[],contacts:[],invoices:[],money:[],content:[],ideas:[],weekly:[],links:[],cals:[],events:[],calErr:null,dbErr:null,calNeedsConnect:false,loaded:{},me:null,an:null,anLoading:false};
+try{const v=JSON.parse(sessionStorage.getItem('hq-view')||'null');if(v&&typeof v.page==='string'&&v.page!=='search'){S.page=v.page;if(v.stab)S.stab=v.stab;if(v.cf)S.cf=v.cf}}catch(e){}
 let sig='';
 const COLS=['depts','actions','decisions','contacts','invoices','money','content','ideas','weekly','links','tools','skills'];
 const $=s=>document.querySelector(s);
@@ -159,7 +160,7 @@ async function boot(){
  await pull(true);
  setInterval(()=>{if(document.visibilityState==='visible'&&!$('#modal').innerHTML)pull()},30000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull()});
- loadAnalytics().then(loadStatus);loadZd();loadBrief(false);await loadCals();loadEvents();
+ if(S.page==='audience'&&!S.aud)loadAud();loadAnalytics().then(loadStatus);loadZd();loadBrief(false);await loadCals();loadEvents();
 }
 async function loadAnalytics(force){S.anLoading=true;render();try{S.an=await api('analytics'+(force?'?refresh=1':''))}catch(e){if(e.code!=='auth')S.an=Object.assign({},S.an||{},{err:e.msg||'offline'})}S.anLoading=false;render()}
 function localSet(col,id,o){const arr=S[col]||(S[col]=[]);const i=arr.findIndex(x=>x.id===id);const v=Object.assign({id},o);if(i>=0)arr[i]=v;else arr.push(v);sig='';render()}
@@ -359,7 +360,7 @@ function renderSide(){
  $('#side').innerHTML=h;
  $('#tabbar').innerHTML=[['today','Today',''],['sales','Sales','sales'],['money','Money','money'],['actions','Work','work']].map(([k,l,a])=>`<button class="${S.page===k||(a&&cur===a)?'on':''}" data-go="${k}">${l}</button>`).join('')+'<button data-act="menu">More</button>';
 }
-function render(){renderSide();const p=S.page;let h='';
+function render(){renderSide();const p=S.page;let h='';try{sessionStorage.setItem('hq-view',JSON.stringify({page:p,stab:S.stab||null,cf:S.cf||null}))}catch(e){}
  if(S.dbErr)h+=`<div class="banner">${esc(S.dbErr)}</div>`;
  if(!S.settings&&!S.dbErr){$('#main').innerHTML='<p class="mut">Loading your HQ…</p>';return}
  const f={search:pSearch,partners:pPartners,zernio:pZernio,brevo:pBrevo,calendly:pCalendly,sales:pSales,contacts:pSales,clients:pSales,money:pMoney,products:pProducts,status:pStatus,audience:pAudience,skills:pSkills,tools:pTools,today:pToday,calendar:pCal,actions:pActions,decisions:pDecisions,review:pReview,kit:pKit,library:pLibrary,ideas:pIdeas,bin:pBin,settings:pSettings}[p];
