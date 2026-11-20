@@ -18,7 +18,7 @@ button[disabled]{opacity:.55;cursor:default}.err{color:#B42318;font-size:14px;mi
 <button id="b" type="submit">Pay EGP 1,500</button><p id="err" class="err" role="alert"></p></form>
 <p class="note">Secure card payment by Paymob. Your card details go to Paymob, never to this site.</p></div><p class="disc">Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</p></main>
 <script>(function(){var q=new URLSearchParams(location.search),g=function(k){return (q.get(k)||'').trim()};
-var name=g('invitee_full_name')||[g('invitee_first_name'),g('invitee_last_name')].filter(Boolean).join(' ')||g('name'),email=g('invitee_email')||g('email'),start=g('event_start_time'),phone=g('text_reminder_number')||g('answer_2')||'';
+var name=g('invitee_full_name')||[g('invitee_first_name'),g('invitee_last_name')].filter(Boolean).join(' ')||g('attendeeName')||g('name'),email=g('invitee_email')||g('email'),start=g('event_start_time')||g('startTime'),phone=g('text_reminder_number')||g('attendeePhoneNumber')||g('answer_2')||'';
 document.getElementById('n').value=name;document.getElementById('e').value=email;if(/^[+\d][\d\s-]{7,}$/.test(phone))document.getElementById('p').value=phone;
 document.getElementById('lang').href='/ar/pay/session/'+location.search;
 if(start&&!isNaN(Date.parse(start))){var d=new Date(start);document.getElementById('when').textContent='Session time: '+d.toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})}
