@@ -380,6 +380,38 @@ async function publishContent(env,id,by){
   c.zernioPostId=pid;c.status="Scheduled";c.history=histS(c,by,"Sent to Zernio","Scheduled for "+body.scheduledFor+" Cairo time"+(pid?" · "+pid:""));await saveContent(env,id,c);
   return {sent:true,zernioPostId:pid};
 }
+// ---- Paymob (Egypt) ----
+const PAYMOB_BASE="https://accept.paymob.com";
+const paymobIds=env=>(env.PAYMOB_INTEGRATION_IDS||"").split(/[,\s]+/).map(x=>Number(x)).filter(n=>Number.isInteger(n)&&n>0);
+const paymobMode=env=>/_test_/.test(env.PAYMOB_PUBLIC_KEY||"")?"test":(env.PAYMOB_PUBLIC_KEY?"live":"none");
+async function payTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_payments (id TEXT PRIMARY KEY, order_id TEXT, ref TEXT, amount_cents INTEGER, currency TEXT, success INTEGER, pending INTEGER, refunded INTEGER, voided INTEGER, mode TEXT, method TEXT, created_at TEXT, received_at TEXT DEFAULT (datetime('now')))").run()}
+async function paymobStatus(env){const cfg={secret:!!env.PAYMOB_SECRET_KEY,hmac:!!env.PAYMOB_HMAC,publicKey:!!env.PAYMOB_PUBLIC_KEY,integrations:paymobIds(env).length,mode:paymobMode(env)};cfg.ready=cfg.secret&&cfg.hmac&&cfg.publicKey&&cfg.integrations>0;
+ let last=[];try{await payTable(env);last=(await env.DB.prepare("SELECT id,order_id,ref,amount_cents,currency,success,pending,refunded,voided,mode,method,created_at,received_at FROM hq_payments ORDER BY received_at DESC LIMIT 10").all()).results||[]}catch(e){}
+ return Object.assign(cfg,{last})}
+async function paymobIntention(env,o){const ids=paymobIds(env);
+ if(!env.PAYMOB_SECRET_KEY||!env.PAYMOB_PUBLIC_KEY||!ids.length)throw Object.assign(new Error("Paymob isn't fully set up in Cloudflare"),{status:503});
+ const body={amount:o.amountCents,currency:"EGP",payment_methods:ids,items:[{name:o.name,amount:o.amountCents,description:o.description||o.name,quantity:1}],
+  billing_data:{first_name:o.first||"NA",last_name:o.last||"NA",email:o.email,phone_number:o.phone||"+201000000000",country:"EG",city:"NA",street:"NA",building:"NA",floor:"NA",apartment:"NA",state:"NA"},
+  special_reference:o.ref,notification_url:ORIGIN+"/hq/hook/paymob",redirection_url:o.redirect};
+ const res=await fetch(PAYMOB_BASE+"/v1/intention/",{method:"POST",headers:{Authorization:"Token "+env.PAYMOB_SECRET_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
+ const t=await res.text();let d={};try{d=JSON.parse(t)}catch(e){d={raw:t.slice(0,200)}}
+ if(!res.ok||!d.client_secret)throw Object.assign(new Error("Paymob said "+res.status+": "+JSON.stringify(d.detail||d.message||d.raw||d).slice(0,240)),{status:502});
+ return {url:PAYMOB_BASE+"/unifiedcheckout/?publicKey="+encodeURIComponent(env.PAYMOB_PUBLIC_KEY)+"&clientSecret="+encodeURIComponent(d.client_secret),intention:String(d.id||""),order:String(d.intention_order_id||""),mode:paymobMode(env)}}
+const PAYMOB_HMAC_FIELDS=[o=>o.amount_cents,o=>o.created_at,o=>o.currency,o=>o.error_occured,o=>o.has_parent_transaction,o=>o.id,o=>o.integration_id,o=>o.is_3d_secure,o=>o.is_auth,o=>o.is_capture,o=>o.is_refunded,o=>o.is_standalone_payment,o=>o.is_voided,o=>o.order&&o.order.id,o=>o.owner,o=>o.pending,o=>o.source_data&&o.source_data.pan,o=>o.source_data&&o.source_data.sub_type,o=>o.source_data&&o.source_data.type,o=>o.success];
+function paymobHmacInput(o){return PAYMOB_HMAC_FIELDS.map(f=>{const v=f(o);return v===undefined||v===null?"":String(v)}).join("")}
+async function hmac512Hex(key,msg){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(key),{name:"HMAC",hash:"SHA-512"},false,["sign"]);const sig=await crypto.subtle.sign("HMAC",k,new TextEncoder().encode(msg));return [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,"0")).join("")}
+function sameText(a,b){if(a.length!==b.length)return false;let x=0;for(let i=0;i<a.length;i++)x|=a.charCodeAt(i)^b.charCodeAt(i);return x===0}
+async function paymobHook(req,env){
+ if(!env.PAYMOB_HMAC)return json({error:"Not configured"},503);
+ const given=(new URL(req.url).searchParams.get("hmac")||"").toLowerCase();
+ let body;try{body=await req.json()}catch(e){return json({error:"Bad JSON"},400)}
+ const o=body&&body.obj;if(!o||String(body.type||"").toUpperCase()!=="TRANSACTION")return json({ok:true,ignored:true});
+ const expected=await hmac512Hex(env.PAYMOB_HMAC,paymobHmacInput(o));
+ if(!given||!sameText(expected,given)){console.log("paymob hook rejected: signature mismatch");return json({error:"Bad signature"},401)}
+ await payTable(env);const ord=o.order||{},src=o.source_data||{};
+ await env.DB.prepare("INSERT OR REPLACE INTO hq_payments (id,order_id,ref,amount_cents,currency,success,pending,refunded,voided,mode,method,created_at,received_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))")
+  .bind(String(o.id),String(ord.id||""),String(ord.merchant_order_id||o.special_reference||""),Number(o.amount_cents)||0,String(o.currency||""),o.success?1:0,o.pending?1:0,o.is_refunded?1:0,o.is_voided?1:0,o.is_live===true?"live":(o.is_live===false?"test":paymobMode(env)),[src.type,src.sub_type].filter(Boolean).join(" "),String(o.created_at||"")).run();
+ return json({ok:true})}
 async function zernioHook(req,env){
   await mktTables(env);const secret=await kvGet(env,"zernio_webhook_secret");if(!secret)return new Response("Not configured",{status:503});
   const raw=await req.text();const sig=(req.headers.get("X-Zernio-Signature")||"").toLowerCase();
@@ -447,6 +479,8 @@ async function api(path,req,env,user){
     const q=await env.DB.prepare("SELECT event,value,SUM(count) n FROM events WHERE day>=? GROUP BY event,value ORDER BY n DESC").bind(since).all();return json({since,days:d,rows:q.results||[]})}
   if(path==="/hq/api/zd"&&m==="GET")return json(await zdSummary(env));
   if(path==="/hq/api/status"&&m==="GET")return json(await statusReport(env));
+  if(path==="/hq/api/paymob"&&m==="GET")return json(await paymobStatus(env));
+  if(path==="/hq/api/paymob/test"&&m==="POST"){if(paymobMode(env)!=="test")return json({error:"The test button only works with Paymob test keys."},400);const name=String(user.name||"Amr").split(" ");return json(await paymobIntention(env,{amountCents:1000,name:"HQ test payment",description:"Test payment from ZD Business HQ",email:user.email,first:name[0]||"Amr",last:name.slice(1).join(" ")||"El Hadeka",ref:"hqtest-"+Date.now(),redirect:ORIGIN+"/hq/home/?paymob=done"}))}
   if(path==="/hq/api/briefing"&&(m==="GET"||m==="POST")){try{return json(await briefing(env,m==="POST"))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/ask"&&m==="POST"){const b=await req.json().catch(()=>({}));const q=String(b.q||"").trim().slice(0,500);if(!q)return json({error:"Type a question."},400);try{return json(await askHQ(env,q))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/export"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs ORDER BY col,id").all()).results||[];await audit(env,user.email,"all","export","exported everything");
@@ -497,6 +531,7 @@ export async function onRequest(context) {
   // Keep social and newsletter numbers synced in the background whenever the HQ is opened (at most every 6 hours per source).
   if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil){context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));context.waitUntil(dailyBackup(env).catch(e=>console.log("hq backup failed",String(e&&e.message||e))))}
   if(path==="/hq/hook/zernio" && req.method==="POST")return zernioHook(req,env);
+  if(path==="/hq/hook/paymob" && req.method==="POST")return paymobHook(req,env);
   if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
   if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
   const user=await sessionUser(req,env);
