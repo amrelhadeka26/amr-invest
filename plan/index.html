@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Money plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm, plain, one person in a tight spot; three answers, nothing else
+   IDEA: a one-page worksheet filled in together during the session
+   PICTURE: three answer cards on top (monthly left, debt-free date, wedding), loans as cards with a payoff bar
+   COLOUR and TYPE: ink #1D1D1F and white; red = short/loss, green = on track; Rubik
+   LAYOUT: one column, max 760px: answers, what to fix, then steps 1-2-3 */
+:root{color-scheme:light dark;--bg:light-dark(#fff,#1D1D1F);--ink:light-dark(#1D1D1F,#fff);--line:light-dark(#e3e3e5,#3a3a3d);--soft:light-dark(#f6f6f7,#28282b);--red:light-dark(#DC2626,#f87171);--green:light-dark(#15803D,#4ade80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Rubik,system-ui,sans-serif;overflow-x:clip}
+main{max-width:760px;margin:0 auto;padding:clamp(20px,4vw,48px) 16px 64px}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.08;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0 0 22px;opacity:.75}
+.answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.a{border:2px solid var(--ink);border-radius:16px;padding:16px}
+.a .k{font-size:14px;opacity:.75}
+.a .v{font-size:clamp(24px,4vw,30px);font-weight:700;line-height:1.15;margin:4px 0}
+.a .s{font-size:14px}
+.red{color:var(--red)}.green{color:var(--green)}
+.fix{margin:12px 0 8px}
+.bd{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:15px;line-height:1.7}
+.bd b{white-space:nowrap}
+.tg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:6px}
+.tg button{display:flex;flex-direction:column;align-items:flex-start;padding:10px 14px;min-height:56px;text-align:left;border-color:var(--line)}
+.tg button small{font-size:13px;font-weight:400;opacity:.7}
+.tg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tot{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--soft);display:grid;gap:4px}
+.tot div{display:flex;justify-content:space-between;gap:10px}.tot div span:last-child{font-weight:700;white-space:nowrap}
+.tot .steps{display:block;border-top:1px solid var(--line);margin-top:6px;padding-top:8px;line-height:1.7}.tot .steps div{display:block}.tot .steps .w{font-size:14px;opacity:.8}
+.opt{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:10px;cursor:pointer}.opt input{width:20px;height:20px;accent-color:var(--ink)}
+.phs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ph{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.ph .t{font-weight:700}.ph .d{font-size:13px;opacity:.7;margin-bottom:6px}
+.ph .p{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:3px 0;border-bottom:1px dashed var(--line)}.ph .p:last-child{border:0}.ph .p span:last-child{white-space:nowrap;font-weight:500}
+.gap{margin-top:14px;border:2px solid var(--red);border-radius:14px;padding:14px 16px}
+.gap ol{margin:8px 0 0;padding-left:20px}.gap li{margin:6px 0}
+@media(max-width:620px){.phs{grid-template-columns:minmax(0,1fr)}}
+.lbl{border-bottom:1.5px dashed var(--line);outline:none;padding-bottom:1px;cursor:text}
+.lbl:hover,.lbl:focus{border-bottom-color:var(--ink)}
+h1 .lbl::after{font-size:18px}
+.lbl::after{content:" ✎";font-size:12px;opacity:.4}
+.lbl:focus::after{content:""}
+.plan{list-style:none;padding:0;margin:0;counter-reset:st}
+.plan li{counter-increment:st;position:relative;padding:12px 0 14px 44px;border-bottom:1px solid var(--line)}
+.plan li::before{content:counter(st);position:absolute;left:0;top:12px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:14px}
+.plan .t{font-weight:700}.plan .p{display:flex;justify-content:space-between;gap:10px;font-size:15px;padding:2px 0}.plan .p span:last-child{white-space:nowrap;font-weight:500}
+.plan .w{font-size:14px;opacity:.75;margin-top:4px}
+.flag{padding:10px 14px;border-radius:12px;background:var(--soft);margin:8px 0;border-left:4px solid var(--red)}
+.flag.ok{border-left-color:var(--green)}
+section{margin-top:34px}
+h2{font-size:20px;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+h2 b{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:15px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) 170px;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.f span small{display:block;font-size:13px;opacity:.65}
+.in{position:relative}
+.in input{width:100%;font:500 17px Rubik,sans-serif;padding:10px 46px 10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);text-align:right;min-height:46px}
+.in i{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;font-size:13px;opacity:.6;pointer-events:none}
+input:focus,button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-color:var(--ink)}
+.loan{border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.lh{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.lh input{flex:1;font:700 17px Rubik,sans-serif;border:0;border-bottom:1.5px dashed var(--line);background:none;color:var(--ink);padding:6px 0;min-height:40px}
+.lg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pay .lg{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.lg label{font-size:13px;opacity:.75}
+.bar{height:8px;background:var(--soft);border-radius:8px;margin-top:12px;overflow:hidden}
+.bar div{height:100%;background:var(--green);border-radius:8px}
+.when{font-size:15px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+button{font:500 15px Rubik,sans-serif;min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--ink);background:var(--bg);color:var(--ink);cursor:pointer}
+.x{border:0;font-size:22px;padding:0 10px;opacity:.6}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.note{font-size:13px;opacity:.65;margin-top:26px}
+@media(max-width:620px){.answers{grid-template-columns:minmax(0,1fr)}.f{grid-template-columns:minmax(0,1fr) 150px}.lg{grid-template-columns:repeat(2,minmax(0,1fr))}.loan:not(.pay) .lg>div:first-child{grid-column:span 2}}
+@media(prefers-reduced-motion:no-preference){.bar div{transition:width .4s ease}}
+</style></head><body><main>
+<h1>Money plan for <span class="lbl" contenteditable="true" spellcheck="false" data-k="client">client name</span></h1>
+<p class="sub">Fill in the numbers together. Everything updates instantly. Tap any name with ✎ to rename it.</p>
+<div class="row" style="margin:-8px 0 18px"><button id="newc">New client</button><button id="reset">Load example</button><a href="/plan/logout" style="align-self:center;font-size:14px;color:inherit;opacity:.7;margin-left:auto">Sign out</a></div>
+
+
+
+<section><h2><b>1</b>Every month</h2>
+  <div class="f"><span><span class="lbl" contenteditable="true" spellcheck="false" data-k="inc">Salary after deductions</span></span><div class="in"><input id="inc" inputmode="numeric"><i>EGP</i></div></div>
+  <div class="f"><span><span class="lbl" contenteditable="true" spellcheck="false" data-k="inc2">Other monthly income</span><small>side work, rent, partner</small></span><div class="in"><input id="inc2" inputmode="numeric"><i>EGP</i></div></div>
+  <div class="f"><span><span class="lbl" contenteditable="true" spellcheck="false" data-k="fix">Fixed costs</span><small>rent, transport, family, bills</small></span><div class="in"><input id="fix" inputmode="numeric"><i>EGP</i></div></div>
+  <div class="f"><span><span class="lbl" contenteditable="true" spellcheck="false" data-k="liv">Living costs</span><small>food, outings, subscriptions</small></span><div class="in"><input id="liv" inputmode="numeric"><i>EGP</i></div></div>
+  <div class="tot" id="t1"></div>
+</section>
+
+<section><h2><b>2</b>Loans</h2>
+  <p class="sub" style="margin:-4px 0 12px">Use the yearly declining rate. Credit card monthly rate × 12.</p>
+  <div id="loans"></div>
+  <div class="row"><button id="add">+ Add loan</button></div>
+  <div class="tot" id="t2"></div>
+</section>
+
+<section><h2><b>3</b>Wedding</h2>
+  <div class="f"><span><span class="lbl" contenteditable="true" spellcheck="false" data-k="wsaved">Cash already saved for the wedding</span></span><div class="in"><input id="wsaved" inputmode="numeric"><i>EGP</i></div></div>
+  <p class="sub" style="margin:14px 0 10px">Each payment and when it's due (months from now).</p>
+  <div id="pays"></div>
+  <div class="row"><button id="addp">+ Add payment</button></div>
+  <div class="tot" id="t3"></div>
+  <div class="f" style="margin-top:10px"><span><span class="lbl" contenteditable="true" spellcheck="false" data-k="after">Extra monthly costs after the wedding</span><small>new rent, household bills, shared life (net of any partner income)</small></span><div class="in"><input id="after" inputmode="numeric"><i>EGP</i></div></div>
+</section>
+
+<section><h2><b>4</b>Your results</h2>
+<div class="answers">
+  <div class="a"><div class="k">Left each month</div><div class="v" id="aLeft"></div><div class="s" id="sLeft"></div></div>
+  <div class="a"><div class="k">Debt-free</div><div class="v" id="aFree"></div><div class="s" id="sFree"></div></div>
+  <div class="a"><div class="k">Wedding</div><div class="v" id="aWed"></div><div class="s" id="sWed"></div></div>
+</div>
+<div class="bd" id="bd"></div>
+<div class="fix" id="flags"></div>
+<h2 style="margin-top:26px">His monthly budget, phase by phase</h2>
+<div class="phs" id="phs"></div>
+<div id="gapbox"></div>
+<h2 style="margin-top:26px">Loan payment plan, step by step</h2>
+<div class="tg" role="group" aria-label="Payoff order"><button data-m="rate">Cheapest overall<small>highest interest first</small></button><button data-m="small">Quickest win<small>smallest balance first</small></button></div>
+<div class="bd" id="cmp" style="margin-bottom:6px"></div>
+<ol class="plan" id="plan"></ol>
+</section>
+
+<p class="note">How it works: until the last wedding payment, the wedding fund gets what it needs each month first (any money left in it then goes to the loans); after it, the extra costs come out first; everything else left goes to one loan at a time (highest interest first, or smallest balance first if you pick Quickest win), and each paid-off loan's instalment moves to the next. A planning estimate, not financial advice; the bank's figures are final. Numbers are saved only in this browser, never sent anywhere. Start each client with "New client".</p>
+</main>
+<script>
+{
+const $=id=>document.getElementById(id);
+const SAMPLE={inc:25000,inc2:0,fix:6000,liv:4500,wsaved:60000,after:3000,
+  pays:[{n:'Venue deposit',a:30000,m:1},{n:'Gold (shabka)',a:80000,m:3},{n:'Furniture',a:70000,m:6},{n:'Venue balance and photos',a:40000,m:10,o:true},{n:'Honeymoon',a:30000,m:10,o:true}],
+  loans:[{n:'Credit card',b:35000,r:42,p:2500},{n:'Personal loan',b:120000,r:26,p:5200},{n:'Car',b:60000,r:18,p:2400}]};
+const BLANK={inc:0,inc2:0,fix:0,liv:0,wsaved:0,after:0,loans:[{n:'Loan 1',b:0,r:0,p:0}],pays:[{n:'Wedding payment 1',a:0,m:1}],labels:{}};
+const F=['inc','inc2','fix','liv','wsaved','after'];
+let S;try{S=JSON.parse(localStorage.getItem('ysPlan5'))}catch(e){}
+if(!S)S=structuredClone(SAMPLE);
+const num=v=>+String(v).replace(/[^\d.]/g,'')||0;
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const egp=n=>'EGP '+fmt(n);
+const span=m=>{const y=Math.floor(m/12),r=m%12;return[y?y+(y>1?' years':' year'):'',r?r+(r>1?' months':' month'):''].filter(Boolean).join(' ')||'now'};
+const when=m=>{const d=new Date();d.setMonth(d.getMonth()+m);return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'})};
+function sim(loans,extraFor,meth){
+  const L=loans.map(l=>({...l,b0:l.b,b:l.b,r:l.r/1200,done:null}));let interest=0,m=0;const hist=[null];
+  while(L.some(l=>l.b>0.5)&&m<600){m++;let pool=extraFor(m);
+    const paid=L.map(()=>0);
+    L.forEach((l,k)=>{if(l.b<=0.5)return;const i=l.b*l.r;interest+=i;l.b+=i;const x=Math.min(l.p,l.b);l.b-=x;paid[k]+=x});
+    pool+=L.filter(l=>l.b<=0.5).reduce((a,l)=>a+l.p,0);
+    for(const k of L.map((l,k)=>k).sort((a,b)=>meth==='small'?L[a].b-L[b].b:L[b].r-L[a].r)){const l=L[k];if(l.b<=0.5||pool<=0)continue;const x=Math.min(pool,l.b);l.b-=x;pool-=x;paid[k]+=x}
+    hist.push(paid);
+    for(const l of L)if(l.b<=0.5&&l.done===null)l.done=m}
+  return{m:L.some(l=>l.b>0.5)?Infinity:m,interest,L,hist}}
+function readPays(){return[...document.querySelectorAll('.pay')].map(c=>{const i=c.querySelectorAll('input');return{n:i[0].value,a:num(i[1].value),m:Math.round(num(i[2].value)),o:i[3].checked}})}
+function readLoans(){return[...document.querySelectorAll('.loan:not(.pay)')].map(c=>{const i=c.querySelectorAll('input');return{n:i[0].value,b:num(i[1].value),r:num(i[2].value),p:num(i[3].value)}})}
+function render(){
+  S.meth=S.meth||'rate';for(const k of F)S[k]=num($(k).value);S.loans=readLoans();S.pays=readPays();
+  S.labels=S.labels||{};try{localStorage.setItem('ysPlan5',JSON.stringify(S))}catch(e){}
+  const income=S.inc+S.inc2,inst=S.loans.reduce((a,l)=>a+l.p,0),ess=S.fix+S.liv,left=income-ess-inst,sur=Math.max(left,0);
+  const pays=S.pays.map((p,i)=>({...p,i})).sort((a,b)=>a.m-b.m),wm=pays.length?Math.max(...pays.map(p=>p.m)):0,wtot=pays.reduce((a,p)=>a+p.a,0);
+  let need=0,cum=0;for(const p of pays){cum+=p.a;if(p.m>0)need=Math.max(need,(cum-S.wsaved)/p.m)}
+  const toWed=Math.min(sur,Math.max(need,0));let bal=S.wsaved,gap=0,first=null;const st={};
+  for(let m=0;m<=wm;m++){if(m>0)bal+=toWed;for(const p of pays.filter(p=>p.m===m)){if(bal>=p.a){bal-=p.a;st[p.i]=0}else{st[p.i]=p.a-bal;gap+=p.a-bal;bal=0;if(!first)first=p}}}
+  const leftover=bal,left2=left-S.after,sur2=Math.max(left2,0);
+  const ex=m=>(m<=wm?sur-toWed:sur2)+(m===Math.max(wm,1)?leftover:0);
+  const PA=sim(S.loans,ex,'rate'),PB=sim(S.loans,ex,'small'),P=S.meth==='small'?PB:PA,B=sim(S.loans,()=>0,'rate');
+  document.querySelectorAll('.tg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===(S.meth||'rate')));
+  const firstDone=X=>Math.min(...X.L.map(l=>l.done||Infinity));
+  $('cmp').innerHTML=S.loans.length>1&&isFinite(PA.m)&&isFinite(PB.m)?'<b>Cheapest overall:</b> debt-free '+when(PA.m)+', interest '+egp(PA.interest)+', first loan gone '+when(firstDone(PA))+'<br><b>Quickest win:</b> debt-free '+when(PB.m)+', interest '+egp(PB.interest)+', first loan gone '+when(firstDone(PB))+(Math.abs(PB.interest-PA.interest)>1?'<br>Quickest win costs <b>'+egp(PB.interest-PA.interest)+'</b> more interest.':'<br>Same order here: both methods give the same result.'):'';
+  $('aLeft').textContent=egp(left);$('aLeft').className='v '+(left<0?'red':'green');
+  $('sLeft').innerHTML=(left<0?'Spending more than earning':'now')+' · after the wedding: <b class="'+(left2<0?'red':'')+'">'+egp(left2)+'</b>';
+  $('aFree').className='v';
+  if(!S.loans.some(l=>l.b>0)){$('aFree').textContent='No loans';$('sFree').textContent=''}
+  else if(isFinite(P.m)){$('aFree').textContent=when(P.m);$('sFree').textContent='in '+span(P.m)+(B.interest-P.interest>1?' · saves '+egp(B.interest-P.interest)+' interest':'')}
+  else{$('aFree').textContent='Not yet';$('aFree').className='v red';$('sFree').textContent='instalments don’t cover the interest'}
+  $('aWed').textContent=gap>0?'Short '+egp(gap):'Covered';$('aWed').className='v '+(gap>0?'red':'green');
+  $('sWed').textContent=gap>0?'first gap: '+first.n+', '+when(first.m):(pays.length?'puts aside '+egp(toWed)+'/month until '+when(wm):'no payments added');
+  const pc=document.querySelectorAll('.pay');S.pays.forEach((p,i)=>{const c=pc[i];if(!c)return;const sh=st[i]||0;
+    c.querySelector('.when').innerHTML=(sh>0?'<span class="red">Short '+egp(sh)+'</span>':'<span class="green">Covered</span>')+' · due <b>'+(p.m?when(p.m):'now')+'</b>'});
+  const cards=document.querySelectorAll('.loan:not(.pay)'),tot=isFinite(P.m)?P.m:600;
+  P.L.forEach((l,i)=>{const c=cards[i];if(!c)return;
+    c.querySelector('.when').innerHTML=l.done?'Paid off <b>'+when(l.done)+'</b> · '+span(l.done):(l.b0?'<span class="red">Not paid off: raise the instalment</span>':'')});
+  $('bd').innerHTML='<b>Now:</b> '+egp(income)+' income − '+egp(ess)+' costs − '+egp(inst)+' instalments = <b class="'+(left<0?'red':'green')+'">'+egp(left)+'</b><br><b>After the wedding:</b> '+egp(left)+' − '+egp(S.after)+' new costs = <b class="'+(left2<0?'red':'green')+'">'+egp(left2)+'</b><br><b>Wedding:</b> '+egp(S.wsaved)+' saved + '+egp(toWed)+' × '+wm+' months = '+egp(S.wsaved+toWed*wm)+' vs '+egp(wtot)+' in payments';
+  if(isFinite(P.m)&&S.loans.some(l=>l.b>0)){
+    const ev=[...new Set([0,Math.min(wm,P.m),...P.L.map(l=>l.done).filter(d=>d)])].filter(e=>e<P.m||e===0).sort((a,b)=>a-b);ev.push(P.m);
+    const steps=[];for(let i=0;i<ev.length-1;i++){const a=ev[i]+1,b=ev[i+1];if(a>b)continue;const row=P.hist[a];if(!row)continue;
+      const lines=P.L.map((l,k)=>({n:l.n||'Loan '+(k+1),v:row[k],x:row[k]-l.p,d:l.done})).filter(x=>x.v>0.5);
+      const fin=P.L.filter(l=>l.done===b).map(l=>l.n);
+      steps.push('<li><div class="t">'+when(a)+(b>a?' → '+when(b):'')+' <span style="font-weight:400;opacity:.7">('+(b-a+1)+(b-a+1>1?' months':' month')+')</span></div>'+
+        lines.map(x=>'<div class="p"><span>'+x.n+(x.x>1?' <b class="green">+ extra '+egp(x.x)+'</b>':'')+'</span><span>'+egp(x.v)+' / month</span></div>').join('')+
+        '<div class="w">'+(b<=wm&&wm>0?'Extra money goes to the wedding fund first. ':'')+(fin.length?'✓ '+fin.join(', ')+' paid off in '+when(b)+'. ':'')+'</div></li>')}
+    $('plan').innerHTML=steps.join('')+'<li><div class="t">Debt-free '+when(P.m)+'</div><div class="w">Keep paying the same total into savings: first the emergency fund, then investing.</div></li>';
+  }else $('plan').innerHTML='<li><div class="t">No plan yet</div><div class="w">'+(S.loans.some(l=>l.b>0)?'Instalments don’t cover the interest: raise them first.':'Add his loans in step 2.')+'</div></li>';
+  const T=(id,rows)=>$(id).innerHTML=rows.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('');
+  T('t1',[['Total income',egp(income)],['Total costs',egp(ess)]]);
+  T('t2',[['Total debt',egp(S.loans.reduce((a,l)=>a+l.b,0))],['Total instalments',egp(inst)+' / month']]);
+  const have=S.wsaved+toWed*wm,sg=Math.max(wtot-have,0);
+  T('t3',[['Total wedding cost',egp(wtot)],['Already saved',egp(S.wsaved)],['Still needed',egp(Math.max(wtot-S.wsaved,0))]]);
+  $('t3').innerHTML+='<div class="steps"><div><b>1.</b> He will have by the wedding: '+fmt(S.wsaved)+' + ('+fmt(toWed)+' × '+wm+(wm===1?' month':' months')+') = <b>'+egp(have)+'</b></div>'+
+    '<div><b>2.</b> '+(wtot>have?'Short: '+fmt(wtot)+' − '+fmt(have)+' = <b class="red">'+egp(sg)+'</b>':'Covered: '+fmt(have)+' − '+fmt(wtot)+' = <b class="green">'+egp(have-wtot)+' left over</b> (goes to the loans)')+'</div>'+
+    (gap>sg+1?'<div class="w">Timing: early payments come before the money is saved, so the short amount rises to <b class="red">'+egp(gap)+'</b>. Move a payment later to fix it.</div>':'')+'</div>';
+  {const L1=(a,b)=>'<div class="p"><span>'+a+'</span><span>'+b+'</span></div>';
+   const ph=[];
+   if(wm>0)ph.push('<div class="ph"><div class="t">Until the wedding</div><div class="d">'+when(1)+' → '+when(wm)+'</div>'+L1('Income',egp(income))+L1('Costs',egp(ess))+L1('Loan instalments',egp(inst))+L1('Wedding fund',egp(toWed))+(sur-toWed>1?L1('Extra to loans',egp(sur-toWed)):'')+(left<0?L1('<span class="red">Missing</span>','<span class="red">'+egp(-left)+'</span>'):'')+'</div>');
+   const dfree=isFinite(P.m)&&S.loans.length;
+   if(!dfree||P.m>wm)ph.push('<div class="ph"><div class="t">'+(wm>0?'After the wedding':'Paying off loans')+'</div><div class="d">'+when(wm+1)+(dfree?' → '+when(P.m):'')+'</div>'+L1('Income',egp(income))+L1('Costs'+(S.after&&wm>0?' (incl. new)':''),egp(ess+(wm>0?S.after:0)))+L1('Loans (all that’s left)',egp(Math.max(income-ess-(wm>0?S.after:0),0)))+'<div class="p"><span style="opacity:.75">'+egp(inst)+' instalments + '+egp(Math.max(income-ess-(wm>0?S.after:0)-inst,0))+' extra; follow the step-by-step plan below</span><span></span></div></div>');
+   const free=income-ess-S.after,emT=3*(ess+S.after);
+   ph.push('<div class="ph"><div class="t">Debt-free</div><div class="d">from '+(dfree?when(P.m+1):'—')+'</div>'+L1('Income',egp(income))+L1('Costs',egp(ess+S.after))+L1('Emergency fund',egp(Math.max(free,0)))+'<div class="p"><span style="opacity:.75">until it reaches '+egp(emT)+' (3 months), then start investing</span><span></span></div></div>');
+   $('phs').innerHTML=ph.join('');
+   const G=Math.max(gap,sg);
+   if(G>0){const opt=pays.filter(p=>p.o).reduce((a,p)=>a+p.a,0),perM=wm>0?G/wm:G,mNeed=sur>0?Math.ceil(Math.max(wtot-S.wsaved,0)/sur):Infinity;
+     const o=[];
+     if(isFinite(mNeed)&&mNeed>wm)o.push('<b>Move the wedding</b> to '+when(mNeed)+' ('+(mNeed-wm)+' months later), keeping the same budget.');
+     o.push(perM<=S.liv*0.4?'<b>Spend '+egp(perM)+' less a month</b> on living costs until the wedding ('+egp(S.liv)+' → '+egp(S.liv-perM)+').':'<b>Cutting living costs alone can’t close it:</b> it would need '+egp(perM)+' less a month.');
+     if(opt>0)o.push('<b>Cut or downsize the optional items</b> (worth '+egp(opt)+'): '+(opt>=G?'that alone closes the gap.':'closes '+Math.round(opt/G*100)+'% of it.'));
+     o.push('<b>Family help</b> of '+egp(G)+' before '+when(first?first.m:wm)+'.');
+     const cut=Math.round(S.liv*0.15/100)*100,g2=Math.max(G-opt-cut*wm,0),extraM=g2>0&&(sur+cut)>0?Math.ceil(g2/(sur+cut)):0;
+     o.push('<b>A realistic mix:</b> '+(opt>0?'drop the optional items ('+egp(opt)+'), ':'')+'spend '+egp(cut)+' less a month (−15% living costs)'+(g2>0?', and move the wedding '+extraM+' month'+(extraM>1?'s':'')+' later ('+when(wm+extraM)+').':'. That closes the gap with no new loan.'));
+     $('gapbox').innerHTML='<div class="gap"><b>How to close the '+egp(G)+' wedding gap without a loan</b><ol>'+o.map(x=>'<li>'+x+'</li>').join('')+'</ol></div>';
+   }else $('gapbox').innerHTML='';}
+  const f=[];
+  if(left<0)f.push('Spending is '+egp(-left)+' a month more than income. Cut one cost and add one income first.');
+  if(income>0&&inst/income>0.5)f.push('Instalments take '+Math.round(inst/income*100)+'% of income. Talk to the lenders about rescheduling.');
+  if(left>=0&&left2<0)f.push('After the wedding, costs will be '+egp(-left2)+' a month more than income. Plan the new household budget before the wedding.');
+  if(gap>0)f.push('The wedding is '+egp(gap)+' short, starting with '+first.n+' ('+when(first.m)+'). Move a payment later, cut it, or ask family, but no new loan.');
+  $('flags').innerHTML=(f.length?f.map(t=>'<div class="flag">'+t+'</div>'):['<div class="flag ok">On track. No new debt needed.</div>']).join('');
+}
+function loanCard(l){const c=document.createElement('div');c.className='loan';
+  c.innerHTML=`<div class="lh"><input value="${(l.n||'').replace(/"/g,'&quot;')}" aria-label="Loan name"><button class="x" aria-label="Remove loan">×</button></div>
+  <div class="lg"><div><label>Amount left</label><div class="in"><input inputmode="numeric" value="${fmt(l.b)}"><i>EGP</i></div></div>
+  <div><label>Interest / year</label><div class="in"><input inputmode="decimal" value="${l.r}"><i>%</i></div></div>
+  <div><label>Instalment / month</label><div class="in"><input inputmode="numeric" value="${fmt(l.p)}"><i>EGP</i></div></div></div>
+  <div class="when"></div>`;
+  c.querySelector('.x').onclick=()=>{c.remove();render()};$('loans').appendChild(c)}
+function payCard(p){const c=document.createElement('div');c.className='loan pay';
+  c.innerHTML=`<div class="lh"><input value="${(p.n||'').replace(/"/g,'&quot;')}" aria-label="Payment name"><button class="x" aria-label="Remove payment">×</button></div>
+  <div class="lg"><div><label>Amount</label><div class="in"><input inputmode="numeric" value="${fmt(p.a)}"><i>EGP</i></div></div>
+  <div><label>Due in</label><div class="in"><input inputmode="numeric" value="${p.m}"><i>mo</i></div></div></div>
+  <label class="opt"><input type="checkbox" ${p.o?'checked':''}> Optional: can be cut or downsized</label>
+  <div class="when"></div>`;
+  c.querySelector('.x').onclick=()=>{c.remove();render()};$('pays').appendChild(c)}
+function saveLabels(){S.labels={};document.querySelectorAll('.lbl').forEach(e=>{S.labels[e.dataset.k]=e.textContent.trim()});try{localStorage.setItem('ysPlan5',JSON.stringify(S))}catch(e){}}
+const DEF={};document.querySelectorAll('.lbl').forEach(e=>DEF[e.dataset.k]=e.textContent);
+document.querySelectorAll('.lbl').forEach(e=>{e.addEventListener('input',saveLabels);e.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();e.blur()}});e.addEventListener('blur',()=>{if(!e.textContent.trim())e.textContent=DEF[e.dataset.k];saveLabels()})});
+function load(){document.querySelectorAll('.lbl').forEach(e=>{e.textContent=(S.labels&&S.labels[e.dataset.k])||DEF[e.dataset.k]});for(const k of F)$(k).value=fmt(S[k]);$('loans').innerHTML='';S.loans.forEach(loanCard);$('pays').innerHTML='';(S.pays||[]).forEach(payCard);render()}
+document.addEventListener('input',e=>{if(e.target.tagName==='INPUT')render()});document.addEventListener('change',e=>{if(e.target.type==='checkbox')render()});
+document.addEventListener('focusout',e=>{const t=e.target;if(t.tagName==='INPUT'&&t.inputMode==='numeric'&&t.value)t.value=fmt(num(t.value))});
+$('addp').onclick=()=>{payCard({n:'New payment',a:0,m:1});render()};
+document.querySelectorAll('.tg button').forEach(b=>b.onclick=()=>{S.meth=b.dataset.m;render()});
+$('add').onclick=()=>{loanCard({n:'New loan',b:0,r:0,p:0});render()};
+$('reset').onclick=()=>{S=structuredClone(SAMPLE);S.labels={client:'example'};load()};
+{let armed=0;$('newc').onclick=()=>{if(!armed){armed=1;$('newc').textContent='Tap again to clear everything';setTimeout(()=>{armed=0;$('newc').textContent='New client'},3000);return}armed=0;$('newc').textContent='New client';S=structuredClone(BLANK);load()}}
+load();
+}
+</script></body></html>

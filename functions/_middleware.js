@@ -55,12 +55,34 @@ async function exchange(code,env) {
   if(!r.ok)throw Error("Google token exchange failed: "+r.status);
   return r.json();
 }
-async function googleProfile(access_token) {
+async function googleProfile(access_token,anyAccount=false) {
   const r=await fetch("https://openidconnect.googleapis.com/v1/userinfo",{headers:{Authorization:"Bearer "+access_token}});
   if(!r.ok)throw Error("Google identity verification failed");
   const u=await r.json();
-  if(!ALLOWED_ACCOUNTS.has(u.email) || u.email_verified!==true || !u.sub)throw Error("This Google account is not authorized");
+  if((!anyAccount&&!ALLOWED_ACCOUNTS.has(u.email)) || u.email_verified!==true || !u.sub)throw Error("This Google account is not authorized");
   return u;
+}
+// Money plan tool (/plan): open to the owners plus paying clients listed in plan_clients, each for 90 days.
+const PLAN_SESSION="zd_plan_session";
+const PLAN_DAYS=90;
+const cookieP=(n,v,maxAge)=>n+"="+encodeURIComponent(v)+"; Path=/plan; HttpOnly; Secure; SameSite=Lax; Max-Age="+maxAge;
+async function planTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS plan_clients(email TEXT PRIMARY KEY,name TEXT,added_at TEXT NOT NULL,expires_at TEXT NOT NULL)").run()}
+async function planAllowed(env,email){if(ALLOWED_ACCOUNTS.has(email))return {owner:true};await planTable(env);
+  const r=await env.DB.prepare("SELECT name,expires_at FROM plan_clients WHERE email=? AND expires_at>datetime('now')").bind(String(email||"").toLowerCase()).first();return r||null}
+async function planUser(req,env){const value=cookies(req)[PLAN_SESSION]||"";const i=value.lastIndexOf(".");if(i<0)return null;const p=value.slice(0,i);
+  if(!await verifySig("session|"+p,value.slice(i+1),env.GOOGLE_CLIENT_SECRET||""))return null;
+  try{const d=JSON.parse(td.decode(unb64(p)));return d.exp>Date.now()/1000&&d.sub?d:null}catch{return null}}
+function planPage(title,msg,status){return new Response('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Money plan</title><style>body{margin:0;font:17px/1.6 system-ui,sans-serif;color:#1D1D1F;background:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}main{max-width:460px}h1{font-size:28px;line-height:1.15}a{color:#1D1D1F;font-weight:600}</style></head><body><main><h1>'+title+'</h1><p>'+msg+'</p></main></body></html>',{status,headers:{...htmlHeaders,"Content-Type":"text/html; charset=utf-8"}})}
+async function planRoute(context,env,req,path){
+  if(path==="/plan/login")return startOAuth("plan",env);
+  const u=await planUser(req,env);
+  if(!u)return redirect(ORIGIN+"/plan/login");
+  if(path==="/plan/logout")return redirect(ORIGIN+"/",[cookieP(PLAN_SESSION,"",0)]);
+  const ok=await planAllowed(env,u.email);
+  if(!ok)return planPage("Your access has ended","Your 3 months of access to the money plan tool are over, or this Google account ("+u.email.replace(/[<>&"]/g,"")+") isn’t on the list. To renew, book a follow-up session with Amr: <a href=\"https://invest.amrelhadeka.com/\">invest.amrelhadeka.com</a>. <br><br><a href=\"/plan/logout\">Sign in with another account</a>",403);
+  if(path==="/plan")return redirect(ORIGIN+"/plan/");
+  const response=await context.next();const headers=new Headers(response.headers);for(const [k,v] of Object.entries(htmlHeaders))headers.set(k,v);
+  return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
 }
 async function aesKey(env) {
   const dig=await crypto.subtle.digest("SHA-256",te.encode("zd-hq-calendar-tokens|"+env.GOOGLE_CLIENT_SECRET));
@@ -429,6 +451,15 @@ async function api(path,req,env,user){
   if(path==="/hq/api/ask"&&m==="POST"){const b=await req.json().catch(()=>({}));const q=String(b.q||"").trim().slice(0,500);if(!q)return json({error:"Type a question."},400);try{return json(await askHQ(env,q))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/export"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs ORDER BY col,id").all()).results||[];await audit(env,user.email,"all","export","exported everything");
     return new Response(JSON.stringify({exportedAt:new Date().toISOString(),docs:r.map(x=>({col:x.col,id:x.id,updatedAt:x.updated_at,data:JSON.parse(x.data)}))},null,1),{headers:{...htmlHeaders,"Content-Type":"application/json; charset=utf-8","Content-Disposition":`attachment; filename="zd-hq-export-${new Date().toISOString().slice(0,10)}.json"`}})}
+  if(path==="/hq/api/plan-clients"){await planTable(env);
+    if(m==="GET"){const r=(await env.DB.prepare("SELECT email,name,added_at,expires_at, expires_at>datetime('now') AS active FROM plan_clients ORDER BY expires_at DESC").all()).results||[];return json({days:PLAN_DAYS,clients:r})}
+    const b=await readBody(req,4000);const email=String(b.email||"").trim().toLowerCase();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||email.length>200)return json({error:"Enter a valid email"},400);
+    if(m==="POST"){const name=String(b.name||"").trim().slice(0,120);
+      await env.DB.prepare("INSERT INTO plan_clients(email,name,added_at,expires_at) VALUES(?,?,datetime('now'),datetime('now','+"+PLAN_DAYS+" days')) ON CONFLICT(email) DO UPDATE SET name=COALESCE(NULLIF(excluded.name,''),plan_clients.name),expires_at=excluded.expires_at").bind(email,name).run();
+      await audit(env,user.email,"plan_clients",email,"grant 90 days",name);return json({ok:true})}
+    if(m==="DELETE"){await env.DB.prepare("DELETE FROM plan_clients WHERE email=?").bind(email).run();await audit(env,user.email,"plan_clients",email,"removed","");return json({ok:true})}
+    return json({error:"Method not allowed"},405)}
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
   return json({error:"Unknown HQ API route"},404);
 }
@@ -436,11 +467,14 @@ async function callback(req,env) {
   const url=new URL(req.url);
   const v=cookies(req)[OAUTH_NAME]||"";
   const [mode,state,sig]=v.split(".");
-  if(!["login","calendar"].includes(mode)||!state||url.searchParams.get("state")!==state||!await verifySig("oauth|"+mode+"."+state,sig,env.GOOGLE_CLIENT_SECRET))return new Response("Invalid or expired Google sign-in request",{status:403,headers:htmlHeaders});
+  if(!["login","calendar","plan"].includes(mode)||!state||url.searchParams.get("state")!==state||!await verifySig("oauth|"+mode+"."+state,sig,env.GOOGLE_CLIENT_SECRET))return new Response("Invalid or expired Google sign-in request",{status:403,headers:htmlHeaders});
   if(!url.searchParams.has("code"))return new Response("Google authorization was cancelled",{status:400,headers:htmlHeaders});
   try {
     const tok=await exchange(url.searchParams.get("code"),env);
-    const profile=await googleProfile(tok.access_token);
+    const profile=await googleProfile(tok.access_token,mode==="plan");
+    if(mode==="plan"){const em=String(profile.email).toLowerCase();const ok=await planAllowed(env,em);
+      if(!ok)return planPage("This account isn’t on the list","The money plan tool is for clients of Amr’s 1-on-1 sessions. If you booked a session, sign in with the same Google email you gave Amr, or ask him to add this one: "+em.replace(/[<>&"]/g,"")+".<br><br><a href=\"/plan/login\">Try another Google account</a>",403);
+      return redirect(ORIGIN+"/plan/",[cookieP(PLAN_SESSION,await signSession(profile.sub,em,env.GOOGLE_CLIENT_SECRET),604800),cookie(OAUTH_NAME,"",0)])}
     if(mode==="calendar"){
       if(profile.email!==CALENDAR_MANAGER)return redirect(ORIGIN+"/hq/home/?calendar=owner-only",[cookie(OAUTH_NAME,"",0),cookie(SESSION_NAME,await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET),604800)]);
       const prev=await calendarRow(env);
@@ -456,8 +490,10 @@ async function callback(req,env) {
 export async function onRequest(context) {
   const {request:req,env}=context;
   const url=new URL(req.url),path=url.pathname;
-  if(!(path==="/hq" || path.startsWith("/hq/")))return context.next();
+  const isPlan=path==="/plan"||path.startsWith("/plan/");
+  if(!isPlan&&!(path==="/hq" || path.startsWith("/hq/")))return context.next();
   if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
+  if(isPlan)return planRoute(context,env,req,path);
   // Keep social and newsletter numbers synced in the background whenever the HQ is opened (at most every 6 hours per source).
   if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil){context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));context.waitUntil(dailyBackup(env).catch(e=>console.log("hq backup failed",String(e&&e.message||e))))}
   if(path==="/hq/hook/zernio" && req.method==="POST")return zernioHook(req,env);
