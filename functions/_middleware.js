@@ -460,6 +460,62 @@ async function recordSessionPayment(env,o,mode){
  const row={date:day,kind:"in",amount,category:"1-on-1 session",contact:c.name,contactId:cid||"",ref:String(o.id),note:"Paymob card payment"+(c.start?" · session "+String(c.start).slice(0,16).replace("T"," "):""),source:"paymob",deletedAt:null};
  const m=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('money',?,?,datetime('now'))").bind("pm-"+o.id,JSON.stringify(row)).run();
  if(m.meta&&m.meta.changes)await audit(env,"paymob","money","pm-"+o.id,"created","Session payment EGP "+amount)}
+// ---- Cal.com bookings -> HQ contact + payment email ----
+async function calTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_calbookings (uid TEXT PRIMARY KEY, email TEXT, name TEXT, start TEXT, status TEXT, mailed_at TEXT, created_at TEXT DEFAULT (datetime('now')))").run()}
+function calPayUrl(b){const q=new URLSearchParams({attendeeName:b.name||"",email:b.email||"",startTime:b.start||""});if(b.phone)q.set("attendeePhoneNumber",b.phone);return ORIGIN+"/pay/session/?"+q.toString()}
+function calWhen(iso,lang){try{return new Date(iso).toLocaleString(lang==="ar"?"ar-EG":"en-GB",{timeZone:"Africa/Cairo",weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})}catch(e){return iso}}
+const escH=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function calPayEmail(b){const url=escH(calPayUrl(b)),first=escH((b.name||"").split(" ")[0]),en=escH(calWhen(b.start,"en")),ar=escH(calWhen(b.start,"ar"));
+ const btn=(href,label,dark)=>`<table cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="${dark?"#1D1D1F":"#FFFFFF"}" style="background:${dark?"#1D1D1F":"#FFFFFF"};border:2px solid #1D1D1F;border-radius:10px;"><a href="${href}" target="_blank" style="display:inline-block;padding:13px 30px;color:${dark?"#FFFFFF":"#1D1D1F"};font-size:15px;font-weight:700;text-decoration:none;font-family:Helvetica,Arial,sans-serif;">${label}</a></td></tr></table>`;
+ return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Confirm your session</title></head><body style="margin:0;padding:0;background:#FFFFFF;"><table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF"><tr><td align="center" style="padding:40px 20px;"><table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:520px;font-family:Helvetica,Arial,sans-serif;color:#1D1D1F;">
+<tr><td align="center" style="padding-bottom:28px;"><a href="https://invest.amrelhadeka.com/" target="_blank"><img src="https://invest.amrelhadeka.com/assets/email-logo.png" width="56" alt="Amr El Hadeka" style="display:block;border:0;width:56px;height:auto;"></a></td></tr>
+<tr><td align="center" style="font-size:24px;line-height:32px;font-weight:700;padding-bottom:6px;">${first?first+", your":"Your"} session is reserved</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:20px;line-height:30px;font-weight:700;padding-bottom:20px;">جلستك محجوزة</td></tr>
+<tr><td align="center" style="font-size:15px;line-height:23px;padding-bottom:6px;"><b>${en}</b> (Cairo time)</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:15px;line-height:25px;padding-bottom:22px;"><b>${ar}</b> (بتوقيت القاهرة)</td></tr>
+<tr><td align="center" style="font-size:15px;line-height:23px;padding-bottom:8px;">To confirm it, please pay the session fee of <b>EGP 1,500</b>. Secure card payment by Paymob.</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:15px;line-height:25px;padding-bottom:24px;">علشان تأكد الجلسة، ادفع رسومها <b>١٬٥٠٠ جنيه</b>. الدفع بالكارت آمن عن طريق Paymob.</td></tr>
+<tr><td align="center" style="padding-bottom:12px;">${btn(url,"Pay EGP 1,500 to confirm",true)}</td></tr>
+<tr><td align="center" style="padding-bottom:28px;">${btn(url.replace("/pay/session/","/ar/pay/session/"),"ادفع وأكّد الجلسة",false)}</td></tr>
+<tr><td align="center" style="font-size:13px;line-height:20px;padding-bottom:8px;color:#424245;">Questions? Just reply to this email.</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:13px;line-height:22px;padding-bottom:24px;color:#424245;">عندك سؤال؟ رد على الإيميل ده.</td></tr>
+<tr><td align="center" style="font-size:12px;line-height:20px;padding-bottom:6px;">Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:12px;line-height:22px;padding-bottom:28px;">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</td></tr>
+<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;">Your Money, Your Future &middot; <span dir="rtl">فلوسك مستقبلك</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a></td></tr>
+</table></td></tr></table></body></html>`}
+async function sendCalPayEmail(env,b){if(!env.BREVO_API_KEY)throw new Error("BREVO_API_KEY missing");
+ const r=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{"api-key":env.BREVO_API_KEY,"Content-Type":"application/json",accept:"application/json"},body:JSON.stringify({sender:{name:"Amr El Hadeka",email:"invest@amrelhadeka.com"},replyTo:{email:"invest@amrelhadeka.com",name:"Amr El Hadeka"},to:[{email:b.email,name:b.name||b.email}],subject:"Confirm your session · أكّد جلستك",htmlContent:calPayEmail(b),tags:["session-payment"]})});
+ if(!r.ok)throw new Error("Brevo "+r.status+": "+(await r.text()).slice(0,200));}
+async function calUpsertContact(env,b,line,booked){await ensureTable(env);const email=String(b.email||"").toLowerCase();if(!email)return;
+ const f=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? AND json_extract(data,'$.deletedAt') IS NULL LIMIT 1").bind(email).first();
+ if(f){const d=JSON.parse(f.data);if((d.log||[]).some(l=>l.key===line.key))return;d.log=(d.log||[]).concat([line]);
+  if(booked&&d.type!=="Client"&&d.type!=="Partner"){d.type="Session lead";if(!["Won","Proposal sent"].includes(d.stage))d.stage="Call booked"}if(!d.phone&&b.phone)d.phone=b.phone;
+  await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),f.id).run();await audit(env,"cal.com","contacts",f.id,"updated",(d.name||email).slice(0,80))}
+ else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
+  const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now'))").bind(id,JSON.stringify(d)).run();if(ins.meta&&ins.meta.changes)await audit(env,"cal.com","contacts",id,"created",String(b.name||email).slice(0,80))}}
+async function calcomHook(req,env){
+ if(!env.CALCOM_WEBHOOK_SECRET)return json({error:"Not configured"},503);
+ const raw=await req.text();const given=(req.headers.get("x-cal-signature-256")||"").trim().toLowerCase();
+ const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(env.CALCOM_WEBHOOK_SECRET),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+ const expected=[...new Uint8Array(await crypto.subtle.sign("HMAC",k,new TextEncoder().encode(raw)))].map(x=>x.toString(16).padStart(2,"0")).join("");
+ if(!given||!sameText(expected,given)){console.log("cal.com hook rejected: signature mismatch");return json({error:"Bad signature"},401)}
+ let body;try{body=JSON.parse(raw)}catch(e){return json({error:"Bad JSON"},400)}
+ const ev=String(body.triggerEvent||"").toUpperCase(),p=body.payload||{};if(ev==="PING"||!p.uid)return json({ok:true});
+ const a=(p.attendees||[])[0]||{},rs=p.responses||{},val=x=>x&&typeof x==="object"?x.value:x;
+ const b={uid:String(p.uid),name:String(val(rs.name)||a.name||"").slice(0,80),email:String(val(rs.email)||a.email||"").toLowerCase().slice(0,120),phone:String(val(rs.attendeePhoneNumber)||a.phoneNumber||"").replace(/[^\d+]/g,"").slice(0,16),start:String(p.startTime||""),notes:String(val(rs.notes)||p.additionalNotes||"").slice(0,400)};
+ if(!b.email)return json({ok:true,ignored:"no email"});
+ await calTable(env);const day=cairoDay(),when=b.start?b.start.slice(0,16).replace("T"," ")+" UTC":"";
+ if(ev==="BOOKING_CREATED"||ev==="BOOKING_RESCHEDULED"){
+  const prev=await env.DB.prepare("SELECT uid,mailed_at FROM hq_calbookings WHERE uid=?").bind(b.uid).first();
+  await env.DB.prepare("INSERT OR IGNORE INTO hq_calbookings(uid,email,name,start,status) VALUES(?,?,?,?,?)").bind(b.uid,b.email,b.name,b.start,ev==="BOOKING_CREATED"?"booked":"rescheduled").run();
+  await calUpsertContact(env,b,{at:day,text:(ev==="BOOKING_CREATED"?"Booked on Cal.com: ":"Rescheduled on Cal.com to ")+(p.title||"session")+(when?" for "+when:"")+(b.notes?" · "+b.notes:""),key:"calcom:"+b.uid},true);
+  // Payment email only for new bookings by people who haven't already paid for this time.
+  const paid=await env.DB.prepare("SELECT 1 FROM hq_checkouts WHERE lower(email)=? AND status='paid' AND created_at>datetime('now','-30 days')").bind(b.email).first().catch(()=>null);
+  if(ev==="BOOKING_CREATED"&&!(prev&&prev.mailed_at)&&!paid){try{await sendCalPayEmail(env,b);await env.DB.prepare("UPDATE hq_calbookings SET mailed_at=datetime('now') WHERE uid=?").bind(b.uid).run()}catch(e){console.log("cal.com pay email failed",String(e.message||e))}}
+  return json({ok:true})}
+ if(ev==="BOOKING_CANCELLED"){await env.DB.prepare("UPDATE hq_calbookings SET status='cancelled' WHERE uid=?").bind(b.uid).run();
+  await calUpsertContact(env,b,{at:day,text:"Cancelled on Cal.com: "+(p.title||"session")+(when?" ("+when+")":"")+(p.cancellationReason?" · "+String(p.cancellationReason).slice(0,200):""),key:"calcom-x:"+b.uid},false);return json({ok:true})}
+ return json({ok:true,ignored:ev})}
 async function zernioHook(req,env){
   await mktTables(env);const secret=await kvGet(env,"zernio_webhook_secret");if(!secret)return new Response("Not configured",{status:503});
   const raw=await req.text();const sig=(req.headers.get("X-Zernio-Signature")||"").toLowerCase();
@@ -581,6 +637,7 @@ export async function onRequest(context) {
   if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil){context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));context.waitUntil(dailyBackup(env).catch(e=>console.log("hq backup failed",String(e&&e.message||e))))}
   if(path==="/hq/hook/zernio" && req.method==="POST")return zernioHook(req,env);
   if(path==="/hq/hook/paymob" && req.method==="POST")return paymobHook(req,env);
+  if(path==="/hq/hook/calcom" && req.method==="POST")return calcomHook(req,env);
   if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
   if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
   const user=await sessionUser(req,env);
