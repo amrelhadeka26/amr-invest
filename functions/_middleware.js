@@ -489,7 +489,7 @@ async function sendCalPayEmail(env,b){if(!env.BREVO_API_KEY)throw new Error("BRE
  if(!r.ok)throw new Error("Brevo "+r.status+": "+(await r.text()).slice(0,200));}
 async function calUpsertContact(env,b,line,booked){await ensureTable(env);const email=String(b.email||"").toLowerCase();if(!email)return;
  const f=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? ORDER BY (json_extract(data,'$.deletedAt') IS NULL) DESC LIMIT 1").bind(email).first();
- if(f){const d=JSON.parse(f.data);if((d.log||[]).some(l=>l.key===line.key)&&!d.deletedAt)return;if(d.deletedAt){d.deletedAt=null;d.restoredBy="cal.com"}if(!d.name&&b.name)d.name=b.name;if(!(d.log||[]).some(l=>l.key===line.key))d.log=(d.log||[]).concat([line]);
+ if(f){const d=JSON.parse(f.data);if(d.deletedAt&&!booked)return;if((d.log||[]).some(l=>l.key===line.key)&&!d.deletedAt)return;if(d.deletedAt){d.deletedAt=null;d.restoredBy="cal.com"}if(!d.name&&b.name)d.name=b.name;if(!(d.log||[]).some(l=>l.key===line.key))d.log=(d.log||[]).concat([line]);
   if(booked&&!d.calcomSince)d.calcomSince=cairoDay();if(booked&&d.type!=="Client"&&d.type!=="Partner"){d.type="Session lead";if(!["Won","Proposal sent"].includes(d.stage))d.stage="Call booked"}if(!d.phone&&b.phone)d.phone=b.phone;
   await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),f.id).run();await audit(env,"cal.com","contacts",f.id,"updated",(d.name||email).slice(0,80))}
  else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",calcomSince:cairoDay(),createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
