@@ -12,7 +12,7 @@ button[disabled]{opacity:.55;cursor:default}.err{color:#B42318;font-size:14px;mi
 <body><main><div class="card" style="text-align:center"><div class="top" style="justify-content:center"><img src="/assets/logo.png" alt="Amr El Hadeka"></div>
 <div id="icon" class="big" aria-hidden="true">…</div><h1 id="h">Checking your payment…</h1><p id="s" class="sub"></p><div id="act"></div></div><p class="disc">Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</p></main>
 <script>(function(){var ref=new URLSearchParams(location.search).get('ref')||'',n=0,H=document.getElementById('h'),S=document.getElementById('s'),I=document.getElementById('icon'),A=document.getElementById('act');
-function fmt(s){if(!s||isNaN(Date.parse(s)))return '';return new Date(s).toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})}
+function fmt(s){if(!s||isNaN(Date.parse(s)))return '';return new Date(s).toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit',hour12:true})}
 function tick(){fetch('/pay/api/status?ref='+encodeURIComponent(ref)).then(function(r){return r.json()}).then(function(j){
 if(j.status==='paid'){I.textContent='✓';H.textContent='Payment received. See you soon'+(j.first?', '+j.first:'')+'.';S.textContent='Your session is confirmed'+(j.start?': '+fmt(j.start):'')+'.';A.innerHTML='<a class="btn" href="/">Back to the site</a>';return}
 if(j.status==='failed'){I.textContent='✕';H.textContent='The payment didn’t go through.';S.textContent='No money was taken. You can try again.';A.innerHTML='<a class="btn" href="/pay/session/">Try again</a>';return}

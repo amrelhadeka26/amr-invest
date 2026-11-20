@@ -463,7 +463,7 @@ async function recordSessionPayment(env,o,mode){
 // ---- Cal.com bookings -> HQ contact + payment email ----
 async function calTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_calbookings (uid TEXT PRIMARY KEY, email TEXT, name TEXT, start TEXT, status TEXT, mailed_at TEXT, created_at TEXT DEFAULT (datetime('now')))").run()}
 function calPayUrl(b){const q=new URLSearchParams({attendeeName:b.name||"",email:b.email||"",startTime:b.start||""});if(b.phone)q.set("attendeePhoneNumber",b.phone);return ORIGIN+"/pay/session/?"+q.toString()}
-function calWhen(iso,lang){try{return new Date(iso).toLocaleString(lang==="ar"?"ar-EG":"en-GB",{timeZone:"Africa/Cairo",weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})}catch(e){return iso}}
+function calWhen(iso,lang){try{return new Date(iso).toLocaleString(lang==="ar"?"ar-EG":"en-GB",{timeZone:"Africa/Cairo",weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit",hour12:true})}catch(e){return iso}}
 const escH=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function calPayEmail(b){const url=escH(calPayUrl(b)),first=escH((b.name||"").split(" ")[0]),en=escH(calWhen(b.start,"en")),ar=escH(calWhen(b.start,"ar"));
  const btn=(href,label,dark)=>`<table cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="${dark?"#1D1D1F":"#FFFFFF"}" style="background:${dark?"#1D1D1F":"#FFFFFF"};border:2px solid #1D1D1F;border-radius:10px;"><a href="${href}" target="_blank" style="display:inline-block;padding:13px 30px;color:${dark?"#FFFFFF":"#1D1D1F"};font-size:15px;font-weight:700;text-decoration:none;font-family:Helvetica,Arial,sans-serif;">${label}</a></td></tr></table>`;
