@@ -74,6 +74,14 @@ button{font:500 15px Rubik,sans-serif;min-height:44px;padding:0 16px;border-radi
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .note{font-size:13px;opacity:.65;margin-top:26px}
 @media(max-width:620px){.answers{grid-template-columns:minmax(0,1fr)}.f{grid-template-columns:minmax(0,1fr) 150px}.lg{grid-template-columns:repeat(2,minmax(0,1fr))}.loan:not(.pay) .lg>div:first-child{grid-column:span 2}}
+table.mm{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mm th{font-size:12px;font-weight:500;opacity:.7;text-align:right;padding:6px 4px;border-bottom:1.5px solid var(--ink)}.mm th:first-child{text-align:left}
+.mm td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top;white-space:nowrap}
+.mm td:first-child{text-align:left;white-space:normal;font-weight:500}.mm td small{display:block;font-weight:400;font-size:12.5px;opacity:.8;line-height:1.4}
+.mm tr.hd td{background:var(--soft);font-weight:700;text-align:left;white-space:normal;font-size:13.5px}
+.mm tr.hd td span{font-weight:400;opacity:.75}
+details{margin-top:26px;border:1.5px solid var(--line);border-radius:14px;padding:4px 14px}details summary{cursor:pointer;font-weight:700;padding:10px 0;min-height:44px}
+@media print{button,.row,.tg,summary,.lbl::after{display:none!important}main{max-width:none;padding:0}details{border:0;padding:0}section{break-inside:auto}.mm tr{break-inside:avoid}}
 @media(prefers-reduced-motion:no-preference){.bar div{transition:width .4s ease}}
 </style></head><body><main>
 <h1>Money plan for <span class="lbl" contenteditable="true" spellcheck="false" data-k="client">client name</span></h1>
@@ -112,15 +120,21 @@ button{font:500 15px Rubik,sans-serif;min-height:44px;padding:0 16px;border-radi
   <div class="a"><div class="k">Debt-free</div><div class="v" id="aFree"></div><div class="s" id="sFree"></div></div>
   <div class="a"><div class="k">Wedding</div><div class="v" id="aWed"></div><div class="s" id="sWed"></div></div>
 </div>
-<div class="bd" id="bd"></div>
 <div class="fix" id="flags"></div>
-<h2 style="margin-top:26px">His monthly budget, phase by phase</h2>
-<div class="phs" id="phs"></div>
 <div id="gapbox"></div>
-<h2 style="margin-top:26px">Loan payment plan, step by step</h2>
+<h2 style="margin-top:26px">Monthly budget</h2>
+<div class="phs" id="phs"></div>
+<h2 style="margin-top:26px">Month by month plan</h2>
+<p class="sub" style="margin:-4px 0 10px">What to pay each month, and what's left of the debt.</p>
+<div id="mm"></div>
+<div class="row" style="margin-top:12px"><button id="prt">Save as PDF / print</button></div>
+<details id="more"><summary>How it's calculated, and the loan order</summary>
+<div class="bd" id="bd"></div>
+<h2 style="margin-top:18px;font-size:17px">Which loan to pay first</h2>
 <div class="tg" role="group" aria-label="Payoff order"><button data-m="rate">Cheapest overall<small>highest interest first</small></button><button data-m="small">Quickest win<small>smallest balance first</small></button></div>
 <div class="bd" id="cmp" style="margin-bottom:6px"></div>
 <ol class="plan" id="plan"></ol>
+</details>
 </section>
 
 <p class="note">How it works: until the last wedding payment, the wedding fund gets what it needs each month first (any money left in it then goes to the loans); after it, the extra costs come out first; everything else left goes to one loan at a time (highest interest first, or smallest balance first if you pick Quickest win), and each paid-off loan's instalment moves to the next. A planning estimate, not financial advice; the bank's figures are final. Numbers are saved only in this browser, never sent anywhere. Start each client with "New client".</p>
@@ -141,15 +155,14 @@ const egp=n=>'EGP '+fmt(n);
 const span=m=>{const y=Math.floor(m/12),r=m%12;return[y?y+(y>1?' years':' year'):'',r?r+(r>1?' months':' month'):''].filter(Boolean).join(' ')||'now'};
 const when=m=>{const d=new Date();d.setMonth(d.getMonth()+m);return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'})};
 function sim(loans,extraFor,meth){
-  const L=loans.map(l=>({...l,b0:l.b,b:l.b,r:l.r/1200,done:null}));let interest=0,m=0;const hist=[null];
+  const L=loans.map(l=>({...l,b0:l.b,b:l.b,r:l.r/1200,done:null}));let interest=0,m=0;const hist=[null],bh=[L.map(l=>l.b)];
   while(L.some(l=>l.b>0.5)&&m<600){m++;let pool=extraFor(m);
     const paid=L.map(()=>0);
-    L.forEach((l,k)=>{if(l.b<=0.5)return;const i=l.b*l.r;interest+=i;l.b+=i;const x=Math.min(l.p,l.b);l.b-=x;paid[k]+=x});
-    pool+=L.filter(l=>l.b<=0.5).reduce((a,l)=>a+l.p,0);
+    L.forEach((l,k)=>{if(l.b<=0.5){pool+=l.p;return}const i=l.b*l.r;interest+=i;l.b+=i;const x=Math.min(l.p,l.b);l.b-=x;paid[k]+=x;pool+=l.p-x});
     for(const k of L.map((l,k)=>k).sort((a,b)=>meth==='small'?L[a].b-L[b].b:L[b].r-L[a].r)){const l=L[k];if(l.b<=0.5||pool<=0)continue;const x=Math.min(pool,l.b);l.b-=x;pool-=x;paid[k]+=x}
-    hist.push(paid);
+    hist.push(paid);bh.push(L.map(l=>Math.max(l.b,0)));
     for(const l of L)if(l.b<=0.5&&l.done===null)l.done=m}
-  return{m:L.some(l=>l.b>0.5)?Infinity:m,interest,L,hist}}
+  return{m:L.some(l=>l.b>0.5)?Infinity:m,interest,L,hist,bh}}
 function readPays(){return[...document.querySelectorAll('.pay')].map(c=>{const i=c.querySelectorAll('input');return{n:i[0].value,a:num(i[1].value),m:Math.round(num(i[2].value)),o:i[3].checked}})}
 function readLoans(){return[...document.querySelectorAll('.loan:not(.pay)')].map(c=>{const i=c.querySelectorAll('input');return{n:i[0].value,b:num(i[1].value),r:num(i[2].value),p:num(i[3].value)}})}
 function render(){
@@ -202,7 +215,7 @@ function render(){
    const ph=[];
    if(wm>0)ph.push('<div class="ph"><div class="t">Until the wedding</div><div class="d">'+when(1)+' → '+when(wm)+'</div>'+L1('Income',egp(income))+L1('Costs',egp(ess))+L1('Loan instalments',egp(inst))+L1('Wedding fund',egp(toWed))+(sur-toWed>1?L1('Extra to loans',egp(sur-toWed)):'')+(left<0?L1('<span class="red">Missing</span>','<span class="red">'+egp(-left)+'</span>'):'')+'</div>');
    const dfree=isFinite(P.m)&&S.loans.length;
-   if(!dfree||P.m>wm)ph.push('<div class="ph"><div class="t">'+(wm>0?'After the wedding':'Paying off loans')+'</div><div class="d">'+when(wm+1)+(dfree?' → '+when(P.m):'')+'</div>'+L1('Income',egp(income))+L1('Costs'+(S.after&&wm>0?' (incl. new)':''),egp(ess+(wm>0?S.after:0)))+L1('Loans (all that’s left)',egp(Math.max(income-ess-(wm>0?S.after:0),0)))+'<div class="p"><span style="opacity:.75">'+egp(inst)+' instalments + '+egp(Math.max(income-ess-(wm>0?S.after:0)-inst,0))+' extra; follow the step-by-step plan below</span><span></span></div></div>');
+   if(!dfree||P.m>wm)ph.push('<div class="ph"><div class="t">'+(wm>0?'After the wedding':'Paying off loans')+'</div><div class="d">'+when(wm+1)+(dfree?' → '+when(P.m):'')+'</div>'+L1('Income',egp(income))+L1('Costs'+(S.after&&wm>0?' (incl. new)':''),egp(ess+(wm>0?S.after:0)))+L1('Loans (all that’s left)',egp(Math.max(income-ess-(wm>0?S.after:0),0)))+'<div class="p"><span style="opacity:.75">'+egp(inst)+' instalments + '+egp(Math.max(income-ess-(wm>0?S.after:0)-inst,0))+' extra; see the month by month plan below</span><span></span></div></div>');
    const free=income-ess-S.after,emT=3*(ess+S.after);
    ph.push('<div class="ph"><div class="t">Debt-free</div><div class="d">from '+(dfree?when(P.m+1):'—')+'</div>'+L1('Income',egp(income))+L1('Costs',egp(ess+S.after))+L1('Emergency fund',egp(Math.max(free,0)))+'<div class="p"><span style="opacity:.75">until it reaches '+egp(emT)+' (3 months), then start investing</span><span></span></div></div>');
    $('phs').innerHTML=ph.join('');
@@ -217,6 +230,22 @@ function render(){
      o.push('<b>A realistic mix:</b> '+(opt>0?'drop the optional items ('+egp(opt)+'), ':'')+'spend '+egp(cut)+' less a month (−15% living costs)'+(g2>0?', and move the wedding '+extraM+' month'+(extraM>1?'s':'')+' later ('+when(wm+extraM)+').':'. That closes the gap with no new loan.'));
      $('gapbox').innerHTML='<div class="gap"><b>How to close the '+egp(G)+' wedding gap without a loan</b><ol>'+o.map(x=>'<li>'+x+'</li>').join('')+'</ol></div>';
    }else $('gapbox').innerHTML='';}
+  {const fin=isFinite(P.m),H=Math.min(fin?Math.max(P.m,wm):Math.max(wm,24),120),hasL=S.loans.some(l=>l.b>0),rows=[];
+   const hd=(t,d)=>'<tr class="hd"><td colspan="4">'+t+' <span>'+d+'</span></td></tr>';
+   let wb=S.wsaved;
+   for(let m=1;m<=H;m++){
+     if(m===1)rows.push(hd(wm>0?'Until the wedding':'Paying off loans',egp(income)+' in − '+egp(ess)+' costs'));
+     if(wm>0&&m===wm+1)rows.push(hd('After the wedding',egp(income)+' in − '+egp(ess+S.after)+' costs'));
+     if(fin&&hasL&&m===P.m+1)rows.push(hd('Debt-free','the loan money now goes to savings'));
+     const n=[],row=P.hist[m],bal=P.bh[m];
+     if(m<=wm){wb+=toWed;for(const p of pays.filter(p=>p.m===m)){if(wb>=p.a){wb-=p.a;n.push('Pay '+(p.n||'wedding payment')+': '+fmt(p.a))}else{n.push('<span class="red">'+(p.n||'Payment')+': short '+fmt(p.a-wb)+'</span>');wb=0}}}
+     if(row){const ex=P.L.map((l,k)=>({n:l.n||'Loan '+(k+1),x:row[k]-l.p})).filter(x=>x.x>1);if(ex.length)n.push('Extra to '+ex.map(x=>x.n).join(', '))}
+     P.L.forEach(l=>{if(l.done===m)n.push('<b class="green">✓ '+(l.n||'Loan')+' paid off</b>')});
+     if(leftover>1&&m===Math.max(wm,1))n.push('Wedding money left over: '+fmt(leftover)+' to loans');
+     const paidT=row?row.reduce((a,b)=>a+b,0):0,debt=bal?bal.reduce((a,b)=>a+b,0):0;
+     rows.push('<tr><td>'+when(m)+(n.length?'<small>'+n.join('<br>')+'</small>':'')+'</td><td>'+(paidT>0.5?fmt(paidT):'—')+'</td><td>'+(m<=wm?fmt(wb):'—')+'</td><td>'+(hasL?fmt(debt):'—')+'</td></tr>')}
+   $('mm').innerHTML=(!fin&&hasL?'<div class="flag">Instalments don’t cover the interest, so the debt never ends. Raise the instalments first; showing the first '+H+' months.</div>':'')+
+     '<div style="overflow-x:auto"><table class="mm"><thead><tr><th>Month</th><th>To loans</th><th>Wedding fund</th><th>Debt left</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'+(H===120&&fin&&P.m>120?'<p class="sub">Showing the first 10 years.</p>':'')}
   const f=[];
   if(left<0)f.push('Spending is '+egp(-left)+' a month more than income. Cut one cost and add one income first.');
   if(income>0&&inst/income>0.5)f.push('Instalments take '+Math.round(inst/income*100)+'% of income. Talk to the lenders about rescheduling.');
@@ -247,6 +276,7 @@ document.addEventListener('focusout',e=>{const t=e.target;if(t.tagName==='INPUT'
 $('addp').onclick=()=>{payCard({n:'New payment',a:0,m:1});render()};
 document.querySelectorAll('.tg button').forEach(b=>b.onclick=()=>{S.meth=b.dataset.m;render()});
 $('add').onclick=()=>{loanCard({n:'New loan',b:0,r:0,p:0});render()};
+$('prt').onclick=()=>{$('more').open=true;print()};
 $('reset').onclick=()=>{S=structuredClone(SAMPLE);S.labels={client:'example'};load()};
 {let armed=0;$('newc').onclick=()=>{if(!armed){armed=1;$('newc').textContent='Tap again to clear everything';setTimeout(()=>{armed=0;$('newc').textContent='New client'},3000);return}armed=0;$('newc').textContent='New client';S=structuredClone(BLANK);load()}}
 load();
