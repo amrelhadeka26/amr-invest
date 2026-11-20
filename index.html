@@ -258,7 +258,7 @@ section[id]{scroll-margin-top:60px}
 <button class="btn btn-dark" type="submit">Pick a time ›</button>
 </form>
 <div id="calWrap" hidden><div id="calendly" class="cal-box"></div><button type="button" class="cal-again" id="calBack">Change name or email</button></div>
-<p class="fine-center">Prefer to book directly? <a href="https://calendly.com/amr-amrelhadeka/1-hour-investing-consultation" target="_blank" rel="noopener">Book on Calendly ›</a></p>
+<p class="fine-center">Prefer to book directly? <a href="https://cal.com/amrelhadeka/1-hour-investing-consultation" target="_blank" rel="noopener">Book on Cal.com ›</a></p>
 <form id="clientForm" method="POST" action="https://d32e8937.sibforms.com/serve/MUIFAEckFzmU8OhC-P0SveAKx9v4UPCp9zZHA4IYbpEnbV-BLIRmpFL0QISQNO5HRZKklj_SZO_0BdtefOnu9U8xb85jA5ZfjP1o5iou1MTUWxHle26ByXQ0WYdW68yGNfCS0BphL9C3Nnq6H5S1VvXtBn00c3mwZyjetT3OtDH5nt0pOBcyLGOOFLqtQlCoJmyO0ZaSAEKmEUZjBQ==" target="bc-frame" hidden>
 <input type="hidden" name="EMAIL"><input type="hidden" name="FIRSTNAME"><input type="hidden" name="locale" value="en"><input type="hidden" name="email_address_check" value="">
 </form>
@@ -312,22 +312,23 @@ section[id]{scroll-margin-top:60px}
 
 <script>
 (function(){
-  var CAL='https://calendly.com/amr-amrelhadeka/1-hour-investing-consultation', pre=document.getElementById('preBook'), wrap=document.getElementById('calWrap'), cf=document.getElementById('clientForm'), who={}, sent=false;
+  var pre=document.getElementById('preBook'), wrap=document.getElementById('calWrap'), cf=document.getElementById('clientForm'), who={}, sent=false, loaded=false;
+  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
   pre.addEventListener('submit',function(e){
     e.preventDefault();
     who.name=document.getElementById('pbName').value.trim(); who.email=document.getElementById('pbEmail').value.trim();
     pre.hidden=true; wrap.hidden=false;
-    var q='?embed_domain='+encodeURIComponent(location.hostname)+'&embed_type=Inline&hide_gdpr_banner=1&primary_color=1d1d1f&name='+encodeURIComponent(who.name)+'&email='+encodeURIComponent(who.email);
     var box=document.getElementById('calendly'); box.innerHTML='';
-    var f=document.createElement('iframe'); f.src=CAL+q; f.title='Pick a time with Amr'; f.loading='eager'; box.appendChild(f);
+    Cal("init","consult",{origin:"https://app.cal.com"});
+    Cal.ns.consult("inline",{elementOrSelector:"#calendly",calLink:"amrelhadeka/1-hour-investing-consultation",config:{name:who.name,email:who.email,theme:"light",layout:"month_view",locale:"en"}});
+    Cal.ns.consult("ui",{theme:"light",cssVarsPerTheme:{light:{"cal-brand":"#1D1D1F"}},hideEventTypeDetails:false,layout:"month_view"});
+    if(!loaded){loaded=true;Cal.ns.consult("on",{action:"bookingSuccessful",callback:function(){
+      if(sent||cf.getAttribute('action').indexOf('https://')!==0) return;
+      sent=true; cf.EMAIL.value=who.email; cf.FIRSTNAME.value=who.name; cf.submit();
+    }});}
     wrap.scrollIntoView({behavior:'smooth',block:'start'});
   });
   document.getElementById('calBack').addEventListener('click',function(){ wrap.hidden=true; pre.hidden=false; document.getElementById('calendly').innerHTML=''; });
-  window.addEventListener('message',function(e){
-    if(e.origin!=='https://calendly.com'||!e.data||e.data.event!=='calendly.event_scheduled'||sent) return;
-    if(cf.getAttribute('action').indexOf('https://')!==0) return;
-    sent=true; cf.EMAIL.value=who.email; cf.FIRSTNAME.value=who.name; cf.submit();
-  });
 })();
 </script>
 <script>track('view','home',1);document.querySelectorAll('.gtile').forEach(function(a){a.addEventListener('click',function(){track('tile',(a.getAttribute('href')||'').split('#')[1])})});var g=document.querySelector('.calc-go');if(g)g.addEventListener('click',function(){track('explore','home')});document.querySelectorAll('.myth .more').forEach(function(a){a.addEventListener('click',function(){track('lesson',(a.getAttribute('href')||'').split('/')[2])})});</script>

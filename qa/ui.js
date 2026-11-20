@@ -5,7 +5,7 @@ const R=[]; const ok=(n,c,info='')=>R.push({n,pass:!!c,info});
   const b=await chromium.launch(); const c=await b.newContext({...devices['iPhone 13']}); const p=await c.newPage();
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
   // block outside world but record requests to Brevo
-  const posts=[]; await p.route(/sibforms|calendly|googletagmanager|google-analytics|fonts\.g/,r=>{posts.push(r.request().url().slice(0,40));r.abort()});
+  const posts=[]; await p.route(/sibforms|calendly|cal\.com|googletagmanager|google-analytics|fonts\.g/,r=>{posts.push(r.request().url().slice(0,40));r.abort()});
   await p.goto(B+'/',{waitUntil:'networkidle'});
   // newsletter: empty submit blocked by validation
   await p.click('#guideForm button'); ok('newsletter empty email blocked', await p.isVisible('#guideForm'));
