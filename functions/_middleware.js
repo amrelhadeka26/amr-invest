@@ -274,7 +274,8 @@ async function statusReport(env){await metricsTable(env);
   const cal=await calendarRow(env).catch(()=>null);
   let rates=null;if(env.RATES){try{const l=await env.RATES.get("latest","json"),a=await env.RATES.get("auto","json");rates={latest:l&&l.latest,lastAttempt:l&&l.lastAttempt,errors:(l&&l.errors)||[],autoCheckedAt:a&&a.checkedAt,decision:a&&a.decision&&a.decision.status}}catch(e){rates={error:String(e.message||e)}}}
   const audits=await env.DB.prepare("SELECT at,who,col,doc,action,label FROM hq_audit ORDER BY at DESC LIMIT 50").all().then(r=>r.results||[]).catch(()=>[]);
-  return {calendar:{connected:!!cal},zernio:{at:at(get("zernio")),error:get("zernio")?get("zernio").error:"never synced"},brevo:{at:at(get("brevo")),error:get("brevo")?get("brevo").error:"never synced"},
+  let calcom={connected:!!env.CALCOM_WEBHOOK_SECRET};try{await calTable(env);const lb=await env.DB.prepare("SELECT created_at,mailed_at FROM hq_calbookings ORDER BY created_at DESC LIMIT 1").first();if(lb){calcom.last=lb.created_at.replace(' ','T');calcom.mailed=!!lb.mailed_at}}catch(e){}
+  return {calcom,calendar:{connected:!!cal},zernio:{at:at(get("zernio")),error:get("zernio")?get("zernio").error:"never synced"},brevo:{at:at(get("brevo")),error:get("brevo")?get("brevo").error:"never synced"},
     contacts:{at:at(get("contacts")),error:get("contacts")?get("contacts").error:"never synced"},zd:{connected:!!env.ZD_DB},calendly:{connected:!!env.CALENDLY_TOKEN},ai:{connected:!!env.ANTHROPIC_API_KEY},rates,audits}}
 
 /* ---------- analytics: Zernio (Instagram, TikTok) and Brevo ---------- */
@@ -489,9 +490,9 @@ async function sendCalPayEmail(env,b){if(!env.BREVO_API_KEY)throw new Error("BRE
 async function calUpsertContact(env,b,line,booked){await ensureTable(env);const email=String(b.email||"").toLowerCase();if(!email)return;
  const f=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? ORDER BY (json_extract(data,'$.deletedAt') IS NULL) DESC LIMIT 1").bind(email).first();
  if(f){const d=JSON.parse(f.data);if((d.log||[]).some(l=>l.key===line.key)&&!d.deletedAt)return;if(d.deletedAt){d.deletedAt=null;d.restoredBy="cal.com"}if(!d.name&&b.name)d.name=b.name;if(!(d.log||[]).some(l=>l.key===line.key))d.log=(d.log||[]).concat([line]);
-  if(booked&&d.type!=="Client"&&d.type!=="Partner"){d.type="Session lead";if(!["Won","Proposal sent"].includes(d.stage))d.stage="Call booked"}if(!d.phone&&b.phone)d.phone=b.phone;
+  if(booked&&!d.calcomSince)d.calcomSince=cairoDay();if(booked&&d.type!=="Client"&&d.type!=="Partner"){d.type="Session lead";if(!["Won","Proposal sent"].includes(d.stage))d.stage="Call booked"}if(!d.phone&&b.phone)d.phone=b.phone;
   await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),f.id).run();await audit(env,"cal.com","contacts",f.id,"updated",(d.name||email).slice(0,80))}
- else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
+ else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",calcomSince:cairoDay(),createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
   const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now'))").bind(id,JSON.stringify(d)).run();if(ins.meta&&ins.meta.changes)await audit(env,"cal.com","contacts",id,"created",String(b.name||email).slice(0,80))}}
 async function calcomHook(req,env){
  if(!env.CALCOM_WEBHOOK_SECRET)return json({error:"Not configured"},503);
