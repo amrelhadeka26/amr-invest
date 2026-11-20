@@ -336,7 +336,8 @@ function mdLite(t){const lines=esc(t||'').split('\n');let h='',list='';const clo
  close();return h}
 async function loadBrief(refresh){S.brief=Object.assign({},S.brief||{},{busy:true});render();try{S.brief=await api('briefing',refresh?{method:'POST'}:undefined)}catch(e){S.brief={error:e.msg||'offline'}}render()}
 async function loadZd(){try{S.zd=await api('zd')}catch(e){S.zd={err:e.msg||'offline'}}render()}
-async function loadStatus(){try{S.st=await api('status')}catch(e){S.st=null;S.stErr=e.msg||'offline'}render()}
+async function loadStatus(){try{S.st=await api('status');try{S.st.paymob=await api('paymob')}catch(e){S.st.paymob=null}}catch(e){S.st=null;S.stErr=e.msg||'offline'}render()}
+if(/[?&]paymob=done/.test(location.search)){S.page='status';try{history.replaceState(null,'',location.pathname)}catch(e){}setTimeout(()=>{toast('Back from Paymob. Checking the result…');setTimeout(loadStatus,4000)},600)}
 
 
 /* ---------- navigation: one menu item per area; related pages become tabs inside it ---------- */
@@ -629,7 +630,7 @@ function pProducts(){const z=S.zd;let h=head('ZD AI','How people use ZD AI: coun
  return h}
 
 /* ---------- Status: connections, backups, recent changes ---------- */
-function pStatus(){const st=S.st;let h=head('Status','Every connection, when it last worked, and every change made',`<button data-act="syncNow">Sync now</button><a class="pill blk" style="padding:6px 12px;text-decoration:none" href="/hq/api/export">Export everything</a>`);
+function pStatus(){const st=S.st;let h=head('Status','Every connection, when it last worked, and every change made',`<button data-act="syncNow">Sync now</button>${S.st&&S.st.paymob&&S.st.paymob.mode==='test'?'<button data-act="paymobTest">Test payment (EGP 10)</button>':''}<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="/hq/api/export">Export everything</a>`);
  if(!st)return h+(S.stErr?`<div class="banner">Couldn't load status (${esc(S.stErr)}).</div>`:'<p class="mut">Loading…</p>');
  const ago=x=>{if(!x)return 'never';const m=Math.round((Date.now()-Date.parse(x))/6e4);return m<60?m+' min ago':m<2880?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
  const r=st.rates||{},rl=r.latest||{};const rOk=r.lastAttempt&&Date.now()-Date.parse(r.lastAttempt)<26*36e5&&!(r.errors||[]).length;
@@ -637,6 +638,7 @@ function pStatus(){const st=S.st;let h=head('Status','Every connection, when it 
   ['Instagram + TikTok (Zernio)',!st.zernio.error,ago(st.zernio.at),st.zernio.error||''],['Newsletter (Brevo)',!st.brevo.error,ago(st.brevo.at),st.brevo.error||''],
   ['Contacts from ZD AI, newsletter and Calendly',!st.contacts.error,ago(st.contacts.at),st.contacts.error||''],['Calendly',!!(st.calendly&&st.calendly.connected)&&!/Calendly/.test(st.contacts.error||''),st.calendly&&st.calendly.connected?ago(st.contacts.at):'no token',''],['AI briefing',!!(st.ai&&st.ai.connected),st.ai&&st.ai.connected?'ready':'no key',S.brief&&S.brief.error?S.brief.error:''],['ZD AI numbers',st.zd.connected,st.zd.connected?'live':'not connected',''],
   ['Dollar and gold',!!rOk,ago(r.lastAttempt),(r.errors||[]).join('; ')+(rl.usdegp?` · USD ${rl.usdegp.value}, gold 21K ${fmtN(rl.gold21&&rl.gold21.value)}`:'')],
+  ['Payments (Paymob)',!!(st.paymob&&st.paymob.ready),st.paymob?(st.paymob.ready?st.paymob.mode+' mode':'not set up'):'…',st.paymob&&st.paymob.last&&st.paymob.last[0]?`last: EGP ${(st.paymob.last[0].amount_cents/100).toLocaleString()} · ${st.paymob.last[0].success?'paid':st.paymob.last[0].pending?'pending':'failed'} · ${st.paymob.last[0].mode} · ${ago(st.paymob.last[0].received_at+'Z')}`:'no payments yet'],
   ['Inflation check',!!r.autoCheckedAt,ago(r.autoCheckedAt),rl.inflation?`${rl.inflation.value}% for ${rl.inflation.period}`+(r.decision==='pending'?' · a new figure waits for you in ZD AI → Data':''):'']];
  h+=`<div class="card"><h2>Connections</h2><table><tr><th>Connection</th><th>Status</th><th>Last sync</th><th>Detail</th></tr>${rows.map(x=>`<tr><td>${esc(x[0])}</td><td>${x[1]?'<span class="pill ok">✓ Working</span>':'<span class="pill bad">⚠ Needs attention</span>'}</td><td>${esc(x[2])}</td><td class="mut">${esc(x[3])}</td></tr>`).join('')}</table><p class="mut" style="margin-top:6px">Social, newsletter and contacts sync every 6 hours while you use the HQ, and when you press Sync now. A daily copy of your HQ data is kept for 30 days.</p></div>`;
  h+=`<div class="card"><h2>Recent changes</h2>${(st.audits||[]).length?`<table><tr><th>When</th><th>Who</th><th>What</th></tr>${st.audits.map(a=>`<tr><td>${esc(ago(a.at.replace(' ','T')+'Z'))}</td><td>${esc(a.who==='sync'?'Automatic sync':a.who)}</td><td>${esc(a.action)} · ${esc(a.col)}${a.label?' · '+esc(a.label):''}</td></tr>`).join('')}</table>`:'<div class="empty">Changes appear here from now on.</div>'}</div>`;
@@ -774,6 +776,7 @@ document.addEventListener('click',async e=>{
  case 'setOpening':{const v=prompt('Cash you had on the start date (EGP)',S.settings.openingCash||0);if(v!==null&&!isNaN(+v)){await putSettings({openingCash:+v});toast('Opening cash saved')}break}
  case 'viewContact':contactView(find('contacts'));break;
  case 'addNote':{const t=($('#cnote').value||'').trim();if(!t)break;const c=find('contacts');await put('contacts',id,{log:(c.log||[]).concat([{at:today(),text:t.slice(0,500)}])});contactView(S.contacts.find(x=>x.id===id));toast('Note added');break}
+ case 'paymobTest':toast('Opening Paymob test checkout…');try{const j=await api('paymob/test',{method:'POST'});location.href=j.url}catch(er){toast(er.msg||'Paymob test failed')}break;
  case 'syncNow':toast('Syncing…');await loadAnalytics(true);await loadStatus();toast('Synced');break;
  case 'close':closeM();break;
  case 'newAct':actForm(null,b.dataset.dept||(S.page.startsWith('d:')?S.page.slice(2):'strat'));break;
