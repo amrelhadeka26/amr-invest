@@ -12,7 +12,7 @@ button[disabled]{opacity:.55;cursor:default}.err{color:#B42318;font-size:14px;mi
 <body><main><div class="card" style="text-align:center"><div class="top" style="justify-content:center"><img src="/assets/logo.png" alt="Amr El Hadeka"></div>
 <div id="icon" class="big" aria-hidden="true">…</div><h1 id="h">بنتأكد من الدفع…</h1><p id="s" class="sub"></p><div id="act"></div></div><p class="disc">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</p></main>
 <script>(function(){var ref=new URLSearchParams(location.search).get('ref')||'',n=0,H=document.getElementById('h'),S=document.getElementById('s'),I=document.getElementById('icon'),A=document.getElementById('act');
-function fmt(s){if(!s||isNaN(Date.parse(s)))return '';return new Date(s).toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})}
+function fmt(s){if(!s||isNaN(Date.parse(s)))return '';return new Date(s).toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit',hour12:true})}
 function tick(){fetch('/pay/api/status?ref='+encodeURIComponent(ref)).then(function(r){return r.json()}).then(function(j){
 if(j.status==='paid'){I.textContent='✓';H.textContent='الدفع وصل. نشوفك قريب'+(j.first?', '+j.first:'')+'.';S.textContent='جلستك اتأكدت'+(j.start?': '+fmt(j.start):'')+'.';A.innerHTML='<a class="btn" href="/ar/">ارجع للموقع</a>';return}
 if(j.status==='failed'){I.textContent='✕';H.textContent='الدفع ماتمّش.';S.textContent='مافيش فلوس اتخصمت. تقدر تجرب تاني.';A.innerHTML='<a class="btn" href="/ar/pay/session/">جرب تاني</a>';return}
