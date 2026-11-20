@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>أكّد جلستك | Amr El Hadeka</title><meta name="robots" content="noindex, nofollow"><meta name="referrer" content="no-referrer"><link rel="icon" type="image/png" href="/assets/favicon.png?v=3"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F5F5F7;color:#1D1D1F;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,"IBM Plex Sans Arabic",Arial,sans-serif;padding:22px;box-sizing:border-box}
+main{width:100%;max-width:460px}.card{background:#fff;border:1px solid #E5E5EA;border-radius:22px;padding:28px 24px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top img{height:44px;width:auto}.top a{font-size:14px;color:#1D1D1F}
+h1{margin:0 0 8px;font-size:28px;letter-spacing:-.02em;line-height:1.15}.sub{margin:0 0 20px;color:#424245;font-size:16px;line-height:1.5}
+.sum{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #1D1D1F;border-bottom:1px solid #E5E5EA;padding:14px 0;margin-bottom:20px}.sum b{font-size:22px}
+label{display:block;font-size:14px;font-weight:600;margin:0 0 6px}input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid #D2D2D7;border-radius:12px;margin:0 0 14px;background:#fff;color:#1D1D1F}
+input:focus{outline:2px solid #1D1D1F;outline-offset:1px;border-color:#1D1D1F}button{width:100%;min-height:52px;border:0;border-radius:999px;background:#1D1D1F;color:#fff;font:inherit;font-size:17px;font-weight:600;cursor:pointer;margin-top:4px}
+button[disabled]{opacity:.55;cursor:default}.err{color:#B42318;font-size:14px;min-height:20px;margin:8px 0 0}.note{font-size:13px;color:#6E6E73;margin:14px 0 0;line-height:1.5}.disc{font-size:12px;color:#6E6E73;margin:18px 4px 0;text-align:center;line-height:1.5}
+.big{font-size:44px;line-height:1;margin-bottom:10px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:999px;background:#1D1D1F;color:#fff;text-decoration:none;margin-top:8px}</style></head>
+<body><main><div class="card"><div class="top"><a href="/ar/"><img src="/assets/logo.png" alt="Amr El Hadeka"></a><a id="lang" href="/pay/session/">English</a></div>
+<h1>أكّد جلستك</h1><p class="sub">جلسة أونلاين ساعة معايا: فلوسك، أسئلتك، وكلام بسيط.</p>
+<div class="sum"><div><div style="font-weight:600">جلسة استثمار فردية (٦٠ دقيقة)</div><div id="when" class="note" style="margin:4px 0 0"></div></div><b>EGP 1,500</b></div>
+<form id="f" novalidate><label for="n">الاسم بالكامل</label><input id="n" name="name" autocomplete="name" required maxlength="80">
+<label for="e">الإيميل</label><input id="e" name="email" type="email" autocomplete="email" required maxlength="120" dir="ltr">
+<label for="p">رقم الموبايل</label><input id="p" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="01X XXXX XXXX" dir="ltr">
+<button id="b" type="submit">ادفع ١٬٥٠٠ جنيه</button><p id="err" class="err" role="alert"></p></form>
+<p class="note">الدفع بالكارت آمن عن طريق Paymob. بيانات الكارت بتروح لـ Paymob بس، مش للموقع ده.</p></div><p class="disc">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</p></main>
+<script>(function(){var q=new URLSearchParams(location.search),g=function(k){return (q.get(k)||'').trim()};
+var name=g('invitee_full_name')||[g('invitee_first_name'),g('invitee_last_name')].filter(Boolean).join(' ')||g('name'),email=g('invitee_email')||g('email'),start=g('event_start_time'),phone=g('text_reminder_number')||g('answer_2')||'';
+document.getElementById('n').value=name;document.getElementById('e').value=email;if(/^[+\d][\d\s-]{7,}$/.test(phone))document.getElementById('p').value=phone;
+document.getElementById('lang').href='/pay/session/'+location.search;
+if(start&&!isNaN(Date.parse(start))){var d=new Date(start);document.getElementById('when').textContent='ميعاد الجلسة: '+d.toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})}
+var f=document.getElementById('f'),b=document.getElementById('b'),er=document.getElementById('err');
+f.addEventListener('submit',function(ev){ev.preventDefault();er.textContent='';b.disabled=true;b.textContent='بنفتح صفحة الدفع الآمنة…';
+fetch('/pay/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value,email:f.email.value,phone:f.phone.value,start:start,lang:'ar'})})
+.then(function(r){return r.json().then(function(j){return [r.ok,j]})}).then(function(x){if(x[0]&&x[1].url){location.href=x[1].url}else{throw new Error(x[1].error||'Error')}})
+.catch(function(e){er.textContent=e.message;b.disabled=false;b.textContent='ادفع ١٬٥٠٠ جنيه'})});})();</script></body></html>

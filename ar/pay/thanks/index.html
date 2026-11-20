@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>الدفع | Amr El Hadeka</title><meta name="robots" content="noindex, nofollow"><meta name="referrer" content="no-referrer"><link rel="icon" type="image/png" href="/assets/favicon.png?v=3"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F5F5F7;color:#1D1D1F;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,"IBM Plex Sans Arabic",Arial,sans-serif;padding:22px;box-sizing:border-box}
+main{width:100%;max-width:460px}.card{background:#fff;border:1px solid #E5E5EA;border-radius:22px;padding:28px 24px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top img{height:44px;width:auto}.top a{font-size:14px;color:#1D1D1F}
+h1{margin:0 0 8px;font-size:28px;letter-spacing:-.02em;line-height:1.15}.sub{margin:0 0 20px;color:#424245;font-size:16px;line-height:1.5}
+.sum{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #1D1D1F;border-bottom:1px solid #E5E5EA;padding:14px 0;margin-bottom:20px}.sum b{font-size:22px}
+label{display:block;font-size:14px;font-weight:600;margin:0 0 6px}input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid #D2D2D7;border-radius:12px;margin:0 0 14px;background:#fff;color:#1D1D1F}
+input:focus{outline:2px solid #1D1D1F;outline-offset:1px;border-color:#1D1D1F}button{width:100%;min-height:52px;border:0;border-radius:999px;background:#1D1D1F;color:#fff;font:inherit;font-size:17px;font-weight:600;cursor:pointer;margin-top:4px}
+button[disabled]{opacity:.55;cursor:default}.err{color:#B42318;font-size:14px;min-height:20px;margin:8px 0 0}.note{font-size:13px;color:#6E6E73;margin:14px 0 0;line-height:1.5}.disc{font-size:12px;color:#6E6E73;margin:18px 4px 0;text-align:center;line-height:1.5}
+.big{font-size:44px;line-height:1;margin-bottom:10px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:999px;background:#1D1D1F;color:#fff;text-decoration:none;margin-top:8px}</style></head>
+<body><main><div class="card" style="text-align:center"><div class="top" style="justify-content:center"><img src="/assets/logo.png" alt="Amr El Hadeka"></div>
+<div id="icon" class="big" aria-hidden="true">…</div><h1 id="h">بنتأكد من الدفع…</h1><p id="s" class="sub"></p><div id="act"></div></div><p class="disc">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</p></main>
+<script>(function(){var ref=new URLSearchParams(location.search).get('ref')||'',n=0,H=document.getElementById('h'),S=document.getElementById('s'),I=document.getElementById('icon'),A=document.getElementById('act');
+function fmt(s){if(!s||isNaN(Date.parse(s)))return '';return new Date(s).toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})}
+function tick(){fetch('/pay/api/status?ref='+encodeURIComponent(ref)).then(function(r){return r.json()}).then(function(j){
+if(j.status==='paid'){I.textContent='✓';H.textContent='الدفع وصل. نشوفك قريب'+(j.first?', '+j.first:'')+'.';S.textContent='جلستك اتأكدت'+(j.start?': '+fmt(j.start):'')+'.';A.innerHTML='<a class="btn" href="/ar/">ارجع للموقع</a>';return}
+if(j.status==='failed'){I.textContent='✕';H.textContent='الدفع ماتمّش.';S.textContent='مافيش فلوس اتخصمت. تقدر تجرب تاني.';A.innerHTML='<a class="btn" href="/ar/pay/session/">جرب تاني</a>';return}
+if(j.status==='unknown'){I.textContent='?';H.textContent='مش لاقيين الدفع ده.';A.innerHTML='<a class="btn" href="/ar/">ارجع للموقع</a>';return}
+S.textContent='الدفع لسه بيتعالج. الصفحة هتتحدّث لوحدها.';if(++n<40)setTimeout(tick,3000)}).catch(function(){if(++n<40)setTimeout(tick,3000)})}tick()})();</script></body></html>

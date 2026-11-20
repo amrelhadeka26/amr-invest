@@ -411,7 +411,55 @@ async function paymobHook(req,env){
  await payTable(env);const ord=o.order||{},src=o.source_data||{};
  await env.DB.prepare("INSERT OR REPLACE INTO hq_payments (id,order_id,ref,amount_cents,currency,success,pending,refunded,voided,mode,method,created_at,received_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))")
   .bind(String(o.id),String(ord.id||""),String(ord.merchant_order_id||o.special_reference||""),Number(o.amount_cents)||0,String(o.currency||""),o.success?1:0,o.pending?1:0,o.is_refunded?1:0,o.is_voided?1:0,o.is_live===true?"live":(o.is_live===false?"test":paymobMode(env)),[src.type,src.sub_type].filter(Boolean).join(" "),String(o.created_at||"")).run();
+ const mode=o.is_live===true?"live":(o.is_live===false?"test":paymobMode(env));
+ try{await recordSessionPayment(env,o,mode)}catch(e){console.log("session payment bookkeeping failed",String(e.message||e))}
  return json({ok:true})}
+// ---- Paid 1-on-1 session (public pay page -> Paymob) ----
+const SESSION_PRICE_CENTS=150000;
+async function checkoutTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_checkouts (ref TEXT PRIMARY KEY, product TEXT, amount_cents INTEGER, name TEXT, email TEXT, phone TEXT, start TEXT, lang TEXT, ip TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')), paid_at TEXT)").run()}
+async function payApi(req,env,path){
+ const pj=(o,st)=>new Response(JSON.stringify(o),{status:st||200,headers:{"Content-Type":"application/json","Cache-Control":"no-store","X-Robots-Tag":"noindex"}});
+ if(path==="/pay/api/session"&&req.method==="POST"){
+  const origin=req.headers.get("Origin");if(origin&&![ORIGIN,env.HQ_TEST_ORIGIN].includes(origin))return pj({error:"Origin rejected"},403);
+  let b={};try{b=await req.json()}catch(e){return pj({error:"Bad request"},400)}
+  const name=String(b.name||"").replace(/\s+/g," ").trim().slice(0,80),email=String(b.email||"").trim().toLowerCase().slice(0,120),phoneRaw=String(b.phone||"").replace(/[^\d+]/g,""),start=String(b.start||"").slice(0,40),lang=b.lang==="ar"?"ar":"en";
+  if(name.length<2)return pj({error:lang==="ar"?"اكتب اسمك.":"Please enter your name."},400);
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return pj({error:lang==="ar"?"الإيميل مش مظبوط.":"Please enter a valid email."},400);
+  const digits=phoneRaw.replace(/\D/g,"");if(digits.length<8||digits.length>15)return pj({error:lang==="ar"?"اكتب رقم موبايل صحيح.":"Please enter a valid mobile number."},400);
+  const phone=phoneRaw.startsWith("+")?"+"+digits:(digits.startsWith("0")?"+2"+digits:"+"+digits);
+  if(start&&isNaN(Date.parse(start)))return pj({error:"Bad session time"},400);
+  await checkoutTable(env);const ip=req.headers.get("CF-Connecting-IP")||"";
+  const recent=await env.DB.prepare("SELECT COUNT(*) n FROM hq_checkouts WHERE ip=? AND created_at>datetime('now','-1 hour')").bind(ip).first();
+  if(recent&&recent.n>=10)return pj({error:lang==="ar"?"محاولات كتير. جرب كمان شوية.":"Too many attempts. Please try again later."},429);
+  const ref="session-"+Date.now().toString(36)+"-"+crypto.randomUUID().slice(0,8);
+  await env.DB.prepare("INSERT INTO hq_checkouts (ref,product,amount_cents,name,email,phone,start,lang,ip,status) VALUES (?,?,?,?,?,?,?,?,?,'created')").bind(ref,"1-on-1 session",SESSION_PRICE_CENTS,name,email,phone,start,lang,ip).run();
+  const parts=name.split(" ");
+  try{const it=await paymobIntention(env,{amountCents:SESSION_PRICE_CENTS,name:"1-on-1 investing session (60 min)",description:"1-hour online session with Amr El Hadeka"+(start?" · "+start.slice(0,16):""),email,phone,first:parts[0],last:parts.slice(1).join(" ")||parts[0],ref,redirect:ORIGIN+(lang==="ar"?"/ar":"")+"/pay/thanks/?ref="+encodeURIComponent(ref)});
+   return pj({url:it.url})}catch(e){console.log("pay session intention failed",String(e.message||e));return pj({error:lang==="ar"?"الدفع مش متاح دلوقتي. جرب تاني أو كلمني.":"Payment isn't available right now. Please try again or contact me."},502)}
+ }
+ if(path==="/pay/api/status"&&req.method==="GET"){
+  const ref=new URL(req.url).searchParams.get("ref")||"";if(!/^session-[a-z0-9]+-[a-f0-9]{8}$/.test(ref))return pj({status:"unknown"});
+  await checkoutTable(env);await payTable(env);
+  const c=await env.DB.prepare("SELECT start,name,status FROM hq_checkouts WHERE ref=?").bind(ref).first();if(!c)return pj({status:"unknown"});
+  const p=await env.DB.prepare("SELECT success,pending FROM hq_payments WHERE ref=? ORDER BY success DESC, received_at DESC LIMIT 1").bind(ref).first();
+  return pj({status:p?(p.success?"paid":(p.pending?"pending":"failed")):"waiting",start:c.start||"",first:(c.name||"").split(" ")[0]})
+ }
+ return pj({error:"Not found"},404)}
+async function recordSessionPayment(env,o,mode){
+ const ref=String((o.order&&o.order.merchant_order_id)||o.special_reference||"");if(!ref.startsWith("session-")||!o.success||o.is_refunded||o.is_voided)return;
+ await checkoutTable(env);const c=await env.DB.prepare("SELECT * FROM hq_checkouts WHERE ref=?").bind(ref).first();if(!c)return;
+ await env.DB.prepare("UPDATE hq_checkouts SET status='paid',paid_at=datetime('now') WHERE ref=?").bind(ref).run();
+ if(mode!=="live")return; // test payments never touch Money or Contacts
+ await ensureTable(env);const day=cairoDay(),amount=(Number(o.amount_cents)||0)/100,email=String(c.email||"").toLowerCase();
+ let cid=null;const found=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? AND json_extract(data,'$.deletedAt') IS NULL LIMIT 1").bind(email).first();
+ const line={at:day,text:"Paid EGP "+amount.toLocaleString("en-US")+" for a 1-on-1 session"+(c.start?" ("+String(c.start).slice(0,16).replace("T"," ")+")":"")+" via Paymob, transaction "+o.id,key:"pay:"+o.id};
+ if(found){cid=found.id;const d=JSON.parse(found.data);if(!(d.log||[]).some(l=>l.key===line.key)){d.log=(d.log||[]).concat([line]);if(d.type!=="Partner")d.type="Client";if(d.stage!=="Won"){d.stage="Won";d.wonAt=day}if(!d.since)d.since=day;if(!d.phone&&c.phone)d.phone=c.phone;
+   await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),cid).run();await audit(env,"paymob","contacts",cid,"updated",(d.name||email).slice(0,80))}}
+ else{cid=await contactId(email);const d={name:c.name,email,phone:c.phone||"",type:"Client",stage:"Won",since:day,wonAt:day,log:[line],createdBy:"paymob",deletedAt:null};
+   const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now'))").bind(cid,JSON.stringify(d)).run();if(ins.meta&&ins.meta.changes)await audit(env,"paymob","contacts",cid,"created",String(c.name).slice(0,80))}
+ const row={date:day,kind:"in",amount,category:"1-on-1 session",contact:c.name,contactId:cid||"",ref:String(o.id),note:"Paymob card payment"+(c.start?" · session "+String(c.start).slice(0,16).replace("T"," "):""),source:"paymob",deletedAt:null};
+ const m=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('money',?,?,datetime('now'))").bind("pm-"+o.id,JSON.stringify(row)).run();
+ if(m.meta&&m.meta.changes)await audit(env,"paymob","money","pm-"+o.id,"created","Session payment EGP "+amount)}
 async function zernioHook(req,env){
   await mktTables(env);const secret=await kvGet(env,"zernio_webhook_secret");if(!secret)return new Response("Not configured",{status:503});
   const raw=await req.text();const sig=(req.headers.get("X-Zernio-Signature")||"").toLowerCase();
@@ -525,6 +573,7 @@ export async function onRequest(context) {
   const {request:req,env}=context;
   const url=new URL(req.url),path=url.pathname;
   const isPlan=path==="/plan"||path.startsWith("/plan/");
+  if(path.startsWith("/pay/api/")){if(!env.DB)return new Response("Not configured",{status:503});return payApi(req,env,path)}
   if(!isPlan&&!(path==="/hq" || path.startsWith("/hq/")))return context.next();
   if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
   if(isPlan)return planRoute(context,env,req,path);
