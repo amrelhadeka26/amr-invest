@@ -494,6 +494,18 @@ async function calUpsertContact(env,b,line,booked){await ensureTable(env);const 
   await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),f.id).run();await audit(env,"cal.com","contacts",f.id,"updated",(d.name||email).slice(0,80))}
  else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",calcomSince:cairoDay(),createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
   const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now'))").bind(id,JSON.stringify(d)).run();if(ins.meta&&ins.meta.changes)await audit(env,"cal.com","contacts",id,"created",String(b.name||email).slice(0,80))}}
+async function calBookingPaid(env,email,start){try{await checkoutTable(env);const t=Date.parse(start);if(isNaN(t))return false;
+ const rows=(await env.DB.prepare("SELECT start FROM hq_checkouts WHERE lower(email)=? AND status='paid'").bind(String(email||"").toLowerCase()).all()).results||[];
+ return rows.some(r=>Date.parse(r.start)===t)}catch(e){return false}}
+async function calBookingsList(env){await calTable(env);const rows=(await env.DB.prepare("SELECT uid,email,name,start,status,mailed_at,created_at FROM hq_calbookings ORDER BY start DESC LIMIT 40").all()).results||[];
+ for(const r of rows)r.paid=await calBookingPaid(env,r.email,r.start);return rows}
+async function calResend(env,uid){await calTable(env);const r=await env.DB.prepare("SELECT uid,email,name,start,status FROM hq_calbookings WHERE uid=?").bind(String(uid||"")).first();
+ if(!r)throw Object.assign(new Error("Booking not found"),{status:404});if(r.status==="cancelled")throw Object.assign(new Error("That booking was cancelled"),{status:400});
+ if(await calBookingPaid(env,r.email,r.start))throw Object.assign(new Error("Already paid"),{status:400});
+ const c=await env.DB.prepare("SELECT data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? LIMIT 1").bind(String(r.email).toLowerCase()).first().catch(()=>null);
+ const phone=c?String(JSON.parse(c.data).phone||""):"";
+ await sendCalPayEmail(env,{uid:r.uid,name:r.name,email:r.email,start:r.start,phone});await env.DB.prepare("UPDATE hq_calbookings SET mailed_at=datetime('now') WHERE uid=?").bind(r.uid).run();
+ await audit(env,"owner","calbookings",r.uid,"payment email sent",(r.name||r.email).slice(0,80));return {ok:true}}
 async function calcomHook(req,env){
  if(!env.CALCOM_WEBHOOK_SECRET)return json({error:"Not configured"},503);
  const raw=await req.text();const given=(req.headers.get("x-cal-signature-256")||"").trim().toLowerCase();
@@ -511,7 +523,7 @@ async function calcomHook(req,env){
   await env.DB.prepare("INSERT OR IGNORE INTO hq_calbookings(uid,email,name,start,status) VALUES(?,?,?,?,?)").bind(b.uid,b.email,b.name,b.start,ev==="BOOKING_CREATED"?"booked":"rescheduled").run();
   await calUpsertContact(env,b,{at:day,text:(ev==="BOOKING_CREATED"?"Booked on Cal.com: ":"Rescheduled on Cal.com to ")+(p.title||"session")+(when?" for "+when:"")+(b.notes?" · "+b.notes:""),key:"calcom:"+b.uid},true);
   // Payment email only for new bookings by people who haven't already paid for this time.
-  const paid=await env.DB.prepare("SELECT 1 FROM hq_checkouts WHERE lower(email)=? AND status='paid' AND created_at>datetime('now','-30 days')").bind(b.email).first().catch(()=>null);
+  const paid=await calBookingPaid(env,b.email,b.start);
   if(ev==="BOOKING_CREATED"&&!(prev&&prev.mailed_at)&&!paid){try{await sendCalPayEmail(env,b);await env.DB.prepare("UPDATE hq_calbookings SET mailed_at=datetime('now') WHERE uid=?").bind(b.uid).run()}catch(e){console.log("cal.com pay email failed",String(e.message||e))}}
   return json({ok:true})}
  if(ev==="BOOKING_CANCELLED"){await env.DB.prepare("UPDATE hq_calbookings SET status='cancelled' WHERE uid=?").bind(b.uid).run();
@@ -585,6 +597,8 @@ async function api(path,req,env,user){
   if(path==="/hq/api/zd"&&m==="GET")return json(await zdSummary(env));
   if(path==="/hq/api/status"&&m==="GET")return json(await statusReport(env));
   if(path==="/hq/api/paymob"&&m==="GET")return json(await paymobStatus(env));
+  if(path==="/hq/api/calcom"&&m==="GET")return json({bookings:await calBookingsList(env)});
+  if(path==="/hq/api/calcom/resend"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calResend(env,b.uid))}
   if(path==="/hq/api/paymob/test"&&m==="POST"){if(paymobMode(env)!=="test")return json({error:"The test button only works with Paymob test keys."},400);const name=String(user.name||"Amr").split(" ");return json(await paymobIntention(env,{amountCents:1000,name:"HQ test payment",description:"Test payment from ZD Business HQ",email:user.email,first:name[0]||"Amr",last:name.slice(1).join(" ")||"El Hadeka",ref:"hqtest-"+Date.now(),redirect:ORIGIN+"/hq/home/?paymob=done"}))}
   if(path==="/hq/api/briefing"&&(m==="GET"||m==="POST")){try{return json(await briefing(env,m==="POST"))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/ask"&&m==="POST"){const b=await req.json().catch(()=>({}));const q=String(b.q||"").trim().slice(0,500);if(!q)return json({error:"Type a question."},400);try{return json(await askHQ(env,q))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
