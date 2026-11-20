@@ -302,10 +302,89 @@ async function analytics(env0,force){
   out.brevoHistory=rows.filter(r=>r.source.startsWith("brevo:")).map(r=>({date:r.source.slice(6),subscribers:num(JSON.parse(r.data||"{}").subscribers)})).sort((a,b)=>a.date.localeCompare(b.date));
   return out;
 }
+
+/* ---------- Marketing: approvals, publishing to Zernio (locked off by default), Zernio webhook ---------- */
+// The version fingerprint must match cver() in hq/home/index.html exactly.
+const PLATS=[["ig","instagram"],["tt","tiktok"],["li","linkedin"]];
+const cverS=c=>{const t=JSON.stringify([c.script||"",c.caption||"",c.asset||"",PLATS.map(([k])=>!!c[k])]);let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return "v"+(h>>>0).toString(36)};
+async function mktTables(env){
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_kv(k TEXT PRIMARY KEY,v TEXT,updated_at TEXT)").run();
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_approvals(content_id TEXT NOT NULL,version TEXT NOT NULL,stage TEXT NOT NULL,by TEXT NOT NULL,at TEXT NOT NULL,PRIMARY KEY(content_id,version,stage))").run();
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_events(id TEXT PRIMARY KEY,event TEXT,at TEXT,note TEXT)").run();
+}
+const kvGet=async(env,k)=>{const r=await env.DB.prepare("SELECT v FROM hq_kv WHERE k=?").bind(k).first().catch(()=>null);return r?r.v:null};
+async function getContent(env,id){const r=await env.DB.prepare("SELECT data FROM hq_docs WHERE col='content' AND id=?").bind(id).first();if(!r)throw Object.assign(Error("Content not found"),{status:404});return JSON.parse(r.data)}
+async function saveContent(env,id,c){await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='content' AND id=?").bind(JSON.stringify(c),id).run()}
+const histS=(c,by,action,note)=>(c.history||[]).concat([{at:new Date().toISOString(),by,action,note:note||"",version:cverS(c)}]);
+async function decide(env,id,user,body){
+  await mktTables(env);const c=await getContent(env,id);const act=String(body.action||"");const by=user.email;
+  const waiting=["Script for approval","Final for approval"];
+  if(act==="approve"){
+    if(!waiting.includes(c.status))return json({error:"This item isn't waiting for approval."},409);
+    const fin=c.status==="Final for approval";const v=cverS(c);
+    if(fin&&!c.asset)return json({error:"Attach the video first."},409);
+    if(body.version&&body.version!==v)return json({error:"The content changed while you were looking at it. Reload and check again."},409);
+    await env.DB.prepare("INSERT OR IGNORE INTO hq_approvals(content_id,version,stage,by,at) VALUES(?,?,?,?,datetime('now'))").bind(id,v,fin?"final":"script",by).run();
+    c.status=fin?"Approved":"To record";c.approval={stage:fin?"final":"script",version:v,at:new Date().toISOString(),by};c.history=histS(c,by,fin?"Final approved":"Script approved");
+    await saveContent(env,id,c);await audit(env,by,"content",id,c.history.slice(-1)[0].action,c.title);
+    const pub=fin?await publishContent(env,id,by):null;
+    return json({ok:true,status:(await getContent(env,id)).status,publish:pub});
+  }
+  if(act==="changes"){const note=String(body.note||"").slice(0,2000);if(!note)return json({error:"Write what should change."},400);c.status="Changes requested";c.approval=null;c.history=histS(c,by,"Changes requested",note);await saveContent(env,id,c);await audit(env,by,"content",id,"changes requested",c.title);return json({ok:true})}
+  if(act==="reject"){if(c.zernioPostId)return json({error:"Already sent to Zernio. Cancel it in Zernio first."},409);c.status="Rejected";c.approval=null;c.history=histS(c,by,"Rejected");await saveContent(env,id,c);await audit(env,by,"content",id,"rejected",c.title);return json({ok:true})}
+  if(act==="publish")return json(await publishContent(env,id,by));
+  return json({error:"Unknown action"},400);
+}
+async function publishContent(env,id,by){
+  const c=await getContent(env,id);const v=cverS(c);
+  const fail=async(msg)=>{c.history=histS(c,by,"Not sent",msg);await saveContent(env,id,c);return {sent:false,reason:msg}};
+  if(c.zernioPostId)return {sent:true,already:true,zernioPostId:c.zernioPostId};
+  if(c.status!=="Approved")return fail("Only approved posts can be sent.");
+  const ok=await env.DB.prepare("SELECT 1 FROM hq_approvals WHERE content_id=? AND version=? AND stage='final'").bind(id,v).first();
+  if(!ok||!c.approval||c.approval.version!==v)return fail("The approval doesn't match this version, so nothing was sent.");
+  // Safety switch: nothing reaches Zernio unless publishing has been switched on.
+  if((await kvGet(env,"publishing"))!=="on"){c.history=histS(c,by,"Ready to send","Publishing is switched off, so nothing was sent to Zernio.");await saveContent(env,id,c);return {sent:false,reason:"Publishing is switched off. Nothing was sent."}}
+  const key=env.ZERNIO_API_KEY;if(!key)return fail("Zernio key missing.");
+  if(!/^https:\/\/\S+\.(mp4|mov)(\?\S*)?$/i.test(c.asset||""))return fail("The video link must be a direct .mp4 or .mov file, not a Drive page.");
+  if(!c.date)return fail("Pick a publish date first.");
+  const H={Authorization:"Bearer "+key,"Content-Type":"application/json","Idempotency-Key":"hq-"+id+"-"+v};
+  const acc=await getJSON("https://zernio.com/api/v1/accounts",{Authorization:"Bearer "+key});const list=acc.accounts||[];
+  const platforms=PLATS.filter(([k])=>c[k]).map(([,p])=>{const a=list.find(x=>x.platform===p);return a?{platform:p,accountId:a._id}:null});
+  if(!platforms.length||platforms.includes(null))return fail("One of the chosen platforms isn't connected in Zernio.");
+  const body={content:c.caption||"",mediaItems:[{type:"video",url:c.asset}],platforms,scheduledFor:c.date+"T"+(c.time||"19:00")+":00",timezone:"Africa/Cairo"};
+  const r=await fetch("https://zernio.com/api/v1/posts",{method:"POST",headers:H,body:JSON.stringify(body)});const t=await r.text();
+  if(!r.ok&&r.status!==409)return fail("Zernio said "+r.status+": "+t.slice(0,200));
+  let pid=null;try{const j=JSON.parse(t);pid=(j.post&&j.post._id)||null}catch{}
+  c.zernioPostId=pid;c.status="Scheduled";c.history=histS(c,by,"Sent to Zernio","Scheduled for "+body.scheduledFor+" Cairo time"+(pid?" · "+pid:""));await saveContent(env,id,c);
+  return {sent:true,zernioPostId:pid};
+}
+async function zernioHook(req,env){
+  await mktTables(env);const secret=await kvGet(env,"zernio_webhook_secret");if(!secret)return new Response("Not configured",{status:503});
+  const raw=await req.text();const sig=(req.headers.get("X-Zernio-Signature")||"").toLowerCase();
+  const k=await crypto.subtle.importKey("raw",te.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  const exp=[...new Uint8Array(await crypto.subtle.sign("HMAC",k,te.encode(raw)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+  let diff=exp.length^sig.length;for(let i=0;i<Math.min(exp.length,sig.length);i++)diff|=exp.charCodeAt(i)^sig.charCodeAt(i);
+  if(diff)return new Response("Invalid signature",{status:400});
+  let e;try{e=JSON.parse(raw)}catch{return new Response("Bad JSON",{status:400})}
+  const eid=String(e.id||req.headers.get("X-Zernio-Event-Id")||"").slice(0,100);const ev=String(e.event||"");
+  if(eid){const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_events(id,event,at,note) VALUES(?,?,datetime('now'),?)").bind(eid,ev,e.test?"test":"").run();if(!ins.meta.changes)return new Response(null,{status:200})}
+  if(!["post.published","post.failed","post.partial"].includes(ev)||e.test)return new Response(null,{status:200});
+  const post=e.post||{};const pid=post._id||post.id;if(!pid)return new Response(null,{status:200});
+  const row=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='content' AND json_extract(data,'$.zernioPostId')=?").bind(String(pid)).first();
+  if(!row)return new Response(null,{status:200});
+  const c=JSON.parse(row.data);const pl=post.platforms||[];const urls=pl.map(p=>p.platformPostUrl).filter(Boolean);
+  const errs=pl.filter(p=>p.status==="failed").map(p=>p.platform+": "+(p.errorMessage||p.error||"failed"));
+  c.status=ev==="post.failed"?"Failed":ev==="post.partial"?"Failed":"Published";
+  if(urls.length){c.link=urls[0];c.links=urls}
+  c.history=histS(c,"Zernio",ev==="post.published"?"Published":ev==="post.partial"?"Partly published":"Publishing failed",ev==="post.published"?urls.join(" "):errs.join("; ").slice(0,500));
+  await saveContent(env,row.id,c);return new Response(null,{status:200});
+}
 async function api(path,req,env,user){
   const m=req.method;
   if(path==="/hq/api/me"&&m==="GET")return json({email:user.email,calendarManager:CALENDAR_MANAGER});
   if(path==="/hq/api/all"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs").all()).results||[];const out={};for(const x of r){(out[x.col]=out[x.col]||[]).push(Object.assign({id:x.id,_u:x.updated_at},JSON.parse(x.data)))}return json({docs:out,at:new Date().toISOString()})}
+  {const dm=path.match(/^\/hq\/api\/content\/([A-Za-z0-9_-]{1,64})\/decide$/);if(dm&&m==="POST")return decide(env,dm[1],user,await readBody(req,5000))}
+  if(path==="/hq/api/publishing"&&m==="GET"){await mktTables(env);return json({publishing:(await kvGet(env,"publishing"))==="on",webhook:!!(await kvGet(env,"zernio_webhook_secret"))})}
   let mm=path.match(/^\/hq\/api\/doc\/([a-z]+)(?:\/([A-Za-z0-9_-]+))?$/);
   if(mm){const [,col,id]=mm;if(!COLS.has(col))return json({error:"Unknown collection"},400);if(id&&!ID.test(id))return json({error:"Invalid id"},400);await ensureTable(env);
     if(m==="DELETE"&&id){await env.DB.prepare("DELETE FROM hq_docs WHERE col=? AND id=?").bind(col,id).run();await audit(env,user.email,col,id,"deleted for good");return json({deleted:true})}
@@ -381,6 +460,7 @@ export async function onRequest(context) {
   if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
   // Keep social and newsletter numbers synced in the background whenever the HQ is opened (at most every 6 hours per source).
   if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil){context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));context.waitUntil(dailyBackup(env).catch(e=>console.log("hq backup failed",String(e&&e.message||e))))}
+  if(path==="/hq/hook/zernio" && req.method==="POST")return zernioHook(req,env);
   if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
   if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
   const user=await sessionUser(req,env);
