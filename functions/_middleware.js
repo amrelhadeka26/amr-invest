@@ -535,8 +535,8 @@ const IG_AUTOMATIONS={"6afc67e159541fb4c1596c16":"en","6b00305dd957cd5d7d5a99fb"
 const IG_LISTS=[6,2];// Brevo: Instagram – Clients, Website – Newsletter
 const IG_EMAIL_RE=/[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}/;
 const IG_TXT={
- en:{sent:e=>`Sent to ${e} ✅ Check your inbox (and spam, just in case).\n\nWrong email? Just send the right one here.`,bad:"Hmm, that email looks incomplete 🤔 Send it like this: name@gmail.com",again:e=>`Already sent to ${e} ✅ If you can't find it, check your spam folder.`,fail:"Something went wrong on my side 🙏 I'll send it to you myself shortly."},
- ar:{sent:e=>`اتبعت على ${e} ✅ بص في الإيميل (ولو مش لاقيه بص في الـSpam).\n\nلو الإيميل غلط، ابعت الصح هنا.`,bad:"الإيميل ده شكله ناقص حاجة 🤔 ابعته كده: name@gmail.com",again:e=>`اتبعت قبل كده على ${e} ✅ لو مش لاقيه بص في الـSpam.`,fail:"حصلت مشكلة عندي 🙏 هبعتهولك بنفسي كمان شوية."}};
+ en:{sent:e=>`Sent to ${e} ✅ Check your inbox (and spam, just in case).\n\nIf it helps, follow me for the next lessons 🙏\n\nWrong email? Just send the right one here.`,follow:"Follow me",bad:"Hmm, that email looks incomplete 🤔 Send it like this: name@gmail.com",again:e=>`Already sent to ${e} ✅ If you can't find it, check your spam folder.`,fail:"Something went wrong on my side 🙏 I'll send it to you myself shortly."},
+ ar:{sent:e=>`اتبعت على ${e} ✅ بص في الإيميل (ولو مش لاقيه بص في الـSpam).\n\nلو الدليل فادك، تابعني عشان الدروس الجاية 🙏\n\nلو الإيميل غلط، ابعت الصح هنا.`,follow:"تابعني",bad:"الإيميل ده شكله ناقص حاجة 🤔 ابعته كده: name@gmail.com",again:e=>`اتبعت قبل كده على ${e} ✅ لو مش لاقيه بص في الـSpam.`,fail:"حصلت مشكلة عندي 🙏 هبعتهولك بنفسي كمان شوية."}};
 function hqKeys(env0){const names=Object.keys(env0);const pick=(...n)=>{for(const x of n){const k=names.find(y=>y.trim().toUpperCase()===x);const v=k&&env0[k];if(typeof v==="string"&&v.trim())return v.trim()}return ""};
  return {zernio:pick("ZERNIO_API_KEY","ZERNIO_KEY","ZERNIO","LATE_API_KEY"),brevo:pick("BREVO_API_KEY","BREVO_KEY","BREVO","SENDINBLUE_API_KEY")}}
 function guideEmail(lang){const ar=lang==="ar";const pdf="https://invest.amrelhadeka.com/assets/the-5-minute-money-check"+(ar?"-ar":"")+".pdf";
@@ -574,7 +574,7 @@ async function igDm(env,e){const m=e.message||{};if(m.direction!=="incoming"||(m
  for(const x of (j.messages||[]).slice().reverse()){const aid=(x.metadata&&x.metadata.automationId)||"";if(x.direction==="outgoing"&&IG_AUTOMATIONS[aid]&&Date.parse(x.createdAt||x.sentAt||0)>=since){lang=IG_AUTOMATIONS[aid];break}}
  if(!lang)return "skip: no money-check DM in this conversation";
  const T=IG_TXT[lang];const sid=String((m.sender&&m.sender.id)||conv).slice(0,80);
- const reply=async(msg,tag)=>{const r=await fetch("https://zernio.com/api/v1/inbox/conversations/"+encodeURIComponent(conv)+"/messages",{method:"POST",headers:Object.assign({"Idempotency-Key":("hq-ig-"+(e.id||m.id||conv)+"-"+tag).slice(0,200)},ZH),body:JSON.stringify({accountId:acct,message:msg})});if(!r.ok)throw Error("Zernio DM "+r.status+": "+(await r.text()).slice(0,150))};
+ const reply=async(msg,tag,buttons)=>{const r=await fetch("https://zernio.com/api/v1/inbox/conversations/"+encodeURIComponent(conv)+"/messages",{method:"POST",headers:Object.assign({"Idempotency-Key":("hq-ig-"+(e.id||m.id||conv)+"-"+tag).slice(0,200)},ZH),body:JSON.stringify(Object.assign({accountId:acct,message:msg},buttons?{buttons}:{}))});if(!r.ok)throw Error("Zernio DM "+r.status+": "+(await r.text()).slice(0,150))};
  const mt=text.match(IG_EMAIL_RE);
  if(!mt){if(text.includes("@")){await reply(T.bad,"bad");return "asked again: no valid email"}return "skip: no email in the message"}
  const email=mt[0].toLowerCase().replace(/\.+$/,"");if(email.length>150)return "skip: email too long";
@@ -590,7 +590,7 @@ async function igDm(env,e){const m=e.message||{};if(m.direction!=="incoming"||(m
  if(!s.ok){const t=await s.text();await reply(T.fail,"fail");return "error: Brevo email "+s.status+": "+t.slice(0,150)}
  await igContact(env,email,m,lang);
  prev.push({email,at:new Date().toISOString()});await env.DB.prepare("INSERT INTO hq_kv(k,v,updated_at) VALUES(?,?,datetime('now')) ON CONFLICT(k) DO UPDATE SET v=excluded.v,updated_at=excluded.updated_at").bind(kk,JSON.stringify(prev)).run();
- await reply(T.sent(email),"sent");return "sent ("+lang+")"}
+ await reply(T.sent(email),"sent",[{type:"url",title:T.follow,url:"https://www.instagram.com/amrelhadeka.invest/"}]);return "sent ("+lang+")"}
 async function zernioHook(req,env){
   await mktTables(env);const secret=await kvGet(env,"zernio_webhook_secret");if(!secret)return new Response("Not configured",{status:503});
   const raw=await req.text();const sig=(req.headers.get("X-Zernio-Signature")||"").toLowerCase();
