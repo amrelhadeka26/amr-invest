@@ -529,6 +529,68 @@ async function calcomHook(req,env){
  if(ev==="BOOKING_CANCELLED"){await env.DB.prepare("UPDATE hq_calbookings SET status='cancelled' WHERE uid=?").bind(b.uid).run();
   await calUpsertContact(env,b,{at:day,text:"Cancelled on Cal.com: "+(p.title||"session")+(when?" ("+when+")":"")+(p.cancellationReason?" · "+String(p.cancellationReason).slice(0,200):""),key:"calcom-x:"+b.uid},false);return json({ok:true})}
  return json({ok:true,ignored:ev})}
+/* ---------- Instagram DM → email (the 5-minute money check). Comment INVEST / استثمر → follow gate → "send your email" DM (Zernio automations)
+   → the reply arrives here as message.received → Brevo (Instagram – Clients + newsletter) → guide email in their language → HQ contact → DM confirmation. */
+const IG_AUTOMATIONS={"6afc67e159541fb4c1596c16":"en","6b00305dd957cd5d7d5a99fb":"ar"};
+const IG_LISTS=[6,2];// Brevo: Instagram – Clients, Website – Newsletter
+const IG_EMAIL_RE=/[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}/;
+const IG_TXT={
+ en:{sent:e=>`Sent to ${e} ✅ Check your inbox (and spam, just in case).\n\nWrong email? Just send the right one here.`,bad:"Hmm, that email looks incomplete 🤔 Send it like this: name@gmail.com",again:e=>`Already sent to ${e} ✅ If you can't find it, check your spam folder.`,fail:"Something went wrong on my side 🙏 I'll send it to you myself shortly."},
+ ar:{sent:e=>`اتبعت على ${e} ✅ بص في الإيميل (ولو مش لاقيه بص في الـSpam).\n\nلو الإيميل غلط، ابعت الصح هنا.`,bad:"الإيميل ده شكله ناقص حاجة 🤔 ابعته كده: name@gmail.com",again:e=>`اتبعت قبل كده على ${e} ✅ لو مش لاقيه بص في الـSpam.`,fail:"حصلت مشكلة عندي 🙏 هبعتهولك بنفسي كمان شوية."}};
+function hqKeys(env0){const names=Object.keys(env0);const pick=(...n)=>{for(const x of n){const k=names.find(y=>y.trim().toUpperCase()===x);const v=k&&env0[k];if(typeof v==="string"&&v.trim())return v.trim()}return ""};
+ return {zernio:pick("ZERNIO_API_KEY","ZERNIO_KEY","ZERNIO","LATE_API_KEY"),brevo:pick("BREVO_API_KEY","BREVO_KEY","BREVO","SENDINBLUE_API_KEY")}}
+function guideEmail(lang){const ar=lang==="ar";const pdf="https://invest.amrelhadeka.com/assets/the-5-minute-money-check"+(ar?"-ar":"")+".pdf";
+ const T=ar?{t:"فحص الفلوس في ٥ دقايق",h:"أهلاً بيك! ده الدليل اللي طلبته",p:"هات قلم وأرقام الشهر اللي فات: الفحص ده هيوريك فلوسك واقفة فين قبل ما تستثمر ولا جنيه.",b:"افتح فحص الفلوس",n:"هتوصلك مني إيميلات من وقت للتاني فيها دروس استثمار بسيطة. تقدر تلغي الاشتراك في أي وقت.",d:"محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.",s:"فحص الفلوس في ٥ دقايق وصلك 📋"}
+  :{t:"The 5-minute money check",h:"Here's the guide you asked for",p:"Grab a pen and last month's numbers: this check shows where your money stands before you invest a single pound.",b:"Open the money check",n:"You'll also get simple investing lessons from me now and then. You can unsubscribe anytime.",d:"Educational content only, not personal financial advice. Investing involves risk, including loss of capital.",s:"Your 5-minute money check 📋"};
+ const dir=ar?' dir="rtl"':"";
+ const html=`<!DOCTYPE html><html lang="${ar?"ar":"en"}"${dir}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${T.t}</title></head><body style="margin:0;padding:0;background:#FFFFFF;"><table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF"><tr><td align="center" style="padding:40px 20px;"><table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:520px;font-family:Helvetica,Arial,sans-serif;color:#1D1D1F;">
+<tr><td align="center" style="padding-bottom:28px;"><a href="https://invest.amrelhadeka.com/" target="_blank"><img src="https://invest.amrelhadeka.com/assets/email-logo.png" width="56" alt="Amr El Hadeka" style="display:block;border:0;width:56px;height:auto;"></a></td></tr>
+<tr><td align="center"${dir} style="font-size:24px;line-height:34px;font-weight:700;padding-bottom:16px;">${T.h}</td></tr>
+<tr><td align="center"${dir} style="font-size:15px;line-height:25px;padding-bottom:24px;">${T.p}</td></tr>
+<tr><td align="center" style="padding-bottom:28px;"><table cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#1D1D1F" style="background:#1D1D1F;border-radius:10px;"><a href="${pdf}" target="_blank" style="display:inline-block;padding:13px 30px;color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;font-family:Helvetica,Arial,sans-serif;">${T.b}</a></td></tr></table></td></tr>
+<tr><td align="center"${dir} style="font-size:15px;line-height:25px;padding-bottom:24px;">${T.n}</td></tr>
+<tr><td align="center"${dir} style="font-size:12px;line-height:20px;padding-bottom:32px;">${T.d}</td></tr>
+<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;color:#1D1D1F;">Your Money, Your Future &middot; <span dir="rtl">فلوسك مستقبلك</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a> &middot; #YourMoneyYourFuture</td></tr>
+</table></td></tr></table></body></html>`;
+ return {subject:T.s,html}}
+async function igContact(env,email,m,lang){await ensureTable(env);const now=new Date().toISOString(),day=now.slice(0,10);const s=m.sender||{};
+ const u=String(s.username||"").replace(/^@/,"").replace(/[^A-Za-z0-9._]/g,"").slice(0,60);const nm=String(s.name||"").trim().slice(0,80);
+ const entry={at:day,text:"Asked for the 5-minute money check on Instagram"+(u?" (@"+u+")":"")+" · "+(lang==="ar"?"Arabic":"English"),key:"ig:"+day};
+ const hit=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=?").bind(email).first();
+ if(hit){const d=JSON.parse(hit.data);if(!d.igSince)d.igSince=day;if(u)d.instagram=u;if(!d.lang)d.lang=lang;if(!d.name&&(nm||u))d.name=nm||u;
+  if(!(d.log||[]).some(l=>l.key===entry.key))d.log=(d.log||[]).concat([entry]);
+  await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),hit.id).run();await audit(env,"instagram","contacts",hit.id,"updated",(d.name||email).slice(0,80));return}
+ const id=await contactId(email);const d={name:nm||u,email,type:"Audience",stage:"New",instagram:u,igSince:day,lang,createdAt:now,deletedAt:null,createdBy:"instagram",log:[entry]};
+ const ins=await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
+ if(ins&&ins.meta&&ins.meta.changes)await audit(env,"instagram","contacts",id,"created",(d.name||email).slice(0,80))}
+async function igDm(env,e){const m=e.message||{};if(m.direction!=="incoming"||(m.platform&&m.platform!=="instagram"))return "skip: not an incoming Instagram DM";
+ const text=String(m.text||"").trim();const conv=String(m.conversationId||(e.conversation&&e.conversation.id)||"");const acct=String((e.account&&(e.account.accountId||e.account.id))||"");
+ if(!text||!conv||!acct)return "skip: no text";
+ const K=hqKeys(env);if(!K.zernio)return "error: Zernio key missing";
+ const ZH={Authorization:"Bearer "+K.zernio,"Content-Type":"application/json"};
+ // Only people who got the money-check DM from one of the two automations in the last 7 days; their language is that automation's language.
+ const j=await getJSON("https://zernio.com/api/v1/inbox/conversations/"+encodeURIComponent(conv)+"/messages?accountId="+encodeURIComponent(acct),ZH);
+ const since=Date.now()-7*864e5;let lang="";
+ for(const x of (j.messages||[]).slice().reverse()){const aid=(x.metadata&&x.metadata.automationId)||"";if(x.direction==="outgoing"&&IG_AUTOMATIONS[aid]&&Date.parse(x.createdAt||x.sentAt||0)>=since){lang=IG_AUTOMATIONS[aid];break}}
+ if(!lang)return "skip: no money-check DM in this conversation";
+ const T=IG_TXT[lang];const sid=String((m.sender&&m.sender.id)||conv).slice(0,80);
+ const reply=async(msg,tag)=>{const r=await fetch("https://zernio.com/api/v1/inbox/conversations/"+encodeURIComponent(conv)+"/messages",{method:"POST",headers:Object.assign({"Idempotency-Key":("hq-ig-"+(e.id||m.id||conv)+"-"+tag).slice(0,200)},ZH),body:JSON.stringify({accountId:acct,message:msg})});if(!r.ok)throw Error("Zernio DM "+r.status+": "+(await r.text()).slice(0,150))};
+ const mt=text.match(IG_EMAIL_RE);
+ if(!mt){if(text.includes("@")){await reply(T.bad,"bad");return "asked again: no valid email"}return "skip: no email in the message"}
+ const email=mt[0].toLowerCase().replace(/\.+$/,"");if(email.length>150)return "skip: email too long";
+ const kk="igdm:"+sid;const prev=JSON.parse((await kvGet(env,kk))||"[]").filter(x=>Date.parse(x.at)>Date.now()-864e5);
+ if(prev.some(x=>x.email===email)){await reply(T.again(email),"again");return "already sent"}
+ if(prev.length>=3)return "skip: 3 emails in 24 hours from this person";
+ if(!K.brevo){await reply(T.fail,"fail");return "error: Brevo key missing"}
+ const BH={"api-key":K.brevo,"Content-Type":"application/json",accept:"application/json"};
+ const c=await fetch("https://api.brevo.com/v3/contacts",{method:"POST",headers:BH,body:JSON.stringify({email,listIds:IG_LISTS,updateEnabled:true})});
+ if(!c.ok){const t=await c.text();if(c.status===400&&/invalid|email/i.test(t)){await reply(T.bad,"bad");return "asked again: Brevo rejected the email"}await reply(T.fail,"fail");return "error: Brevo contact "+c.status+": "+t.slice(0,150)}
+ const g=guideEmail(lang);
+ const s=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:BH,body:JSON.stringify({sender:{name:"Invest with Amr El Hadeka",email:"invest@amrelhadeka.com"},replyTo:{email:"invest@amrelhadeka.com"},to:[{email}],subject:g.subject,htmlContent:g.html,tags:["ig-money-check","ig-"+lang]})});
+ if(!s.ok){const t=await s.text();await reply(T.fail,"fail");return "error: Brevo email "+s.status+": "+t.slice(0,150)}
+ await igContact(env,email,m,lang);
+ prev.push({email,at:new Date().toISOString()});await env.DB.prepare("INSERT INTO hq_kv(k,v,updated_at) VALUES(?,?,datetime('now')) ON CONFLICT(k) DO UPDATE SET v=excluded.v,updated_at=excluded.updated_at").bind(kk,JSON.stringify(prev)).run();
+ await reply(T.sent(email),"sent");return "sent ("+lang+")"}
 async function zernioHook(req,env){
   await mktTables(env);const secret=await kvGet(env,"zernio_webhook_secret");if(!secret)return new Response("Not configured",{status:503});
   const raw=await req.text();const sig=(req.headers.get("X-Zernio-Signature")||"").toLowerCase();
@@ -539,6 +601,9 @@ async function zernioHook(req,env){
   let e;try{e=JSON.parse(raw)}catch{return new Response("Bad JSON",{status:400})}
   const eid=String(e.id||req.headers.get("X-Zernio-Event-Id")||"").slice(0,100);const ev=String(e.event||"");
   if(eid){const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_events(id,event,at,note) VALUES(?,?,datetime('now'),?)").bind(eid,ev,e.test?"test":"").run();if(!ins.meta.changes)return new Response(null,{status:200})}
+  if(ev==="message.received"&&!e.test){let note;try{note=await igDm(env,e)}catch(x){note="error: "+String(x&&x.message||x).slice(0,200)}
+    if(eid)await env.DB.prepare("UPDATE hq_events SET note=? WHERE id=?").bind(String(note).slice(0,300),eid).run().catch(()=>{});
+    return new Response(null,{status:200})}
   if(!["post.published","post.failed","post.partial"].includes(ev)||e.test)return new Response(null,{status:200});
   const post=e.post||{};const pid=post._id||post.id;if(!pid)return new Response(null,{status:200});
   const row=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='content' AND json_extract(data,'$.zernioPostId')=?").bind(String(pid)).first();
