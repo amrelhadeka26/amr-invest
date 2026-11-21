@@ -1,5 +1,5 @@
 // Anonymous usage counter for the site.
-// Stores only daily counts per event: no IP addresses, no cookies, no personal data.
+// Stores only daily counts per event: no IP addresses, no personal data, and it sets no cookies (it only reads the owner's zd_me marker to skip his own visits).
 const EVENTS = new Set(['view', 'tab', 'use', 'currency', 'outlook', 'goal', 'tile', 'explore', 'lesson', 'src', 'askzd', 'book', 'leadmagnet', 'newsletter']);
 const VALUE = /^[a-z0-9_-]{0,40}$/;
 
@@ -20,6 +20,8 @@ function allowedOrigin(request) {
 export async function onRequestPost({ request, env }) {
   const done = new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
   if (!env.DB || !allowedOrigin(request)) return done;
+  // The owner's own devices (marked at /me or by opening the HQ) are never counted.
+  if (/(?:^|;\s*)zd_me=1(?:;|$)/.test(request.headers.get('Cookie') || '')) return done;
   let body;
   try {
     const text = await request.text();
