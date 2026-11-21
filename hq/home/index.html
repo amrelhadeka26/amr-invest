@@ -79,6 +79,12 @@ h2{font-size:15px;font-weight:600;margin:0}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .tabs button.on{background:var(--ink);color:var(--inv);border-color:var(--ink)}
 .fl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cq{width:260px;max-width:100%;margin:0}
+.seg{display:flex;width:max-content;max-width:100%;box-sizing:border-box;gap:2px;padding:3px;margin:2px 0 12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.seg::-webkit-scrollbar{display:none}
+.seg button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink);opacity:.7;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:none}
+.seg button span{font-size:11px;opacity:.65;font-variant-numeric:tabular-nums}
+.seg button.sel{background:var(--card);opacity:1;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.14)}.seg button.sel span{opacity:.8}
+@media(max-width:640px){.cq{width:100%}.seg button{padding:7px 10px}}
 .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .dy{background:var(--soft);border-radius:10px;padding:8px;min-height:150px}
 .dy.td{outline:2px solid var(--ink)}
@@ -555,6 +561,7 @@ function finance(noKpis){
 }
 
 /* ---------- Sales: one contact list, the pipeline, clients ---------- */
+const CF={all:()=>true,zd:c=>!!c.zdSince,nl:c=>!!c.newsletterSince,cal:c=>!!(c.calendlySince||c.calcomSince),ig:c=>!!c.igSince,leads:c=>c.type!=='Audience'&&c.type!=='Client',clients:c=>c.type==='Client'};
 const SRC_PILLS=c=>(c.zdSince?'<span class="pill">ZD AI</span>':'')+(c.newsletterSince?'<span class="pill">Newsletter</span>':'')+(c.calendlySince?'<span class="pill">Calendly</span>':'')+(c.calcomSince?'<span class="pill">Cal.com</span>':'')+(c.igSince?'<span class="pill">Instagram</span>':'');
 const added=c=>String(c.createdAt||c.zdSince||c.newsletterSince||c.calendlySince||c.calcomSince||c.igSince||'').slice(0,10);
 const agreedTo=c=>[c.newsletterSince&&'Newsletter'].concat(c.agreed||[]).filter(Boolean);
@@ -570,10 +577,10 @@ function pSales(){const t={contacts:'Contacts',clients:'Clients'}[S.page]||'Pipe
  if(t==='Pipeline')h+=pipeline();
  if(t==='Clients')h+=clients();
  if(t==='Contacts'){const f=S.cf||'all',q=(S.cq||'').toLowerCase();
-  let list=all.filter(c=>f==='all'||(f==='zd'&&c.zdSince)||(f==='nl'&&c.newsletterSince)||(f==='cal'&&(c.calendlySince||c.calcomSince))||(f==='ig'&&c.igSince)||(f==='leads'&&c.type!=='Audience'&&c.type!=='Client')||(f==='clients'&&c.type==='Client'));
+  let list=all.filter(CF[f]||CF.all);
   if(q)list=list.filter(c=>[c.name,c.email,c.company,c.title].some(x=>String(x||'').toLowerCase().includes(q)));
   list.sort((a,b)=>added(b).localeCompare(added(a)));
-  h+=`<div class="card"><div class="ch"><h2>Contacts (${list.length})</h2><div class="fl"><input id="cq" placeholder="Search name or email" value="${esc(S.cq||'')}" style="max-width:220px">${[['all','All'],['zd','ZD AI'],['nl','Newsletter'],['cal','Bookings'],['ig','Instagram'],['leads','Leads'],['clients','Clients']].map(([k,l])=>`<button class="sm ${f===k?'on':''}" data-cf="${k}">${l}</button>`).join('')}</div></div>
+  h+=`<div class="card"><div class="ch"><h2>Contacts (${list.length})</h2><input id="cq" class="cq" type="search" placeholder="Search name or email" value="${esc(S.cq||'')}"></div><div class="seg" role="tablist">${[['all','All'],['zd','ZD AI'],['nl','Newsletter'],['cal','Bookings'],['ig','Instagram'],['leads','Leads'],['clients','Clients']].map(([k,l])=>{const n=all.filter(c=>CF[k](c)).length;return `<button role="tab" aria-selected="${f===k}" class="${f===k?'sel':''}" data-cf="${k}">${l}<span>${n}</span></button>`}).join('')}</div>
   <div class="fl" style="justify-content:space-between;margin:0 0 8px"><p class="mut" style="margin:0">ZD AI sign-ups and newsletter subscribers arrive here every few hours; Instagram DM emails and Cal.com bookings arrive the moment they're made. Email people only about what they agreed to.</p><button class="sm" data-act="csvContacts">Download CSV</button></div>
   ${list.length?`<table><tr><th>Name</th><th>Email</th><th>From</th><th>Agreed to</th><th>Type</th><th>Paid</th><th>Added</th><th></th></tr>${list.slice(0,300).map(c=>`<tr><td><button class="lk" data-act="viewContact" data-id="${c.id}">${esc(c.name||c.email||'—')}</button><div class="mut">${esc([c.title,c.company,c.instagram&&'@'+c.instagram].filter(Boolean).join(' · '))}</div></td><td>${esc(c.email||'')}</td><td>${SRC_PILLS(c)||'<span class="mut">added by you</span>'}</td><td class="mut">${esc(agreedTo(c).join(', ')||'—')}</td><td>${esc(c.type||'')}</td><td>${(()=>{const v=sumA(paidBy(c));return v>0?`<span class="gn">+${money(v)}</span>`:'—'})()}</td><td>${esc(fmtD(added(c)))}</td><td style="white-space:nowrap"><button class="ic" data-act="editContact" data-id="${c.id}">Edit</button><button class="ic" data-act="del" data-col="contacts" data-id="${c.id}" title="Move to Bin">Delete</button></td></tr>`).join('')}</table>`:'<div class="empty">No contacts match.</div>'}</div>`}
  return h}
@@ -771,7 +778,7 @@ document.addEventListener('click',async e=>{
  const tf=e.target.closest('[data-tfilt]');if(tf){S.tfilt=tf.dataset.tfilt;render();return}
  const mt=e.target.closest('[data-mtab]');if(mt){S.mtab=mt.dataset.mtab;render();return}
  const stb=e.target.closest('[data-stab]');if(stb){S.stab=stb.dataset.stab;render();return}
- const cfb=e.target.closest('[data-cf]');if(cfb){S.cf=cfb.dataset.cf;render();return}
+ const cfb=e.target.closest('[data-cf]');if(cfb){S.cf=cfb.dataset.cf;render();const sg=document.querySelector('.seg'),on=sg&&sg.querySelector('.sel');if(on)sg.scrollLeft=on.offsetLeft-(sg.clientWidth-on.offsetWidth)/2;return}
  const b=e.target.closest('[data-act]');if(!b)return;const A=b.dataset.act,id=b.dataset.id;
  const find=(c)=>S[c].find(x=>x.id===id);
  try{switch(A){
