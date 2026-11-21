@@ -482,7 +482,7 @@ function calPayEmail(b){const url=escH(calPayUrl(b)),first=escH((b.name||"").spl
 <tr><td align="center" dir="rtl" style="font-size:13px;line-height:22px;padding-bottom:24px;color:#424245;">عندك سؤال؟ رد على الإيميل ده.</td></tr>
 <tr><td align="center" style="font-size:12px;line-height:20px;padding-bottom:6px;">Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</td></tr>
 <tr><td align="center" dir="rtl" style="font-size:12px;line-height:22px;padding-bottom:28px;">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</td></tr>
-<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;">Your Money, Your Future &middot; <span dir="rtl">فلوسك مستقبلك</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a></td></tr>
+<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;">Investing Made Simple &middot; <span dir="rtl">الاستثمار ببساطة</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a></td></tr>
 </table></td></tr></table></body></html>`}
 async function sendCalPayEmail(env,b){if(!env.BREVO_API_KEY)throw new Error("BREVO_API_KEY missing");
  const r=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{"api-key":env.BREVO_API_KEY,"Content-Type":"application/json",accept:"application/json"},body:JSON.stringify({sender:{name:"Amr El Hadeka",email:"invest@amrelhadeka.com"},replyTo:{email:"invest@amrelhadeka.com",name:"Amr El Hadeka"},to:[{email:b.email,name:b.name||b.email}],subject:"Confirm your session · أكّد جلستك",htmlContent:calPayEmail(b),tags:["session-payment"]})});
@@ -552,7 +552,7 @@ function guideEmail(lang){const ar=lang==="ar";const pdf="https://invest.amrelha
 <tr><td align="center" style="padding-bottom:28px;"><table cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#1D1D1F" style="background:#1D1D1F;border-radius:10px;"><a href="${pdf}" target="_blank" style="display:inline-block;padding:13px 30px;color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;font-family:Helvetica,Arial,sans-serif;">${T.b}</a></td></tr></table></td></tr>
 <tr><td align="center"${dir} style="font-size:15px;line-height:25px;padding-bottom:24px;">${T.n}</td></tr>
 <tr><td align="center"${dir} style="font-size:12px;line-height:20px;padding-bottom:32px;">${T.d}</td></tr>
-<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;color:#1D1D1F;">Your Money, Your Future &middot; <span dir="rtl">فلوسك مستقبلك</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a> &middot; #YourMoneyYourFuture</td></tr>
+<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;color:#1D1D1F;">Investing Made Simple &middot; <span dir="rtl">الاستثمار ببساطة</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a> &middot; #InvestingMadeSimple</td></tr>
 </table></td></tr></table></body></html>`;
  return {subject:T.s,html}}
 async function igContact(env,email,m,lang){await ensureTable(env);const now=new Date().toISOString(),day=now.slice(0,10);const s=m.sender||{};
