@@ -1,4 +1,4 @@
-// ZD. Business HQ (built by Claude): private Google sign-in, D1 storage and Google Calendar.
+// AH HQ (built by Claude): private Google sign-in, D1 storage and Google Calendar.
 // All /hq routes fail closed unless an allowed Google account has authenticated.
 const CLIENT_ID = "322859135457-3prdc4b02hm4d1piguamdve1pbs2anf1.apps.googleusercontent.com";
 const OWNER = "amrelhadeka@gmail.com";
@@ -666,7 +666,7 @@ async function api(path,req,env,user){
   if(path==="/hq/api/paymob"&&m==="GET")return json(await paymobStatus(env));
   if(path==="/hq/api/calcom"&&m==="GET")return json({bookings:await calBookingsList(env)});
   if(path==="/hq/api/calcom/resend"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calResend(env,b.uid))}
-  if(path==="/hq/api/paymob/test"&&m==="POST"){if(paymobMode(env)!=="test")return json({error:"The test button only works with Paymob test keys."},400);const name=String(user.name||"Amr").split(" ");return json(await paymobIntention(env,{amountCents:1000,name:"HQ test payment",description:"Test payment from ZD Business HQ",email:user.email,first:name[0]||"Amr",last:name.slice(1).join(" ")||"El Hadeka",ref:"hqtest-"+Date.now(),redirect:ORIGIN+"/hq/home/?paymob=done"}))}
+  if(path==="/hq/api/paymob/test"&&m==="POST"){if(paymobMode(env)!=="test")return json({error:"The test button only works with Paymob test keys."},400);const name=String(user.name||"Amr").split(" ");return json(await paymobIntention(env,{amountCents:1000,name:"HQ test payment",description:"Test payment from AH HQ",email:user.email,first:name[0]||"Amr",last:name.slice(1).join(" ")||"El Hadeka",ref:"hqtest-"+Date.now(),redirect:ORIGIN+"/hq/home/?paymob=done"}))}
   if(path==="/hq/api/briefing"&&(m==="GET"||m==="POST")){try{return json(await briefing(env,m==="POST"))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/ask"&&m==="POST"){const b=await req.json().catch(()=>({}));const q=String(b.q||"").trim().slice(0,500);if(!q)return json({error:"Type a question."},400);try{return json(await askHQ(env,q))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
   if(path==="/hq/api/export"&&m==="GET"){await ensureTable(env);const r=(await env.DB.prepare("SELECT col,id,data,updated_at FROM hq_docs ORDER BY col,id").all()).results||[];await audit(env,user.email,"all","export","exported everything");
@@ -705,7 +705,7 @@ async function callback(req,env) {
     }
     const ses=await signSession(profile.sub,profile.email,env.GOOGLE_CLIENT_SECRET);
     return redirect(ORIGIN+"/hq/home/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
-  }catch(e){return new Response("ZD HQ Google login: "+String(e.message||e),{status:401,headers:{...htmlHeaders,"Content-Type":"text/plain; charset=utf-8"}})}
+  }catch(e){return new Response("AH HQ Google login: "+String(e.message||e),{status:401,headers:{...htmlHeaders,"Content-Type":"text/plain; charset=utf-8"}})}
 }
 // ---- "This device is me": leave the owner's devices out of all visit counts ----
 const ME_COOKIE="zd_me=1; Path=/; Max-Age=157680000; Secure; HttpOnly; SameSite=Lax";
@@ -721,7 +721,7 @@ export async function onRequest(context) {
   if((path==="/me"||path==="/me/")&&req.method==="GET")return mePage(req);
   if(path.startsWith("/pay/api/")){if(!env.DB)return new Response("Not configured",{status:503});return payApi(req,env,path)}
   if(!isPlan&&!(path==="/hq" || path.startsWith("/hq/")))return context.next();
-  if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
+  if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("AH HQ private access is not configured",{status:503,headers:htmlHeaders});
   if(isPlan)return planRoute(context,env,req,path);
   // Keep social and newsletter numbers synced in the background whenever the HQ is opened (at most every 6 hours per source).
   if(req.method==="GET"&&!path.startsWith("/hq/api/")&&context.waitUntil){context.waitUntil(analytics(env,false).catch(e=>console.log("hq background sync failed",String(e&&e.message||e))));context.waitUntil(dailyBackup(env).catch(e=>console.log("hq backup failed",String(e&&e.message||e))))}
