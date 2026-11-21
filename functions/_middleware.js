@@ -490,9 +490,9 @@ async function sendCalPayEmail(env,b){if(!env.BREVO_API_KEY)throw new Error("BRE
 async function calUpsertContact(env,b,line,booked){await ensureTable(env);const email=String(b.email||"").toLowerCase();if(!email)return;
  const f=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? ORDER BY (json_extract(data,'$.deletedAt') IS NULL) DESC LIMIT 1").bind(email).first();
  if(f){const d=JSON.parse(f.data);if(d.deletedAt&&!booked)return;if((d.log||[]).some(l=>l.key===line.key)&&!d.deletedAt)return;if(d.deletedAt){d.deletedAt=null;d.restoredBy="cal.com"}if(!d.name&&b.name)d.name=b.name;if(!(d.log||[]).some(l=>l.key===line.key))d.log=(d.log||[]).concat([line]);
-  if(booked&&!d.calcomSince)d.calcomSince=cairoDay();if(booked&&d.type!=="Client"&&d.type!=="Partner"){d.type="Session lead";if(!["Won","Proposal sent"].includes(d.stage))d.stage="Call booked"}if(!d.phone&&b.phone)d.phone=b.phone;
+  if(booked&&!d.calcomSince)d.calcomSince=cairoDay();if(booked&&d.type!=="Client"&&d.type!=="Partner"){d.type="Session lead";if(!["Won","Proposal sent"].includes(d.stage))d.stage="Call booked"}if(!d.phone&&b.phone)d.phone=b.phone;if(b.heard&&!d.heardFrom)d.heardFrom=b.heard;
   await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),f.id).run();await audit(env,"cal.com","contacts",f.id,"updated",(d.name||email).slice(0,80))}
- else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",calcomSince:cairoDay(),createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
+ else if(booked){const id=await contactId(email);const d={name:b.name||email,email,phone:b.phone||"",type:"Session lead",stage:"Call booked",calcomSince:cairoDay(),...(b.heard?{heardFrom:b.heard}:{}),createdBy:"cal.com",createdAt:new Date().toISOString(),log:[line],deletedAt:null};
   const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now'))").bind(id,JSON.stringify(d)).run();if(ins.meta&&ins.meta.changes)await audit(env,"cal.com","contacts",id,"created",String(b.name||email).slice(0,80))}}
 async function calBookingPaid(env,email,start){try{await checkoutTable(env);const t=Date.parse(start);if(isNaN(t))return false;
  const rows=(await env.DB.prepare("SELECT start FROM hq_checkouts WHERE lower(email)=? AND status='paid'").bind(String(email||"").toLowerCase()).all()).results||[];
@@ -516,12 +516,14 @@ async function calcomHook(req,env){
  const ev=String(body.triggerEvent||"").toUpperCase(),p=body.payload||{};if(ev==="PING"||!p.uid)return json({ok:true});
  const a=(p.attendees||[])[0]||{},rs=p.responses||{},val=x=>x&&typeof x==="object"?x.value:x;
  const b={uid:String(p.uid),name:String(val(rs.name)||a.name||"").slice(0,80),email:String(val(rs.email)||a.email||"").toLowerCase().slice(0,120),phone:String(val(rs.attendeePhoneNumber)||a.phoneNumber||"").replace(/[^\d+]/g,"").slice(0,16),start:String(p.startTime||""),notes:String(val(rs.notes)||p.additionalNotes||"").slice(0,400)};
+ // "How did you hear about me?" booking question: any custom field whose name or label is about hearing/finding/referral.
+ {const hk=Object.keys(rs).find(k=>/hear|heard|found|find|source|refer/i.test(k+" "+String((rs[k]&&rs[k].label)||"")));const hv=hk?val(rs[hk]):"";b.heard=String(Array.isArray(hv)?hv.join(", "):(hv||"")).trim().slice(0,120)}
  if(!b.email)return json({ok:true,ignored:"no email"});
  await calTable(env);const day=cairoDay(),when=b.start?b.start.slice(0,16).replace("T"," ")+" UTC":"";
  if(ev==="BOOKING_CREATED"||ev==="BOOKING_RESCHEDULED"){
   const prev=await env.DB.prepare("SELECT uid,mailed_at FROM hq_calbookings WHERE uid=?").bind(b.uid).first();
   await env.DB.prepare("INSERT OR IGNORE INTO hq_calbookings(uid,email,name,start,status) VALUES(?,?,?,?,?)").bind(b.uid,b.email,b.name,b.start,ev==="BOOKING_CREATED"?"booked":"rescheduled").run();
-  await calUpsertContact(env,b,{at:day,text:(ev==="BOOKING_CREATED"?"Booked on Cal.com: ":"Rescheduled on Cal.com to ")+(p.title||"session")+(when?" for "+when:"")+(b.notes?" · "+b.notes:""),key:"calcom:"+b.uid},true);
+  await calUpsertContact(env,b,{at:day,text:(ev==="BOOKING_CREATED"?"Booked on Cal.com: ":"Rescheduled on Cal.com to ")+(p.title||"session")+(when?" for "+when:"")+(b.heard?" · Heard about me: "+b.heard:"")+(b.notes?" · "+b.notes:""),key:"calcom:"+b.uid},true);
   // Payment email only for new bookings by people who haven't already paid for this time.
   const paid=await calBookingPaid(env,b.email,b.start);
   if(ev==="BOOKING_CREATED"&&!(prev&&prev.mailed_at)&&!paid){try{await sendCalPayEmail(env,b);await env.DB.prepare("UPDATE hq_calbookings SET mailed_at=datetime('now') WHERE uid=?").bind(b.uid).run()}catch(e){console.log("cal.com pay email failed",String(e.message||e))}}
