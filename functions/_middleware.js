@@ -640,10 +640,18 @@ async function callback(req,env) {
     return redirect(ORIGIN+"/hq/home/"+(mode==="calendar"?"?calendar=connected":""),[cookie(SESSION_NAME,ses,604800),cookie(OAUTH_NAME,"",0)]);
   }catch(e){return new Response("ZD HQ Google login: "+String(e.message||e),{status:401,headers:{...htmlHeaders,"Content-Type":"text/plain; charset=utf-8"}})}
 }
+// ---- "This device is me": leave the owner's devices out of all visit counts ----
+const ME_COOKIE="zd_me=1; Path=/; Max-Age=157680000; Secure; HttpOnly; SameSite=Lax";
+const isMe=req=>/(?:^|;\s*)zd_me=1(?:;|$)/.test(req.headers.get("Cookie")||"");
+function mePage(req){const off=new URL(req.url).searchParams.has("off");const on=!off&&(isMe(req)||true);
+ const body=off?"<h1>This device is counted again</h1><p>Visits from this device now show in your analytics like anyone else's.</p><p><a href='/me'>Stop counting it</a></p>":"<h1>This device isn't counted</h1><p>Your visits to the website and ZD AI from this browser are left out of your analytics. Do this once on each phone, tablet and computer you use (and again if you clear this browser's cookies).</p><p><a href='/me?off'>Count this device again</a></p>";
+ return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>This device</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,Inter,Arial,sans-serif;color:#1D1D1F;background:#F5F5F7;padding:24px}main{max-width:440px;background:#fff;border:1px solid #E5E5EA;border-radius:20px;padding:26px}h1{font-size:24px;margin:0 0 10px;letter-spacing:-.02em}p{line-height:1.5;color:#424245}a{color:#1D1D1F}</style></head><body><main>${body}</main></body></html>`,
+  {headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store","X-Robots-Tag":"noindex","Set-Cookie":off?"zd_me=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax":ME_COOKIE}})}
 export async function onRequest(context) {
   const {request:req,env}=context;
   const url=new URL(req.url),path=url.pathname;
   const isPlan=path==="/plan"||path.startsWith("/plan/");
+  if((path==="/me"||path==="/me/")&&req.method==="GET")return mePage(req);
   if(path.startsWith("/pay/api/")){if(!env.DB)return new Response("Not configured",{status:503});return payApi(req,env,path)}
   if(!isPlan&&!(path==="/hq" || path.startsWith("/hq/")))return context.next();
   if(!env.GOOGLE_CLIENT_SECRET || !env.DB)return new Response("ZD HQ private access is not configured",{status:503,headers:htmlHeaders});
@@ -670,5 +678,6 @@ export async function onRequest(context) {
   const response=await context.next();
   const headers=new Headers(response.headers);
   for(const [k,v] of Object.entries(htmlHeaders))headers.set(k,v);
+  if(!isMe(req))headers.append("Set-Cookie",ME_COOKIE); // any device that opens the HQ is the owner's: leave it out of visit counts
   return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
 }
