@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="ZD HQ"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="AH HQ"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/zd-icon-192.png"><link rel="apple-touch-icon" href="/assets/zd-apple-touch-icon.png">
-<title>ZD. Business HQ</title>
+<title>AH HQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -32,7 +32,7 @@ a{color:var(--ink)}
 .side{border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh;overflow:auto;background:var(--bg)}
 .logo{display:flex;align-items:baseline;gap:8px;padding:0 8px 14px;background:none;border:0;cursor:pointer;font:inherit;color:inherit;text-align:start;width:auto}button.logo:hover,button.logo:focus,button.logo:active{background:none;box-shadow:none}button.logo:focus{outline:none}button.logo:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:10px}
 .logo{align-items:center}.logo b{width:34px;height:34px;border-radius:9px;background:#1D1D1F;color:#fff;font-size:14px;font-weight:700;letter-spacing:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 0 0 1px var(--line2)}
-.logo span{font-size:11px;letter-spacing:1.5px;color:var(--ink2);font-weight:500}
+.logo .ahlogo{height:36px;width:auto;display:block;flex-shrink:0}:root[data-theme="dark"] .logo .ahlogo{filter:invert(1)}@media(prefers-color-scheme:dark){:root[data-theme="auto"] .logo .ahlogo{filter:invert(1)}}.logo span{font-size:11px;letter-spacing:1.5px;color:var(--ink2);font-weight:500}
 .grp{font-size:10.5px;letter-spacing:1.2px;color:var(--ink3);margin:16px 8px 4px;font-weight:500}
 .nv{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;background:transparent;padding:7px 10px;border-radius:8px;font-size:13.5px;color:var(--ink)}
 .nv:hover{background:var(--soft)}
@@ -218,7 +218,7 @@ async function syncFromCalendar(){
 const calDefault=dept=>{const s=S.settings||{};return (s.deptCal&&s.deptCal[dept])||s.defaultCal||'primary'};
 function endOf(due,dur){const d=parseL(due);d.setMinutes(d.getMinutes()+(+dur||60));return loc(d).slice(0,16)}
 const hexId=s=>Array.from(new TextEncoder().encode(String(s))).map(b=>b.toString(16).padStart(2,'0')).join('');
-const evDesc=a=>'From ZD. Business HQ · '+deptName(a.dept)+(a.notes?'\n'+a.notes:'');
+const evDesc=a=>'From AH HQ · '+deptName(a.dept)+(a.notes?'\n'+a.notes:'');
 async function calCreate(a){a.evSeq=(+a.evSeq||0)+1;const eid='hq'+hexId(a.id||'new')+'00'+a.evSeq;const r=await api('cal/event',{method:'POST',body:{calendarId:a.calId,eventId:eid,summary:a.title,start:a.due,end:endOf(a.due,a.dur),description:evDesc(a)}});return r.id||eid}
 async function calSync(prev,a){
  const want=a.cal&&a.due;
@@ -361,7 +361,7 @@ const areaOf=p=>Object.keys(AREAS).find(k=>AREAS[k].some(t=>t[0]===p));
 const GROUPS=['GROW REVENUE','DELIVER','RUN THE BUSINESS'];
 function renderSide(){
  const d=live(S.depts).slice().sort((a,b)=>(a.order||0)-(b.order||0));const cur=areaOf(S.page);
- let h=`<button class="logo" data-go="today" aria-label="ZD Business HQ, go to Home" title="Home"><b aria-hidden="true">ZD</b><span>BUSINESS HQ</span></button>`;
+ let h=`<button class="logo" data-go="today" aria-label="AH HQ, go to Home" title="Home"><img class="ahlogo" src="/assets/logo.png" alt="" width="40" height="36"><span>HQ</span></button>`;
  const nb=(k,l,extra,area)=>`<button class="nv ${S.page===k||(area&&cur===area)?'on':''}" data-go="${k}">${esc(l)}${extra||''}</button>`;
  const ct=n=>n?`<span class="ct">${n}</span>`:'';const dn=(id,fb)=>(d.find(x=>x.id===id)||{}).name||fb;
  const partnersDue=live(S.contacts).filter(c=>c.type==='Partner'&&c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage)).length;
@@ -479,7 +479,7 @@ function pReview(){
  const qs=['Did I publish what I planned?','Where did leads come from?','Who paid, and why?','What\'s stuck, and what unblocks it?','Do the 3 priorities still hold?'];
  return head('Weekly review','Week of '+fmtD(k)+' · 20 minutes every Sunday',`<button class="sm" data-act="wk" data-n="-1">‹</button><button class="sm" data-act="wk" data-n="0">This week</button><button class="sm" data-act="wk" data-n="1">›</button>`)+
  `<div class="grid g4" style="margin-bottom:14px">${kpi('Reels published',mr.reels,mr.auto?'auto · Zernio':'auto · content marked Published')}${kpi('Reach',mr.reach!=null?fmtN(mr.reach):'—',mr.auto?'auto · Zernio':'type it below')}${kpi('Paid this week',pd.length,'auto · invoices')}${kpi('Revenue',money(pd.reduce((a,i)=>a+(+i.amount||0),0)),'auto · invoices')}</div>`+
- `<div class="card"><div class="ch"><h2>Your numbers and answers</h2></div><div class="fg" id="rvf"><label>Instagram followers<input type="number" min="0" id="rv_fol" value="${esc(w.followers||(anFollowers()!=null?anFollowers():''))}"></label><label>Reach this week<input type="number" min="0" id="rv_reach" value="${esc(w.reach||(mr.auto?mr.reach:''))}"></label><label>Leads (DMs, sign-ups, enquiries)<input type="number" min="0" id="rv_leads" value="${esc(w.leads||'')}"></label><label>Newsletter subscribers<input type="number" min="0" id="rv_subs" value="${esc(w.subs||(bd()?bd().subscribers:''))}"></label><label>ZD sign-ups<input type="number" min="0" id="rv_zd" value="${esc(w.zd||'')}"></label><label>AI spend this month ($)<input type="number" min="0" step="0.01" id="rv_ai" value="${esc(w.ai||'')}"></label>${qs.map((q,i)=>`<label class="full">${q}<textarea id="rv_q${i}">${esc((w.q||[])[i]||'')}</textarea></label>`).join('')}</div><div class="fl" style="margin-top:10px"><button class="pri" data-act="saveReview" data-k="${k}" data-ek="${ek}">Save review</button><span class="mut">Saved reviews feed the trends below.</span></div></div>`+
+ `<div class="card"><div class="ch"><h2>Your numbers and answers</h2></div><div class="fg" id="rvf"><label>Instagram followers<input type="number" min="0" id="rv_fol" value="${esc(w.followers||(anFollowers()!=null?anFollowers():''))}"></label><label>Reach this week<input type="number" min="0" id="rv_reach" value="${esc(w.reach||(mr.auto?mr.reach:''))}"></label><label>Leads (DMs, sign-ups, enquiries)<input type="number" min="0" id="rv_leads" value="${esc(w.leads||'')}"></label><label>Newsletter subscribers<input type="number" min="0" id="rv_subs" value="${esc(w.subs||(bd()?bd().subscribers:''))}"></label><label>ZD AI sign-ups<input type="number" min="0" id="rv_zd" value="${esc(w.zd||'')}"></label><label>AI spend this month ($)<input type="number" min="0" step="0.01" id="rv_ai" value="${esc(w.ai||'')}"></label>${qs.map((q,i)=>`<label class="full">${q}<textarea id="rv_q${i}">${esc((w.q||[])[i]||'')}</textarea></label>`).join('')}</div><div class="fl" style="margin-top:10px"><button class="pri" data-act="saveReview" data-k="${k}" data-ek="${ek}">Save review</button><span class="mut">Saved reviews feed the trends below.</span></div></div>`+
  `<div class="card"><h2>Trends · last ${hist.length} weeks</h2>${hist.length?`<div class="grid g4" style="margin-top:10px"><div><div class="mut">Leads</div>${sp('leads')}</div><div><div class="mut">Reels</div>${sp('reels')}</div><div><div class="mut">Paid customers</div>${sp('paid')}</div><div><div class="mut">Revenue</div>${sp('revenue')}</div></div>`:'<div class="empty">Trends appear after your first saved review.</div>'}</div>`;
 }
 function deptActions(id){return `<div class="card"><div class="ch"><h2>Actions</h2><button class="sm pri" data-act="newAct" data-dept="${id}">+ Action</button></div>${actList(live(S.actions).filter(a=>a.dept===id&&(a.status!=='done'||(a.doneAt||'')>=weekKey(0))),false,'No actions in this department.')}</div>`}
