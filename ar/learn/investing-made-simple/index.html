@@ -53,9 +53,7 @@
 @media (max-width:600px){.article{padding-top:96px}.body{font-size:18px}.dek{font-size:19px}.cta .btn{flex:1 1 100%}}
 </style>
 <link rel="stylesheet" href="/ar/ar.css">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-MXWYCCXQ37"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MXWYCCXQ37');</script>
-<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.posthog&&posthog.__loaded)posthog.capture('calc_'+e,{value:v});if(window.gtag)gtag('event','calc_'+e,{calc_value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
+<script>window.track=function(e,v,once){try{v=String(v||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,40);var k='t:'+e+':'+v;if(once){if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}navigator.sendBeacon('/api/track',JSON.stringify({e:e,v:v}));if(window.posthog&&posthog.__loaded)posthog.capture('calc_'+e,{value:v})}catch(x){}};(function(){try{var s=new URLSearchParams(location.search).get('src');if(s)track('src',s,1)}catch(x){}})();</script>
 <style>
 /* audit Nov 6: skip link + 24px minimum tap height for menu and footer links */
 .skip{position:absolute;inset-inline-start:8px;top:8px;z-index:1000;display:inline-block;min-height:0;padding:10px 14px;border-radius:8px;background:#1D1D1F;color:#fff;font-size:15px;text-decoration:none;transform:translateY(-300%)}
