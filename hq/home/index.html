@@ -303,7 +303,8 @@ const openActs=()=>live(S.actions).filter(a=>a.status!=='done');
 const overdueActs=()=>openActs().filter(a=>a.due&&a.due.slice(0,10)<today());
 const todayActs=()=>openActs().filter(a=>a.due&&a.due.slice(0,10)===today());
 const starred=()=>openActs().filter(a=>a.star);
-const followUps=()=>live(S.contacts).filter(c=>c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage));
+const fuDone=c=>(c.log||[]).some(l=>String(l.at||'').slice(0,10)>=String(c.next).slice(0,10));
+const followUps=()=>live(S.contacts).filter(c=>c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage)&&!fuDone(c));
 const waitingDec=()=>live(S.decisions).filter(d=>d.status==='waiting');
 /* ---------- money: one ledger, every figure traceable to its rows ---------- */
 const mIn=(a,b)=>live(S.money).filter(m=>m.kind==='in'&&(m.date||'')>=a&&(m.date||'')<=b);
@@ -368,7 +369,7 @@ const AREAS={sales:[['sales','Pipeline'],['contacts','Contacts'],['clients','Cli
  work:[['actions','Actions'],['decisions','Decisions'],['review','Weekly review']],
  tech:[['d:ops','Tech and operations'],['status','Status']]};
 const MERGED=new Set(['sales','mkt','fin','edu','prod','ops','strat','legal']);
-const tabTodo=k=>k==='decisions'?waitingDec().length:k==='actions'?overdueActs().length:(k==='sales'||k==='contacts')?followUps().filter(c=>c.type!=='Partner').length:0;
+const tabTodo=k=>0;
 const areaOf=p=>Object.keys(AREAS).find(k=>AREAS[k].some(t=>t[0]===p));
 const GROUPS=['GROW REVENUE','DELIVER','RUN THE BUSINESS'];
 function renderSide(){
@@ -376,19 +377,19 @@ function renderSide(){
  let h=`<button class="logo" data-go="today" aria-label="AH HQ, go to Home" title="Home"><img class="ahlogo" src="/assets/logo.png" alt="" width="40" height="36"><span>HQ</span></button>`;
  const nb=(k,l,extra,area)=>`<button class="nv ${S.page===k||(area&&cur===area)?'on':''}" data-go="${k}">${esc(l)}${extra||''}</button>`;
  const ct=n=>n?`<span class="ct">${n}</span>`:'';const dn=(id,fb)=>(d.find(x=>x.id===id)||{}).name||fb;
- const partnersDue=live(S.contacts).filter(c=>c.type==='Partner'&&c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage)).length;
+ const partnersDue=0;
  h+=`<div class="fl" style="margin:0 6px 10px"><input id="gq" placeholder="Search everything" value="${esc(S.gq||'')}" aria-label="Search everything" style="flex:1;min-width:0"><button class="sm pri" data-act="quickAdd" aria-label="Quick add">+</button></div>`;
- h+=`<div class="grp">COMMAND</div>`+nb('today','Home',ct(overdueActs().length))+nb('calendar','Calendar');
- h+=`<div class="grp">GROW REVENUE</div>`+nb('sales','Sales',ct(followUps().filter(c=>c.type!=='Partner').length),'sales')+nb('partners','Partnerships',ct(partnersDue))+nb('d:mkt','Marketing','','marketing');
+ h+=`<div class="grp">COMMAND</div>`+nb('today','Home',ct(todoTotal()))+nb('calendar','Calendar');
+ h+=`<div class="grp">GROW REVENUE</div>`+nb('sales','Sales','','sales')+nb('partners','Partnerships')+nb('d:mkt','Marketing','','marketing');
  h+=`<div class="grp">MARKETING TOOLS</div>`+nb('zernio','Zernio')+nb('brevo','Brevo')+nb('calendly','Cal.com');
  h+=`<div class="grp">DELIVER</div>`+nb('d:edu',dn('edu','Courses and workshops'))+nb('products','ZD AI','','zd');
- h+=`<div class="grp">RUN THE BUSINESS</div>`+nb('money','Money','','money')+nb('actions','Work',ct(waitingDec().length),'work')+nb('d:strat',dn('strat','Strategy'))+nb('d:ops','Tech and status',S.st&&['zernio','brevo','contacts'].some(k=>S.st[k]&&S.st[k].error)?'<span class="ct">!</span>':'','tech')+nb('d:legal',dn('legal','Legal and compliance'));
+ h+=`<div class="grp">RUN THE BUSINESS</div>`+nb('money','Money','','money')+nb('actions','Work','','work')+nb('d:strat',dn('strat','Strategy'))+nb('d:ops','Tech and status',S.st&&['zernio','brevo','contacts'].some(k=>S.st[k]&&S.st[k].error)?'<span class="ct">!</span>':'','tech')+nb('d:legal',dn('legal','Legal and compliance'));
  const other=d.filter(x=>!MERGED.has(x.id));if(other.length)h+=`<div class="grp">OTHER</div>`+other.map(x=>nb('d:'+x.id,x.name)).join('');
  h+=`<div class="grp">REFERENCE</div>`+nb('kit','Sales kit')+nb('tools','Tools')+nb('skills','Skills')+nb('library','Library')+nb('ideas','Parked ideas')+nb('bin','Bin')+nb('settings','Settings')+`<a class="nv" href="/hq/auth/logout" style="text-decoration:none">Sign out</a>`;
  $('#side').innerHTML=h;
  const TI={today:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h5v-6h4v6h5V9.5"/>',sales:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4c1.9.8 3 2.8 3 5.6"/>',money:'<rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9v.01M18 15v.01"/>',actions:'<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="m8 12 3 3 5-6"/>',more:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>'};
  const ic=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${TI[k]}</svg>`;
- const todo={today:overdueActs().length,sales:followUps().filter(c=>c.type!=='Partner').length,actions:waitingDec().length};
+ const todo={today:todoTotal()};
  $('#tabbar').innerHTML=[['today','Home',''],['sales','Sales','sales'],['money','Money','money'],['actions','Work','work']].map(([k,l,a])=>{const on=S.page===k||(a&&cur===a);const n=todo[k]||0;return `<button class="${on?'on':''}" data-go="${k}"${on?' aria-current="page"':''}${n?` aria-label="${l}, ${n} to do"`:''}>${ic(k)}${n?`<span class="tdot">${n>9?'9+':n}</span>`:''}<span>${l}</span></button>`}).join('')+`<button data-act="menu">${ic('more')}<span>More</span></button>`;
 }
 function render(){renderSide();const p=S.page;let h='';try{sessionStorage.setItem('hq-view',JSON.stringify({page:p,stab:S.stab||null,cf:S.cf||null}))}catch(e){}
@@ -444,10 +445,11 @@ function evForm(e,day){const isNew=!e;const wc=S.cals.filter(c=>c.writable!==fal
 /* ---------- pages ---------- */
 function folNow(){const a=anFollowers();return a!=null?{n:a,src:'Instagram + TikTok · Zernio'}:(latestWeekly('followers')!=null?{n:+latestWeekly('followers'),src:'from your weekly review'}:null)}
 // One red box that says exactly what to do, item by item. kinds: od = late actions, fu = follow-ups due, dec = decisions waiting.
+const todoTotal=()=>overdueActs().length+followUps().length+waitingDec().length;
 function todoBox(kinds){let rows='',n=0;
  if(kinds.includes('od'))overdueActs().forEach(a=>{n++;rows+=`<div class="todo"><div class="t"><div class="nm">${esc(a.title)}</div><div class="why">Late: was due ${esc(fmtD(a.due))}. Do it, or open it to change the date.</div></div><div class="fl"><button class="sm pri" data-act="done" data-id="${a.id}">Done</button><button class="sm" data-act="editAct" data-id="${a.id}">Open</button></div></div>`});
  if(kinds.includes('fu'))followUps().filter(c=>c.type!=='Partner').forEach(c=>{n++;rows+=`<div class="todo"><div class="t"><div class="nm">Follow up with ${esc(c.name||c.email||'')}</div><div class="why">Follow-up was due ${esc(fmtD(c.next))}${c.stage?' · '+esc(c.stage):''}. Contact them, then open their card to set the next date, or mark them Won or Lost.</div></div><div class="fl"><button class="sm pri" data-act="editContact" data-id="${c.id}">Open</button></div></div>`});
- if(kinds.includes('pa'))live(S.contacts).filter(c=>c.type==='Partner'&&c.next&&c.next<=today()&&!['Won','Lost'].includes(c.stage)).forEach(c=>{n++;rows+=`<div class="todo"><div class="t"><div class="nm">Follow up with ${esc(c.name||c.company||'')}</div><div class="why">Partner follow-up was due ${esc(fmtD(c.next))}.</div></div><div class="fl"><button class="sm pri" data-act="editContact" data-id="${c.id}">Open</button></div></div>`});
+ if(kinds.includes('pa'))followUps().filter(c=>c.type==='Partner').forEach(c=>{n++;rows+=`<div class="todo"><div class="t"><div class="nm">Follow up with ${esc(c.name||c.company||'')}</div><div class="why">Partner follow-up was due ${esc(fmtD(c.next))}.</div></div><div class="fl"><button class="sm pri" data-act="editContact" data-id="${c.id}">Open</button></div></div>`});
  if(kinds.includes('dec'))waitingDec().forEach(d=>{n++;rows+=`<div class="todo"><div class="t"><div class="nm">Decide: ${esc(d.title)}</div><div class="why">${d.rec?'Recommended: '+esc(d.rec):'Waiting for your yes or no.'}</div></div><div class="fl"><button class="sm pri" data-act="decide" data-v="approved" data-id="${d.id}">Approve</button><button class="sm" data-act="decide" data-v="rejected" data-id="${d.id}">Reject</button><button class="sm" data-act="editDec" data-id="${d.id}">Details</button></div></div>`});
  return n?`<div class="card todobox"><div class="ch"><h2><span class="rb" style="margin-right:8px">${n}</span>Needs you</h2><span class="mut">Clear these and the red number goes away</span></div>${rows}</div>`:''}
 function pToday(){
@@ -484,7 +486,7 @@ function pToday(){
 function pCal(){return head('Calendar','All your Google calendars, with every dated action',`<button class="sm" data-act="wk" data-n="-1">‹ Previous</button><button class="sm" data-act="wk" data-n="0">This week</button><button class="sm" data-act="wk" data-n="1">Next ›</button><button data-act="newEv">+ Event</button><button class="pri" data-act="newAct">+ Action</button>`)+calBanner()+`<div class="card">${weekGrid()}</div><div class="card"><h2>Calendars</h2>${S.cals.length?S.cals.map(c=>`<div class="row"><div class="t"><div class="nm">${esc(c.summary||c.id)}</div><div class="mut">${c.id===(S.settings.defaultCal)?'Default for new actions':''}</div></div></div>`).join(''):'<div class="empty">Loading calendars…</div>'}<p class="mut">Change the default and per-department calendars in Settings.</p></div>`}
 function pActions(){
  const f=S.filt;let list=live(S.actions);if(f.dept!=='all')list=list.filter(a=>a.dept===f.dept);if(f.status==='open')list=list.filter(a=>a.status!=='done');if(f.status==='done')list=list.filter(a=>a.status==='done');
- return head('All actions',openActs().length+' open · '+starred().length+'/3 top priorities',`<button class="pri" data-act="newAct">+ Action</button>`)+todoBox(['od','dec'])+`<div class="card"><div class="fl" style="margin-bottom:8px"><select data-filt="dept" style="width:auto"><option value="all">All departments</option>${live(S.depts).map(d=>`<option value="${d.id}" ${f.dept===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select><select data-filt="status" style="width:auto">${['open','done','all'].map(s=>`<option value="${s}" ${f.status===s?'selected':''}>${s==='open'?'Open':s==='done'?'Done':'All'}</option>`).join('')}</select></div>${actList(list,true)}</div>`;
+ return head('All actions',openActs().length+' open · '+starred().length+'/3 top priorities',`<button class="pri" data-act="newAct">+ Action</button>`)+`<div class="card"><div class="fl" style="margin-bottom:8px"><select data-filt="dept" style="width:auto"><option value="all">All departments</option>${live(S.depts).map(d=>`<option value="${d.id}" ${f.dept===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}</select><select data-filt="status" style="width:auto">${['open','done','all'].map(s=>`<option value="${s}" ${f.status===s?'selected':''}>${s==='open'?'Open':s==='done'?'Done':'All'}</option>`).join('')}</select></div>${actList(list,true)}</div>`;
 }
 function pDecisions(){
  const w=waitingDec(),o=live(S.decisions).filter(d=>d.status!=='waiting').sort((a,b)=>String(b.decidedAt||b.date||'').localeCompare(String(a.decidedAt||a.date||'')));
@@ -594,7 +596,6 @@ function pSales(){const t={contacts:'Contacts',clients:'Clients'}[S.page]||'Pipe
  const open=pipe.filter(c=>!['Won','Lost'].includes(c.stage)),val=open.reduce((s,c)=>s+(+c.value||0),0);
  const m0=today().slice(0,7)+'-01',d30=ymd(new Date(Date.now()-30*864e5));
  let h=head('Sales','Everyone who gave you their email, your pipeline and your clients',`<button class="pri" data-act="newContact" data-type="Workshop lead">+ Contact</button>`);
- h+=todoBox(['fu']);
  h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Open pipeline',money(val),open.length+' open deal'+(open.length===1?'':'s'))}${kpi('Follow-ups due',followUps().length,followUps().length?'see Needs attention':'none due')}${kpi('Won this month',all.filter(c=>c.stage==='Won'&&(c.wonAt||'')>=m0).length)}${kpi('Contacts',all.length,all.filter(c=>added(c)>=d30).length+' new in 30 days')}</div>`;
  if(t==='Pipeline')h+=pipeline();
  if(t==='Clients')h+=clients();
