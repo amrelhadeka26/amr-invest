@@ -44,7 +44,7 @@ a{color:var(--ink)}
 .nv .dot.q{background:var(--line2)}
 .main{padding:24px 32px 60px;max-width:1180px;width:100%;min-width:0}
 .card{overflow-x:auto}
-.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;flex-wrap:wrap}.pact{margin-top:14px}
 h1{font-size:24px;font-weight:600;margin:0;letter-spacing:-.4px}
 h2{font-size:15px;font-weight:600;margin:0}
 .sub{color:var(--ink2);font-size:13px;margin:2px 0 0}
@@ -400,7 +400,7 @@ function render(){renderSide();const p=S.page;let h='';try{sessionStorage.setIte
  const a=areaOf(p);if(a){const strip=`<div class="tabs" role="tablist" style="margin-bottom:14px">${AREAS[a].map(([k,l])=>`<button class="sm ${k===p?'on':''}" role="tab" aria-selected="${k===p}" data-go="${k}">${esc(l)}${tabTodo(k)?` <span class="rb" style="margin-left:6px">${tabTodo(k)}</span>`:''}</button>`).join('')}</div>`;h=h.replace('<!--/head-->',strip)}
  $('#main').innerHTML=h;
 }
-const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}<button class="sm rfr bell" data-act="bell" aria-label="Notifications" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>${S.unread?`<span class="bdg">${S.unread>9?'9+':S.unread}</span>`:''}</button><button class="sm rfr" data-act="refresh" aria-label="Refresh" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div></div><!--/head-->`;
+const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}${right?`<div class="fl pact">${right}</div>`:''}</div><div class="fl tbtn"><button class="sm rfr bell" data-act="bell" aria-label="Notifications" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>${S.unread?`<span class="bdg">${S.unread>9?'9+':S.unread}</span>`:''}</button><button class="sm rfr" data-act="refresh" aria-label="Refresh" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div></div><!--/head-->`;
 
 /* ---------- shared blocks ---------- */
 function actRow(a,showDept){
