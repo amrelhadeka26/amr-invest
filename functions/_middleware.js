@@ -520,6 +520,32 @@ async function calCancel(env,b){await calTable(env);const uid=String(b.uid||"");
  if(!r)throw calErr("Booking not found",404);if(r.status==="cancelled")throw calErr("Already cancelled",400);if(Date.parse(r.start)<Date.now())throw calErr("That session has already started",400);
  await calApi(env,"POST","/bookings/"+encodeURIComponent(uid)+"/cancel",{cancellationReason:String(b.reason||"Cancelled by Amr").slice(0,300)},"2024-08-13");
  await env.DB.prepare("UPDATE hq_calbookings SET status='cancelled' WHERE uid=?").bind(uid).run();await audit(env,"owner","calcom",uid,"booking cancelled",String(r.name||"").slice(0,80));return {ok:true}}
+// Weekly hours + one-off date hours (Cal.com default schedule). Times are in the schedule's own time zone.
+const CAL_DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const hhmm=t=>/^([01]\d|2[0-3]):[0-5]\d$/.test(String(t||""));
+async function calSchedule(env){const d=await calApi(env,"GET","/schedules/default",null,"2024-06-11");if(!d||!d.id)throw calErr("No default schedule found in Cal.com",400);
+ const dayName=x=>CAL_DAYS.find(c=>c.toLowerCase()===String(x).toLowerCase());
+ const availability=(d.availability||[]).map(a=>({days:(a.days||[]).map(dayName),startTime:a.startTime,endTime:a.endTime}));
+ const overrides=(d.overrides||[]).map(o=>({date:o.date,startTime:o.startTime,endTime:o.endTime}));
+ // Never edit hours we could not read exactly: saving a misread schedule would wipe the real one.
+ if(availability.some(a=>!a.days.length||a.days.some(x=>!x)||!hhmm(a.startTime)||!hhmm(a.endTime))||overrides.some(o=>!/^\d{4}-\d{2}-\d{2}$/.test(String(o.date))||!hhmm(o.startTime)||!hhmm(o.endTime)))throw calErr("Couldn't read your hours from Cal.com safely, so editing is off. Change them in Cal.com for now.",502);
+ return {id:d.id,name:d.name||"",timeZone:d.timeZone||"",availability,overrides}}
+async function calSchedulePatch(env,id,body){await calApi(env,"PATCH","/schedules/"+id,body,"2024-06-11")}
+function calCheckBlock(st,en,what){if(!hhmm(st)||!hhmm(en))throw calErr(what+": use times like 12:00",400);if(st>=en)throw calErr(what+": the end must be after the start",400)}
+async function calHoursSave(env,b){const days=b&&b.days;if(!days||typeof days!=="object")throw calErr("Nothing to save",400);
+ const groups=new Map();
+ for(const day of Object.keys(days)){if(!CAL_DAYS.includes(day))throw calErr("Unknown day",400);const blocks=Array.isArray(days[day])?days[day]:[];if(blocks.length>4)throw calErr(day+": up to 4 time blocks",400);
+  const sorted=blocks.map(x=>({s:String(x.start),e:String(x.end)})).sort((a,b)=>a.s.localeCompare(b.s));
+  sorted.forEach((x,i)=>{calCheckBlock(x.s,x.e,day);if(i&&x.s<sorted[i-1].e)throw calErr(day+": time blocks overlap",400);const k=x.s+"-"+x.e;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(day)})}
+ const availability=[...groups].map(([k,ds])=>({days:CAL_DAYS.filter(d=>ds.includes(d)),startTime:k.slice(0,5),endTime:k.slice(6)}));
+ const cur=await calSchedule(env);await calSchedulePatch(env,cur.id,{availability,overrides:cur.overrides});
+ await audit(env,"owner","calcom","schedule-"+cur.id,"weekly hours changed",availability.map(a=>a.days.map(d=>d.slice(0,3)).join(",")+" "+a.startTime+"-"+a.endTime).join("; ").slice(0,200));return {ok:true}}
+async function calOverrideSet(env,b){const date=String(b.date||"");if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||isNaN(Date.parse(date)))throw calErr("Pick a valid date",400);
+ if(cairoDayStart(date)+86400000<Date.now())throw calErr("That day is already over",400);calCheckBlock(b.start,b.end,date);
+ const cur=await calSchedule(env);const overrides=cur.overrides.filter(o=>o.date!==date).concat([{date,startTime:b.start,endTime:b.end}]).sort((a,b)=>a.date.localeCompare(b.date));
+ await calSchedulePatch(env,cur.id,{availability:cur.availability,overrides});await audit(env,"owner","calcom","schedule-"+cur.id,"date hours set",date+" "+b.start+"-"+b.end);return {ok:true}}
+async function calOverrideRemove(env,b){const date=String(b.date||"");const cur=await calSchedule(env);if(!cur.overrides.some(o=>o.date===date))throw calErr("No special hours on that date",404);
+ await calSchedulePatch(env,cur.id,{availability:cur.availability,overrides:cur.overrides.filter(o=>o.date!==date)});await audit(env,"owner","calcom","schedule-"+cur.id,"date hours removed",date);return {ok:true}}
 async function calBookingsList(env){await calTable(env);const rows=(await env.DB.prepare("SELECT uid,email,name,start,status,mailed_at,created_at FROM hq_calbookings ORDER BY start DESC LIMIT 40").all()).results||[];
  for(const r of rows)r.paid=await calBookingPaid(env,r.email,r.start);return rows}
 async function calResend(env,uid){await calTable(env);const r=await env.DB.prepare("SELECT uid,email,name,start,status FROM hq_calbookings WHERE uid=?").bind(String(uid||"")).first();
@@ -691,6 +717,10 @@ async function api(path,req,env,user){
   if(path==="/hq/api/calcom/timeoff"&&m==="GET")return json({timeoff:await calTimeOffList(env)});
   if(path==="/hq/api/calcom/timeoff"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calTimeOffAdd(env,b))}
   if(path==="/hq/api/calcom/timeoff/remove"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calTimeOffRemove(env,b.id))}
+  if(path==="/hq/api/calcom/hours"&&m==="GET")return json(await calSchedule(env));
+  if(path==="/hq/api/calcom/hours"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calHoursSave(env,b))}
+  if(path==="/hq/api/calcom/datehours"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calOverrideSet(env,b))}
+  if(path==="/hq/api/calcom/datehours/remove"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calOverrideRemove(env,b))}
   if(path==="/hq/api/calcom/cancel"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calCancel(env,b))}
   if(path==="/hq/api/calcom/resend"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calResend(env,b.uid))}
   if(path==="/hq/api/paymob/test"&&m==="POST"){if(paymobMode(env)!=="test")return json({error:"The test button only works with Paymob test keys."},400);const name=String(user.name||"Amr").split(" ");return json(await paymobIntention(env,{amountCents:1000,name:"HQ test payment",description:"Test payment from AH HQ",email:user.email,first:name[0]||"Amr",last:name.slice(1).join(" ")||"El Hadeka",ref:"hqtest-"+Date.now(),redirect:ORIGIN+"/hq/home/?paymob=done"}))}
