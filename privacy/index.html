@@ -27,7 +27,7 @@ a{color:#1D1D1F}</style>
 @media (max-width:370px){.site-header .nav{gap:8px;font-size:12px}.site-header .nav .btn{padding:0 10px}}
 @media (max-width:340px){.site-header .nav>a:not([class]){display:none}.site-header .nav{gap:6px}.site-header .nav .btn{padding:0 8px;font-size:11.5px}}
 </style>
-</head>
+<script src="/assets/ph.js" defer></script></head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <main id="main">
@@ -44,7 +44,7 @@ a{color:#1D1D1F}</style>
 <li><b>If you create an account with email:</b> your email, a name and your password (stored only as a secure hash).</li>
 <li><b>What you choose to enter in ZD AI:</b> for example income, spending, savings, debts, goals and the questions you ask. You never need to enter bank account numbers, card numbers or passwords, and ZD AI will never ask for them.</li>
 <li><b>Guest accounts:</b> if you try ZD AI without signing in, we create a private guest account just for you. It is deleted automatically after 7 days.</li>
-<li><b>Website usage:</b> anonymous daily counts of which pages are visited, the site you came from (for example Instagram or Google), your country and whether you use a phone or a computer. No cookies and no IP addresses are stored for this, and a visitor can't be followed from one day to the next. If your browser sends "Do Not Track" or "Global Privacy Control", the visit isn't counted.</li>
+<li><b>Website usage:</b> anonymous daily counts of which pages are visited, the site you came from (for example Instagram or Google), your country and whether you use a phone or a computer. No cookies and no IP addresses are stored for this, and a visitor can't be followed from one day to the next. If your browser sends "Do Not Track" or "Global Privacy Control", the visit isn't counted. We also use PostHog in cookieless mode to see which buttons and links are clicked (for example "Calculate" or "Book a session") and which pages people move through, so we can improve the site. It sets no cookies, records no screens, never captures what you type, and can't follow you from one day to the next.</li>
 <li><b>Newsletter and sessions:</b> if you subscribe or book a session, your email (and booking details) go to our newsletter tool (Brevo) or booking tool (Cal.com).</li>
 </ul>
 
@@ -61,6 +61,7 @@ a{color:#1D1D1F}</style>
 <li><b>Cloudflare</b> hosts the website and ZD AI. ZD AI's database is stored in Cloudflare's Eastern Europe region.</li>
 <li><b>Anthropic</b> (the company behind Claude) processes the questions you ask ZD AI, together with the figures ZD AI needs to answer them, to write each reply. Anthropic does not use this data to train its models.</li>
 <li><b>Google</b>, only if you choose "Continue with Google", to confirm who you are.</li>
+<li><b>PostHog</b> (United States) receives anonymous website usage events: pages, clicks on links and buttons, device type and the page you came from. No cookies, no screen recordings and nothing you type.</li>
 </ul>
 
 <h2>How long we keep it</h2>
