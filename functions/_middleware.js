@@ -497,6 +497,29 @@ async function calUpsertContact(env,b,line,booked){await ensureTable(env);const 
 async function calBookingPaid(env,email,start){try{await checkoutTable(env);const t=Date.parse(start);if(isNaN(t))return false;
  const rows=(await env.DB.prepare("SELECT start FROM hq_checkouts WHERE lower(email)=? AND status='paid'").bind(String(email||"").toLowerCase()).all()).results||[];
  return rows.some(r=>Date.parse(r.start)===t)}catch(e){return false}}
+// ---- Cal.com API (time off + cancelling bookings from the HQ). Key: Cloudflare secret CALCOM_API_KEY ----
+const CAL_API="https://api.cal.com/v2";
+function calErr(msg,status){return Object.assign(new Error(msg),{status})}
+async function calApi(env,method,path,body,ver){
+ if(!env.CALCOM_API_KEY)throw calErr("Cal.com isn't connected yet: add CALCOM_API_KEY in Cloudflare",400);
+ const h={"Authorization":"Bearer "+env.CALCOM_API_KEY,"Content-Type":"application/json"};if(ver)h["cal-api-version"]=ver;
+ const res=await fetch(CAL_API+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+ const j=await res.json().catch(()=>({}));
+ if(!res.ok||j.status==="error"){const m=(j.error&&(j.error.message||j.error.code))||j.message||("Cal.com said "+res.status);throw calErr(String(m).slice(0,200),res.status===401||res.status===403?400:502)}
+ return j.data}
+// Cairo has no daylight saving: whole days run 22:00 UTC the day before to 21:59:59 UTC.
+function cairoDayStart(d){const t=Date.parse(d+"T00:00:00+02:00");if(isNaN(t)||!/^\d{4}-\d{2}-\d{2}$/.test(d))throw calErr("Pick valid dates",400);return t}
+async function calTimeOffList(env){const d=await calApi(env,"GET","/me/ooo");return (Array.isArray(d)?d:[]).map(o=>({id:o.id,start:o.start,end:o.end,reason:o.reason||"",notes:o.notes||""})).filter(o=>Date.parse(o.end)>Date.now()).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start))}
+async function calTimeOffAdd(env,b){const from=String(b.from||""),to=String(b.to||from);const s0=cairoDayStart(from),e0=cairoDayStart(to)+86400000-1;
+ if(e0<s0)throw calErr("The last day is before the first day",400);if(e0<Date.now())throw calErr("Those days are already over",400);if(e0-s0>366*86400000)throw calErr("Keep it under a year",400);
+ const reason=["vacation","travel","sick","public_holiday","unspecified"].includes(b.reason)?b.reason:"unspecified";
+ const d=await calApi(env,"POST","/me/ooo",{start:new Date(s0).toISOString(),end:new Date(e0).toISOString(),reason,notes:String(b.notes||"").slice(0,200)});
+ await audit(env,"owner","calcom","ooo-"+(d&&d.id),"time off added",from+" → "+to);return d}
+async function calTimeOffRemove(env,id){if(!/^\d+$/.test(String(id)))throw calErr("Unknown time off",400);await calApi(env,"DELETE","/me/ooo/"+id);await audit(env,"owner","calcom","ooo-"+id,"time off removed","");return {ok:true}}
+async function calCancel(env,b){await calTable(env);const uid=String(b.uid||"");const r=await env.DB.prepare("SELECT uid,start,status,name FROM hq_calbookings WHERE uid=?").bind(uid).first();
+ if(!r)throw calErr("Booking not found",404);if(r.status==="cancelled")throw calErr("Already cancelled",400);if(Date.parse(r.start)<Date.now())throw calErr("That session has already started",400);
+ await calApi(env,"POST","/bookings/"+encodeURIComponent(uid)+"/cancel",{cancellationReason:String(b.reason||"Cancelled by Amr").slice(0,300)},"2024-08-13");
+ await env.DB.prepare("UPDATE hq_calbookings SET status='cancelled' WHERE uid=?").bind(uid).run();await audit(env,"owner","calcom",uid,"booking cancelled",String(r.name||"").slice(0,80));return {ok:true}}
 async function calBookingsList(env){await calTable(env);const rows=(await env.DB.prepare("SELECT uid,email,name,start,status,mailed_at,created_at FROM hq_calbookings ORDER BY start DESC LIMIT 40").all()).results||[];
  for(const r of rows)r.paid=await calBookingPaid(env,r.email,r.start);return rows}
 async function calResend(env,uid){await calTable(env);const r=await env.DB.prepare("SELECT uid,email,name,start,status FROM hq_calbookings WHERE uid=?").bind(String(uid||"")).first();
@@ -664,7 +687,11 @@ async function api(path,req,env,user){
   if(path==="/hq/api/zd"&&m==="GET")return json(await zdSummary(env));
   if(path==="/hq/api/status"&&m==="GET")return json(await statusReport(env));
   if(path==="/hq/api/paymob"&&m==="GET")return json(await paymobStatus(env));
-  if(path==="/hq/api/calcom"&&m==="GET")return json({bookings:await calBookingsList(env)});
+  if(path==="/hq/api/calcom"&&m==="GET")return json({bookings:await calBookingsList(env),api:!!env.CALCOM_API_KEY});
+  if(path==="/hq/api/calcom/timeoff"&&m==="GET")return json({timeoff:await calTimeOffList(env)});
+  if(path==="/hq/api/calcom/timeoff"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calTimeOffAdd(env,b))}
+  if(path==="/hq/api/calcom/timeoff/remove"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calTimeOffRemove(env,b.id))}
+  if(path==="/hq/api/calcom/cancel"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calCancel(env,b))}
   if(path==="/hq/api/calcom/resend"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calResend(env,b.uid))}
   if(path==="/hq/api/paymob/test"&&m==="POST"){if(paymobMode(env)!=="test")return json({error:"The test button only works with Paymob test keys."},400);const name=String(user.name||"Amr").split(" ");return json(await paymobIntention(env,{amountCents:1000,name:"HQ test payment",description:"Test payment from AH HQ",email:user.email,first:name[0]||"Amr",last:name.slice(1).join(" ")||"El Hadeka",ref:"hqtest-"+Date.now(),redirect:ORIGIN+"/hq/home/?paymob=done"}))}
   if(path==="/hq/api/briefing"&&(m==="GET"||m==="POST")){try{return json(await briefing(env,m==="POST"))}catch(e){return json({error:String(e.message||e).slice(0,240)},502)}}
