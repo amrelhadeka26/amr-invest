@@ -197,7 +197,8 @@ async function syncContacts(env,brevoKey){
       if("zd" in x.src)d.zdSince=x.src.zd;if("newsletter" in x.src)d.newsletterSince=x.src.newsletter;if(x.agreed&&x.agreed.length)d.agreed=x.agreed;
       if(booked){d.calendlySince=x.src.calendly;if(x.phone)d.phone=x.phone;d.log=bookLog(x);afterCall(d,x)}
       const ins=await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
-      if(ins&&ins.meta&&ins.meta.changes){await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++}}}
+      if(ins&&ins.meta&&ins.meta.changes){await audit(env,"sync","contacts",id,"created",(x.name||k).slice(0,80));added++;
+       const why=booked?"Booked a session on Calendly":"newsletter" in x.src?"Subscribed to your newsletter":"zd" in x.src?"Signed up for ZD AI":"New contact";await notify(env,booked?"booking":"signup",why+": "+(x.name||k),k,"/hq/home/#contacts")}}}
   // People who left both sources stay as contacts (your notes are kept); their source dates are cleared above.
   return {added,updated,zdAccounts:zd?zd.length:null,subscribers:nl?nl.length:null,bookings:cal?cal.length:null,errors}}
 
@@ -460,7 +461,7 @@ async function recordSessionPayment(env,o,mode){
    const ins=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now'))").bind(cid,JSON.stringify(d)).run();if(ins.meta&&ins.meta.changes)await audit(env,"paymob","contacts",cid,"created",String(c.name).slice(0,80))}
  const row={date:day,kind:"in",amount,category:"1-on-1 session",contact:c.name,contactId:cid||"",ref:String(o.id),note:"Paymob card payment"+(c.start?" · session "+String(c.start).slice(0,16).replace("T"," "):""),source:"paymob",deletedAt:null};
  const m=await env.DB.prepare("INSERT OR IGNORE INTO hq_docs(col,id,data,updated_at) VALUES('money',?,?,datetime('now'))").bind("pm-"+o.id,JSON.stringify(row)).run();
- if(m.meta&&m.meta.changes)await audit(env,"paymob","money","pm-"+o.id,"created","Session payment EGP "+amount)}
+ if(m.meta&&m.meta.changes){await audit(env,"paymob","money","pm-"+o.id,"created","Session payment EGP "+amount);await notify(env,"payment","Payment received: EGP "+amount.toLocaleString("en-US"),(c.name||email)+" · 1-on-1 session","/hq/home/#money")}}
 // ---- Cal.com bookings -> HQ contact + payment email ----
 async function calTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_calbookings (uid TEXT PRIMARY KEY, email TEXT, name TEXT, start TEXT, status TEXT, mailed_at TEXT, created_at TEXT DEFAULT (datetime('now')))").run()}
 function calPayUrl(b){const q=new URLSearchParams({attendeeName:b.name||"",email:b.email||"",startTime:b.start||""});if(b.phone)q.set("attendeePhoneNumber",b.phone);return ORIGIN+"/pay/session/?"+q.toString()}
@@ -546,6 +547,45 @@ async function calOverrideSet(env,b){const date=String(b.date||"");if(!/^\d{4}-\
  await calSchedulePatch(env,cur.id,{availability:cur.availability,overrides});await audit(env,"owner","calcom","schedule-"+cur.id,"date hours set",date+" "+b.start+"-"+b.end);return {ok:true}}
 async function calOverrideRemove(env,b){const date=String(b.date||"");const cur=await calSchedule(env);if(!cur.overrides.some(o=>o.date===date))throw calErr("No special hours on that date",404);
  await calSchedulePatch(env,cur.id,{availability:cur.availability,overrides:cur.overrides.filter(o=>o.date!==date)});await audit(env,"owner","calcom","schedule-"+cur.id,"date hours removed",date);return {ok:true}}
+/* ---------- Notifications: an in-HQ list + phone alerts (Web Push, RFC 8291/8292).
+   The signing key pair is generated here once and kept in D1; nobody ever sees or types it. ---------- */
+const b64u=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const unb64u=s=>{s=String(s).replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const PUSH_HOSTS=/^(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|web\.push\.apple\.com|[a-z0-9-]+\.notify\.windows\.com|android\.googleapis\.com)$/;
+async function noteTables(env){await env.DB.batch([env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_notes(id INTEGER PRIMARY KEY AUTOINCREMENT,at TEXT NOT NULL,kind TEXT,title TEXT,body TEXT,link TEXT,read_at TEXT)"),env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_push_subs(endpoint TEXT PRIMARY KEY,p256dh TEXT NOT NULL,auth TEXT NOT NULL,ua TEXT,created_at TEXT DEFAULT (datetime('now')),last_ok TEXT)"),env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_push_keys(id TEXT PRIMARY KEY,priv TEXT NOT NULL,pub TEXT NOT NULL)")])}
+async function vapidKeys(env){await noteTables(env);let k=await env.DB.prepare("SELECT priv,pub FROM hq_push_keys WHERE id='vapid'").first();
+ if(!k){const kp=await crypto.subtle.generateKey({name:"ECDSA",namedCurve:"P-256"},true,["sign","verify"]);const pub=b64u(await crypto.subtle.exportKey("raw",kp.publicKey));const priv=JSON.stringify(await crypto.subtle.exportKey("jwk",kp.privateKey));
+  await env.DB.prepare("INSERT OR IGNORE INTO hq_push_keys(id,priv,pub) VALUES('vapid',?,?)").bind(priv,pub).run();k=await env.DB.prepare("SELECT priv,pub FROM hq_push_keys WHERE id='vapid'").first()}
+ return {pub:k.pub,priv:await crypto.subtle.importKey("jwk",JSON.parse(k.priv),{name:"ECDSA",namedCurve:"P-256"},false,["sign"])}}
+async function vapidAuth(endpoint,keys){const aud=new URL(endpoint).origin;const enc=o=>b64u(new TextEncoder().encode(JSON.stringify(o)));
+ const unsigned=enc({typ:"JWT",alg:"ES256"})+"."+enc({aud,exp:Math.floor(Date.now()/1000)+12*3600,sub:"mailto:invest@amrelhadeka.com"});
+ const sig=await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"},keys.priv,new TextEncoder().encode(unsigned));return "vapid t="+unsigned+"."+b64u(sig)+", k="+keys.pub}
+async function hkdf(salt,ikm,info,len){const k=await crypto.subtle.importKey("raw",ikm,"HKDF",false,["deriveBits"]);return new Uint8Array(await crypto.subtle.deriveBits({name:"HKDF",hash:"SHA-256",salt,info},k,len*8))}
+const cat=(...a)=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let i=0;for(const x of a){o.set(x,i);i+=x.length}return o};
+async function pushEncrypt(sub,text){// RFC 8291 aes128gcm, single record
+ const ua=unb64u(sub.p256dh),auth=unb64u(sub.auth);if(ua.length!==65||auth.length!==16)throw new Error("bad subscription keys");
+ const eph=await crypto.subtle.generateKey({name:"ECDH",namedCurve:"P-256"},true,["deriveBits"]);const asPub=new Uint8Array(await crypto.subtle.exportKey("raw",eph.publicKey));
+ const uaKey=await crypto.subtle.importKey("raw",ua,{name:"ECDH",namedCurve:"P-256"},false,[]);const shared=new Uint8Array(await crypto.subtle.deriveBits({name:"ECDH",public:uaKey},eph.privateKey,256));
+ const te=new TextEncoder();const ikm=await hkdf(auth,shared,cat(te.encode("WebPush: info\0"),ua,asPub),32);const salt=crypto.getRandomValues(new Uint8Array(16));
+ const cek=await hkdf(salt,ikm,te.encode("Content-Encoding: aes128gcm\0"),16),nonce=await hkdf(salt,ikm,te.encode("Content-Encoding: nonce\0"),12);
+ const key=await crypto.subtle.importKey("raw",cek,"AES-GCM",false,["encrypt"]);const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:nonce},key,cat(te.encode(text),new Uint8Array([2]))));
+ return cat(salt,new Uint8Array([0,0,16,0]),new Uint8Array([65]),asPub,ct)}
+async function pushSend(env,note){await noteTables(env);const subs=(await env.DB.prepare("SELECT endpoint,p256dh,auth FROM hq_push_subs").all()).results||[];if(!subs.length)return {sent:0};
+ const keys=await vapidKeys(env);const payload=JSON.stringify({title:note.title,body:note.body||"",url:note.link||"/hq/home/",tag:note.kind||"hq"}).slice(0,3000);let sent=0;
+ await Promise.all(subs.map(async s=>{try{const res=await fetch(s.endpoint,{method:"POST",headers:{Authorization:await vapidAuth(s.endpoint,keys),"Content-Encoding":"aes128gcm","Content-Type":"application/octet-stream",TTL:"86400",Urgency:"high"},body:await pushEncrypt(s,payload)});
+   if(res.status===404||res.status===410)await env.DB.prepare("DELETE FROM hq_push_subs WHERE endpoint=?").bind(s.endpoint).run();else if(res.ok){sent++;await env.DB.prepare("UPDATE hq_push_subs SET last_ok=datetime('now') WHERE endpoint=?").bind(s.endpoint).run()}else console.log("push failed",res.status,new URL(s.endpoint).host)}catch(e){console.log("push error",String(e&&e.message||e))}}));
+ return {sent,devices:subs.length}}
+// Never lets a notification problem break the booking/payment/sign-up that triggered it.
+async function notify(env,kind,title,body,link){try{await noteTables(env);const n={kind,title:String(title).slice(0,120),body:String(body||"").slice(0,240),link:link||"/hq/home/"};
+ await env.DB.prepare("INSERT INTO hq_notes(at,kind,title,body,link) VALUES(datetime('now'),?,?,?,?)").bind(n.kind,n.title,n.body,n.link).run();
+ await env.DB.prepare("DELETE FROM hq_notes WHERE id NOT IN (SELECT id FROM hq_notes ORDER BY id DESC LIMIT 300)").run();await pushSend(env,n)}catch(e){console.log("notify failed",String(e&&e.message||e))}}
+async function notesList(env){await noteTables(env);const notes=(await env.DB.prepare("SELECT id,at,kind,title,body,link,read_at FROM hq_notes ORDER BY id DESC LIMIT 60").all()).results||[];
+ const unread=(await env.DB.prepare("SELECT COUNT(*) n FROM hq_notes WHERE read_at IS NULL").first()).n;const devices=(await env.DB.prepare("SELECT COUNT(*) n FROM hq_push_subs").first()).n;return {notes,unread,devices}}
+async function pushSubscribe(env,b,ua){const ep=String(b&&b.endpoint||""),k=(b&&b.keys)||{};let u;try{u=new URL(ep)}catch(e){throw Object.assign(new Error("Bad subscription"),{status:400})}
+ if(u.protocol!=="https:"||!PUSH_HOSTS.test(u.hostname))throw Object.assign(new Error("Unknown push service"),{status:400});
+ if(unb64u(k.p256dh||"").length!==65||unb64u(k.auth||"").length!==16)throw Object.assign(new Error("Bad subscription keys"),{status:400});
+ await noteTables(env);await env.DB.prepare("INSERT INTO hq_push_subs(endpoint,p256dh,auth,ua) VALUES(?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET p256dh=excluded.p256dh,auth=excluded.auth,ua=excluded.ua").bind(ep,k.p256dh,k.auth,String(ua||"").slice(0,160)).run();
+ await audit(env,"owner","push",u.hostname,"device added","");return {ok:true}}
 async function calBookingsList(env){await calTable(env);const rows=(await env.DB.prepare("SELECT uid,email,name,start,status,mailed_at,created_at FROM hq_calbookings ORDER BY start DESC LIMIT 40").all()).results||[];
  for(const r of rows)r.paid=await calBookingPaid(env,r.email,r.start);return rows}
 async function calResend(env,uid){await calTable(env);const r=await env.DB.prepare("SELECT uid,email,name,start,status FROM hq_calbookings WHERE uid=?").bind(String(uid||"")).first();
@@ -575,10 +615,12 @@ async function calcomHook(req,env){
   await calUpsertContact(env,b,{at:day,text:(ev==="BOOKING_CREATED"?"Booked on Cal.com: ":"Rescheduled on Cal.com to ")+(p.title||"session")+(when?" for "+when:"")+(b.heard?" · Heard about me: "+b.heard:"")+(b.notes?" · "+b.notes:""),key:"calcom:"+b.uid},true);
   // Payment email only for new bookings by people who haven't already paid for this time.
   const paid=await calBookingPaid(env,b.email,b.start);
+  const whenC=b.start?calWhen(b.start,"en"):"";
+  if(!prev||ev==="BOOKING_RESCHEDULED")await notify(env,"booking",(ev==="BOOKING_CREATED"?"New booking: ":"Rescheduled: ")+(b.name||b.email),whenC+(paid?" · already paid":""),"/hq/home/#calendly");
   if(ev==="BOOKING_CREATED"&&!(prev&&prev.mailed_at)&&!paid){try{await sendCalPayEmail(env,b);await env.DB.prepare("UPDATE hq_calbookings SET mailed_at=datetime('now') WHERE uid=?").bind(b.uid).run()}catch(e){console.log("cal.com pay email failed",String(e.message||e))}}
   return json({ok:true})}
  if(ev==="BOOKING_CANCELLED"){await env.DB.prepare("UPDATE hq_calbookings SET status='cancelled' WHERE uid=?").bind(b.uid).run();
-  await calUpsertContact(env,b,{at:day,text:"Cancelled on Cal.com: "+(p.title||"session")+(when?" ("+when+")":"")+(p.cancellationReason?" · "+String(p.cancellationReason).slice(0,200):""),key:"calcom-x:"+b.uid},false);return json({ok:true})}
+  await calUpsertContact(env,b,{at:day,text:"Cancelled on Cal.com: "+(p.title||"session")+(when?" ("+when+")":"")+(p.cancellationReason?" · "+String(p.cancellationReason).slice(0,200):""),key:"calcom-x:"+b.uid},false);await notify(env,"booking","Cancelled: "+(b.name||b.email),b.start?calWhen(b.start,"en"):"","/hq/home/#calendly");return json({ok:true})}
  return json({ok:true,ignored:ev})}
 /* ---------- Instagram DM → email (the 5-minute money check). Comment INVEST / استثمر → follow gate → "send your email" DM (Zernio automations)
    → the reply arrives here as message.received → Brevo (Instagram – Clients + newsletter) → guide email in their language → HQ contact → DM confirmation. */
@@ -613,7 +655,7 @@ async function igContact(env,email,m,lang){await ensureTable(env);const now=new 
   await env.DB.prepare("UPDATE hq_docs SET data=?,updated_at=datetime('now') WHERE col='contacts' AND id=?").bind(JSON.stringify(d),hit.id).run();await audit(env,"instagram","contacts",hit.id,"updated",(d.name||email).slice(0,80));return}
  const id=await contactId(email);const d={name:nm||u,email,type:"Audience",stage:"New",instagram:u,igSince:day,lang,createdAt:now,deletedAt:null,createdBy:"instagram",log:[entry]};
  const ins=await env.DB.prepare("INSERT INTO hq_docs(col,id,data,updated_at) VALUES('contacts',?,?,datetime('now')) ON CONFLICT(col,id) DO NOTHING").bind(id,JSON.stringify(d)).run();
- if(ins&&ins.meta&&ins.meta.changes)await audit(env,"instagram","contacts",id,"created",(d.name||email).slice(0,80))}
+ if(ins&&ins.meta&&ins.meta.changes){await audit(env,"instagram","contacts",id,"created",(d.name||email).slice(0,80));await notify(env,"signup","New Instagram lead: "+(d.name||email),(u?"@"+u+" · ":"")+email,"/hq/home/#contacts")}}
 async function igDm(env,e){const m=e.message||{};if(m.direction!=="incoming"||(m.platform&&m.platform!=="instagram"))return "skip: not an incoming Instagram DM";
  const text=String(m.text||"").trim();const conv=String(m.conversationId||(e.conversation&&e.conversation.id)||"");const acct=String((e.account&&(e.account.accountId||e.account.id))||"");
  if(!text||!conv||!acct)return "skip: no text";
@@ -717,6 +759,12 @@ async function api(path,req,env,user){
   if(path==="/hq/api/calcom/timeoff"&&m==="GET")return json({timeoff:await calTimeOffList(env)});
   if(path==="/hq/api/calcom/timeoff"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calTimeOffAdd(env,b))}
   if(path==="/hq/api/calcom/timeoff/remove"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calTimeOffRemove(env,b.id))}
+  if(path==="/hq/api/notes"&&m==="GET")return json(await notesList(env));
+  if(path==="/hq/api/notes/read"&&m==="POST"){await noteTables(env);await env.DB.prepare("UPDATE hq_notes SET read_at=datetime('now') WHERE read_at IS NULL").run();return json({ok:true})}
+  if(path==="/hq/api/push/key"&&m==="GET")return json({key:(await vapidKeys(env)).pub});
+  if(path==="/hq/api/push/sub"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await pushSubscribe(env,b,req.headers.get("User-Agent")))}
+  if(path==="/hq/api/push/unsub"&&m==="POST"){const b=await req.json().catch(()=>({}));await noteTables(env);await env.DB.prepare("DELETE FROM hq_push_subs WHERE endpoint=?").bind(String(b.endpoint||"")).run();return json({ok:true})}
+  if(path==="/hq/api/push/test"&&m==="POST"){await noteTables(env);return json(await pushSend(env,{kind:"test",title:"AH HQ alerts are on",body:"You'll get a message like this for new bookings, payments and sign-ups.",link:"/hq/home/"}))}
   if(path==="/hq/api/calcom/hours"&&m==="GET")return json(await calSchedule(env));
   if(path==="/hq/api/calcom/hours"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calHoursSave(env,b))}
   if(path==="/hq/api/calcom/datehours"&&m==="POST"){const b=await req.json().catch(()=>({}));return json(await calOverrideSet(env,b))}

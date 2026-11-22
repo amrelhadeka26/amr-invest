@@ -81,6 +81,10 @@ h2{font-size:15px;font-weight:600;margin:0}
 .fl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .cq{width:260px;max-width:100%;margin:0}
 .hrs{display:flex;flex-direction:column;gap:6px}.hrow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)}.hrow:last-child{border:0}.hday{min-width:56px;display:flex;gap:6px;align-items:center;font-weight:600;padding-top:7px}.hblocks{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1}.hblk{display:inline-flex;gap:4px;align-items:center}.hblk input[type=time]{width:104px;min-width:0;margin:0;padding:6px 6px;font-size:14px}.hblk .sm{padding:4px 9px}.hblk input[type=time]::-webkit-calendar-picker-indicator{display:none}.hdel{}
+.bell{position:relative;margin-right:6px}.bdg{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#d70015;color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center}
+.npanel{position:fixed;inset:0;z-index:90;display:flex;justify-content:flex-end;background:rgba(0,0,0,.25)}.npanel>div{width:min(420px,100%);height:100%;background:var(--card);overflow:auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:-8px 0 30px rgba(0,0,0,.15)}
+.nitem{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:12px 2px;color:var(--ink);cursor:pointer;font:inherit}.nitem b{display:block;font-size:14px}.nitem span{display:block;font-size:13px;opacity:.7;margin-top:2px}.nitem.new b::before{content:"";display:inline-block;width:8px;height:8px;border-radius:4px;background:#d70015;margin-right:7px;vertical-align:1px}
+.palert{border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0 14px;font-size:13px}
 .rfr{display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;padding:0}.rfr.spin svg{animation:rfr .7s linear infinite}@keyframes rfr{to{transform:rotate(360deg)}}
 .seg{display:flex;width:max-content;max-width:100%;box-sizing:border-box;gap:2px;padding:3px;margin:2px 0 12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.seg::-webkit-scrollbar{display:none}
 .seg button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink);opacity:.7;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:none}
@@ -128,7 +132,7 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 .side.open~.scrim{display:block}
 .main{padding:calc(12px + env(safe-area-inset-top)) 14px calc(96px + env(safe-area-inset-bottom))}
 .tabbar{display:grid}
-.menu{display:inline-flex}.top{position:relative}.top .rfr{position:absolute;top:0;right:0}
+.menu{display:inline-flex}.top{position:relative}.top .rfr{position:absolute;top:0;right:0}.top .bell{right:44px;margin:0}
 .wk{grid-template-columns:repeat(7,minmax(90px,1fr));overflow-x:auto}
 .fg{grid-template-columns:1fr}
 }
@@ -145,7 +149,10 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 <div id="toast"></div>
 <script>
 const S={page:'today',mtab:'Content',weekOff:0,filt:{dept:'all',status:'open'},settings:null,depts:[],actions:[],decisions:[],contacts:[],invoices:[],money:[],content:[],ideas:[],weekly:[],links:[],cals:[],events:[],calErr:null,dbErr:null,calNeedsConnect:false,loaded:{},me:null,an:null,anLoading:false};
+setTimeout(()=>{pollNotes();setInterval(()=>{if(!document.hidden)pollNotes()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollNotes()})},1500);
 try{const v=JSON.parse(sessionStorage.getItem('hq-view')||'null');if(v&&typeof v.page==='string'&&v.page!=='search'){S.page=v.page;if(v.stab)S.stab=v.stab;if(v.cf)S.cf=v.cf}}catch(e){}
+{const h=(location.hash||'').slice(1);if(/^[a-z]+$/.test(h)){S.page=h;history.replaceState(null,'',location.pathname)}}
+window.addEventListener('hashchange',()=>{const h=(location.hash||'').slice(1);if(/^[a-z]+$/.test(h)){S.page=h;history.replaceState(null,'',location.pathname);closeBell();render()}});
 let sig='';
 const COLS=['depts','actions','decisions','contacts','invoices','money','content','ideas','weekly','links','tools','skills'];
 const $=s=>document.querySelector(s);
@@ -388,7 +395,7 @@ function render(){renderSide();const p=S.page;let h='';try{sessionStorage.setIte
  const a=areaOf(p);if(a){const strip=`<div class="tabs" role="tablist" style="margin-bottom:14px">${AREAS[a].map(([k,l])=>`<button class="sm ${k===p?'on':''}" role="tab" aria-selected="${k===p}" data-go="${k}">${esc(l)}</button>`).join('')}</div>`;h=h.replace('<!--/head-->',strip)}
  $('#main').innerHTML=h;
 }
-const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}<button class="sm rfr" data-act="refresh" aria-label="Refresh" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div></div><!--/head-->`;
+const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}<button class="sm rfr bell" data-act="bell" aria-label="Notifications" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>${S.unread?`<span class="bdg">${S.unread>9?'9+':S.unread}</span>`:''}</button><button class="sm rfr" data-act="refresh" aria-label="Refresh" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div></div><!--/head-->`;
 
 /* ---------- shared blocks ---------- */
 function actRow(a,showDept){
@@ -607,6 +614,32 @@ function pZernio(){const z=zd();let h=head('Zernio','Instagram and TikTok: posts
  return h+mkTab('Social')}
 function pBrevo(){return head('Brevo','Newsletter: subscribers, campaigns and issues',`<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="https://app.brevo.com" target="_blank" rel="noopener">Open Brevo ↗</a>`)+mkTab('Newsletter')}
 const CALD=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+// ---- Notifications: bell list + phone alerts ----
+async function pollNotes(){try{const j=await api('notes');const was=S.unread||0;S.notes=j.notes||[];S.unread=j.unread||0;S.pushDevices=j.devices||0;if(S.unread!==was)paintBadge();if($('#npanel'))paintBell()}catch(e){}}
+function paintBadge(){document.querySelectorAll('[data-act="bell"]').forEach(b=>{let x=b.querySelector('.bdg');if(!S.unread){if(x)x.remove();return}if(!x){x=document.createElement('span');x.className='bdg';b.appendChild(x)}x.textContent=S.unread>9?'9+':S.unread})}
+const pushReady=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+async function mySub(){try{const r=await navigator.serviceWorker.getRegistration('/hq/home/');return r?await r.pushManager.getSubscription():null}catch(e){return null}}
+function noteWhen(at){const d=new Date(String(at).replace(' ','T')+'Z');const m=Math.round((Date.now()-d)/6e4);if(m<1)return 'just now';if(m<60)return m+' min ago';if(m<1440)return Math.round(m/60)+' h ago';return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+async function paintBell(){const box=$('#npanel>div');if(!box)return;const sub=pushReady()?await mySub():null;
+ let alert;if(!pushReady())alert=isIOS()&&!standalone()?'<b>Phone alerts</b><p class="mut" style="margin:6px 0 0">Open AH HQ from its icon on your Home Screen to turn alerts on. In Safari: Share, then Add to Home Screen.</p>':'<b>Phone alerts</b><p class="mut" style="margin:6px 0 0">This browser can\'t show alerts.</p>';
+ else if(Notification.permission==='denied')alert='<b>Phone alerts are blocked</b><p class="mut" style="margin:6px 0 0">Allow notifications for AH HQ in your phone\'s Settings, then come back here.</p>';
+ else if(sub)alert=`<div class="fl" style="justify-content:space-between"><div><b>Phone alerts are on</b><div class="mut">On this device${S.pushDevices>1?' and '+(S.pushDevices-1)+' more':''}</div></div><div class="fl"><button class="sm" data-act="pushTest">Send a test</button><button class="sm" data-act="pushOff">Turn off</button></div></div>`;
+ else alert=`<div class="fl" style="justify-content:space-between"><div><b>Phone alerts</b><div class="mut">Get an alert for new bookings, payments and sign-ups</div></div><button class="blk" data-act="pushOn">Turn on</button></div>`;
+ const list=(S.notes||[]).length?S.notes.map(n=>`<button class="nitem${n.read_at?'':' new'}" data-act="ngo" data-u="${esc(n.link||'')}"><b>${esc(n.title)}</b><span>${esc(n.body||'')}${n.body?' · ':''}${esc(noteWhen(n.at))}</span></button>`).join(''):'<p class="mut">Nothing yet. New bookings, payments and sign-ups will show up here.</p>';
+ box.innerHTML=`<div class="fl" style="justify-content:space-between;margin-bottom:4px"><h2 style="margin:0">Notifications</h2><button class="sm" data-act="nclose" aria-label="Close">Close</button></div><div class="palert">${alert}</div>${list}`}
+async function openBell(){if($('#npanel'))return;const w=document.createElement('div');w.className='npanel';w.id='npanel';w.innerHTML='<div role="dialog" aria-label="Notifications"><p class="mut">Loading…</p></div>';w.addEventListener('click',e=>{if(e.target===w)closeBell()});document.body.appendChild(w);
+ await pollNotes();await paintBell();if(S.unread){try{await api('notes/read',{method:'POST'});S.unread=0;paintBadge()}catch(e){}}}
+function closeBell(){const w=$('#npanel');if(w)w.remove();(S.notes||[]).forEach(n=>{if(!n.read_at)n.read_at='seen'})}
+async function pushOn(b){b.disabled=true;b.textContent='Turning on…';try{
+  const perm=await Notification.requestPermission();if(perm!=='granted'){toast('Alerts were not allowed');await paintBell();return}
+  const reg=await navigator.serviceWorker.register('/hq/home/sw.js',{scope:'/hq/home/'});await navigator.serviceWorker.ready;
+  const {key}=await api('push/key');const raw=Uint8Array.from(atob(key.replace(/-/g,'+').replace(/_/g,'/')+'=='.slice(0,(4-key.length%4)%4)),c=>c.charCodeAt(0));
+  const sub=(await reg.pushManager.getSubscription())||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:raw});
+  await api('push/sub',{method:'POST',body:sub.toJSON()});const j=await api('push/test',{method:'POST'});toast(j.sent?'Alerts are on. A test alert is on its way.':'Alerts are on');S.pushDevices=Math.max(1,S.pushDevices||0)}
+ catch(er){console.log(er);toast(er.msg||'Could not turn alerts on')}await paintBell()}
+async function pushOff(b){b.disabled=true;try{const sub=await mySub();if(sub){await api('push/unsub',{method:'POST',body:{endpoint:sub.endpoint}});await sub.unsubscribe()}toast('Alerts are off on this device')}catch(er){toast(er.msg||'Could not turn alerts off')}await pollNotes();await paintBell()}
 function pCalendly(){const link='https://cal.com/amrelhadeka/1-hour-investing-consultation';const t=today();const up=(S.events||[]).filter(e=>/consult|session|cal\.com|calendly/i.test(e.summary||'')&&(e.start||'').slice(0,10)>=t).slice(0,10);
  let h=head('Cal.com','1-on-1 session bookings · EGP 1,500 each',`<a class="pill blk" style="padding:6px 12px;text-decoration:none" href="https://app.cal.com/bookings/upcoming" target="_blank" rel="noopener">Open Cal.com ↗</a> <a class="pill" style="padding:6px 12px;text-decoration:none" href="/hq/clients/">Money plan clients</a>`);
  h+=`<div class="card"><div class="ch"><h2>Your booking link</h2><button class="sm" data-act="copyLink" data-url="${link}">Copy</button></div><p style="margin:0"><a href="${link}" target="_blank" rel="noopener">${link.replace('https://','')}</a></p><p class="mut" style="margin-top:6px">Someone books → they get a payment email within seconds → when they pay EGP 1,500 they become a Client and Money updates.</p></div>`;
@@ -814,6 +847,12 @@ document.addEventListener('click',async e=>{
  case 'hrSave':if(!Object.values(S.calEd).some(x=>x.length)&&!(await sure('No working hours at all?','Nobody will be able to book a session until you add hours again.','Save anyway')))break;b.disabled=true;b.textContent='Saving…';try{await api('calcom/hours',{method:'POST',body:{days:S.calEd}});toast('Working hours saved on Cal.com');S.calHrs=null;render()}catch(er){toast(er.msg||'Could not save');b.disabled=false;b.textContent='Save working hours'}break;
  case 'ovAdd':{const d=$('#ovDate').value;if(!d){toast('Pick the date');break}b.disabled=true;try{await api('calcom/datehours',{method:'POST',body:{date:d,start:$('#ovS').value,end:$('#ovE').value}});toast('Hours set for that day');S.calHrs=null;render()}catch(er){toast(er.msg||'Could not save');b.disabled=false}break}
  case 'ovDel':if(!(await sure('Remove the special hours?','That day goes back to your usual working hours.','Remove')))break;try{await api('calcom/datehours/remove',{method:'POST',body:{date:b.dataset.date}});toast('Back to usual hours');S.calHrs=null;render()}catch(er){toast(er.msg||'Could not remove')}break;
+ case 'bell':openBell();break;
+ case 'nclose':closeBell();break;
+ case 'ngo':{const u=b.dataset.u||'';closeBell();const k=(u.split('#')[1]||'');if(k){S.page=k;render()}break}
+ case 'pushOn':await pushOn(b);break;
+ case 'pushOff':await pushOff(b);break;
+ case 'pushTest':b.disabled=true;try{const j=await api('push/test',{method:'POST'});toast(j.sent?'Test alert sent to '+j.sent+' device'+(j.sent>1?'s':''):'No phone is set up for alerts yet')}catch(er){toast(er.msg||'Could not send')}b.disabled=false;break;
  case 'refresh':b.classList.add('spin');b.disabled=true;setTimeout(()=>location.reload(),150);break;
  case 'copyLink':try{await navigator.clipboard.writeText(b.dataset.url);toast('Link copied')}catch(er){toast(b.dataset.url)}break;
  case 'syncNow':toast('Syncing…');await loadAnalytics(true);await loadStatus();toast('Synced');break;
