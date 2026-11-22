@@ -81,6 +81,7 @@ h2{font-size:15px;font-weight:600;margin:0}
 .fl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .cq{width:260px;max-width:100%;margin:0}
 .hrs{display:flex;flex-direction:column;gap:6px}.hrow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)}.hrow:last-child{border:0}.hday{min-width:56px;display:flex;gap:6px;align-items:center;font-weight:600;padding-top:7px}.hblocks{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1}.hblk{display:inline-flex;gap:4px;align-items:center}.hblk input[type=time]{width:104px;min-width:0;margin:0;padding:6px 6px;font-size:14px}.hblk .sm{padding:4px 9px}.hblk input[type=time]::-webkit-calendar-picker-indicator{display:none}.hdel{}
+.rfr{display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;padding:0}.rfr.spin svg{animation:rfr .7s linear infinite}@keyframes rfr{to{transform:rotate(360deg)}}
 .seg{display:flex;width:max-content;max-width:100%;box-sizing:border-box;gap:2px;padding:3px;margin:2px 0 12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.seg::-webkit-scrollbar{display:none}
 .seg button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink);opacity:.7;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:none}
 .seg button span{font-size:11px;opacity:.65;font-variant-numeric:tabular-nums}
@@ -127,7 +128,7 @@ td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 .side.open~.scrim{display:block}
 .main{padding:calc(12px + env(safe-area-inset-top)) 14px calc(96px + env(safe-area-inset-bottom))}
 .tabbar{display:grid}
-.menu{display:inline-flex}
+.menu{display:inline-flex}.top{position:relative}.top .rfr{position:absolute;top:0;right:0}
 .wk{grid-template-columns:repeat(7,minmax(90px,1fr));overflow-x:auto}
 .fg{grid-template-columns:1fr}
 }
@@ -387,7 +388,7 @@ function render(){renderSide();const p=S.page;let h='';try{sessionStorage.setIte
  const a=areaOf(p);if(a){const strip=`<div class="tabs" role="tablist" style="margin-bottom:14px">${AREAS[a].map(([k,l])=>`<button class="sm ${k===p?'on':''}" role="tab" aria-selected="${k===p}" data-go="${k}">${esc(l)}</button>`).join('')}</div>`;h=h.replace('<!--/head-->',strip)}
  $('#main').innerHTML=h;
 }
-const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}</div></div><!--/head-->`;
+const head=(t,s,right)=>`<div class="top"><div><button class="menu sm" data-act="menu">☰ Menu</button><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}</div><div class="fl">${right||''}<button class="sm rfr" data-act="refresh" aria-label="Refresh" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div></div><!--/head-->`;
 
 /* ---------- shared blocks ---------- */
 function actRow(a,showDept){
@@ -813,6 +814,7 @@ document.addEventListener('click',async e=>{
  case 'hrSave':if(!Object.values(S.calEd).some(x=>x.length)&&!(await sure('No working hours at all?','Nobody will be able to book a session until you add hours again.','Save anyway')))break;b.disabled=true;b.textContent='Saving…';try{await api('calcom/hours',{method:'POST',body:{days:S.calEd}});toast('Working hours saved on Cal.com');S.calHrs=null;render()}catch(er){toast(er.msg||'Could not save');b.disabled=false;b.textContent='Save working hours'}break;
  case 'ovAdd':{const d=$('#ovDate').value;if(!d){toast('Pick the date');break}b.disabled=true;try{await api('calcom/datehours',{method:'POST',body:{date:d,start:$('#ovS').value,end:$('#ovE').value}});toast('Hours set for that day');S.calHrs=null;render()}catch(er){toast(er.msg||'Could not save');b.disabled=false}break}
  case 'ovDel':if(!(await sure('Remove the special hours?','That day goes back to your usual working hours.','Remove')))break;try{await api('calcom/datehours/remove',{method:'POST',body:{date:b.dataset.date}});toast('Back to usual hours');S.calHrs=null;render()}catch(er){toast(er.msg||'Could not remove')}break;
+ case 'refresh':b.classList.add('spin');b.disabled=true;setTimeout(()=>location.reload(),150);break;
  case 'copyLink':try{await navigator.clipboard.writeText(b.dataset.url);toast('Link copied')}catch(er){toast(b.dataset.url)}break;
  case 'syncNow':toast('Syncing…');await loadAnalytics(true);await loadStatus();toast('Synced');break;
  case 'close':closeM();break;
