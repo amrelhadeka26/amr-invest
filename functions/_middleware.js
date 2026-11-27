@@ -66,15 +66,68 @@ async function googleProfile(access_token,anyAccount=false) {
 const PLAN_SESSION="zd_plan_session";
 const PLAN_DAYS=90;
 const cookieP=(n,v,maxAge)=>n+"="+encodeURIComponent(v)+"; Path=/plan; HttpOnly; Secure; SameSite=Lax; Max-Age="+maxAge;
-async function planTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS plan_clients(email TEXT PRIMARY KEY,name TEXT,added_at TEXT NOT NULL,expires_at TEXT NOT NULL)").run()}
+async function planTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS plan_clients(email TEXT PRIMARY KEY,name TEXT,added_at TEXT NOT NULL,expires_at TEXT NOT NULL,last_mail_at TEXT)").run()} // last_mail_at added to the live table on 2026-11-27
 async function planAllowed(env,email){if(ALLOWED_ACCOUNTS.has(email))return {owner:true};await planTable(env);
   const r=await env.DB.prepare("SELECT name,expires_at FROM plan_clients WHERE email=? AND expires_at>datetime('now')").bind(String(email||"").toLowerCase()).first();return r||null}
 async function planUser(req,env){const value=cookies(req)[PLAN_SESSION]||"";const i=value.lastIndexOf(".");if(i<0)return null;const p=value.slice(0,i);
   if(!await verifySig("session|"+p,value.slice(i+1),env.GOOGLE_CLIENT_SECRET||""))return null;
   try{const d=JSON.parse(td.decode(unb64(p)));return d.exp>Date.now()/1000&&d.sub?d:null}catch{return null}}
 function planPage(title,msg,status){return new Response('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Money plan</title><style>body{margin:0;font:17px/1.6 system-ui,sans-serif;color:#1D1D1F;background:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}main{max-width:460px}h1{font-size:28px;line-height:1.15}a{color:#1D1D1F;font-weight:600}</style></head><body><main><h1>'+title+'</h1><p>'+msg+'</p></main></body></html>',{status,headers:{...htmlHeaders,"Content-Type":"text/html; charset=utf-8"}})}
+// Email access for Money plan clients (2026-11-27): adding/renewing a client emails them a personal sign-in link (valid 7 days);
+// returning clients type their email at /plan/login and get a new link. No passwords; Google sign-in stays as an option.
+const PLAN_LINK_DAYS=7;
+async function planLinkToken(env,email){const p=b64(te.encode(JSON.stringify({e:email,exp:Math.floor(Date.now()/1000)+PLAN_LINK_DAYS*86400})));return p+"."+await hmac("planlink|"+p,env.GOOGLE_CLIENT_SECRET)}
+async function planLinkEmail(env,t){t=String(t||"");const i=t.lastIndexOf(".");if(i<0)return null;const p=t.slice(0,i);if(!await verifySig("planlink|"+p,t.slice(i+1),env.GOOGLE_CLIENT_SECRET||""))return null;
+  try{const d=JSON.parse(td.decode(unb64(p)));return d.exp>Date.now()/1000&&d.e?String(d.e):null}catch{return null}}
+function planDay(s,lang){try{return new Date(String(s).replace(" ","T")+"Z").toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",{day:"numeric",month:"long",year:"numeric",timeZone:"Africa/Cairo"})}catch(e){return s}}
+function planMailHtml(c,url,kind){const first=escH((c.name||"").split(" ")[0]),u=escH(url),en=escH(planDay(c.expires_at,"en")),ar=escH(planDay(c.expires_at,"ar"));
+ const btn=(href,label,dark)=>`<table cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="${dark?"#1D1D1F":"#FFFFFF"}" style="background:${dark?"#1D1D1F":"#FFFFFF"};border:2px solid #1D1D1F;border-radius:10px;"><a href="${href}" target="_blank" style="display:inline-block;padding:13px 30px;color:${dark?"#FFFFFF":"#1D1D1F"};font-size:15px;font-weight:700;text-decoration:none;font-family:Helvetica,Arial,sans-serif;">${label}</a></td></tr></table>`;
+ const grant=kind!=="link";
+ const h1=grant?(first?first+", your Money plan is ready":"Your Money plan is ready"):"Your sign-in link",h1ar=grant?"خطة فلوسك جاهزة":"لينك الدخول بتاعك";
+ const p1=grant?`You have access to your month-by-month Money plan until <b>${en}</b>.`:`Tap the button to open your Money plan. Your access lasts until <b>${en}</b>.`;
+ const p1ar=grant?`تقدر تفتح خطة فلوسك شهر بشهر لحد <b>${ar}</b>.`:`دوس على الزرار علشان تفتح خطة فلوسك. اشتراكك ساري لحد <b>${ar}</b>.`;
+ return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Your Money plan</title></head><body style="margin:0;padding:0;background:#FFFFFF;"><table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF"><tr><td align="center" style="padding:40px 20px;"><table width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:520px;font-family:Helvetica,Arial,sans-serif;color:#1D1D1F;">
+<tr><td align="center" style="padding-bottom:28px;"><a href="https://invest.amrelhadeka.com/" target="_blank"><img src="https://invest.amrelhadeka.com/assets/email-logo.png" width="56" alt="Amr El Hadeka" style="display:block;border:0;width:56px;height:auto;"></a></td></tr>
+<tr><td align="center" style="font-size:24px;line-height:32px;font-weight:700;padding-bottom:6px;">${h1}</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:20px;line-height:30px;font-weight:700;padding-bottom:20px;">${h1ar}</td></tr>
+<tr><td align="center" style="font-size:15px;line-height:23px;padding-bottom:8px;">${p1}</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:15px;line-height:25px;padding-bottom:24px;">${p1ar}</td></tr>
+<tr><td align="center" style="padding-bottom:12px;">${btn(u,"Open my Money plan",true)}</td></tr>
+<tr><td align="center" style="padding-bottom:24px;">${btn(u,"افتح خطة فلوسك",false)}</td></tr>
+<tr><td align="center" style="font-size:13px;line-height:20px;padding-bottom:6px;color:#424245;">This button works for ${PLAN_LINK_DAYS} days. After that, go to <a href="https://invest.amrelhadeka.com/plan/" style="color:#1D1D1F;">invest.amrelhadeka.com/plan</a> and enter this email to get a new link.</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:13px;line-height:22px;padding-bottom:24px;color:#424245;">الزرار ده شغال ${PLAN_LINK_DAYS} أيام. بعدها ادخل على <a href="https://invest.amrelhadeka.com/plan/" style="color:#1D1D1F;">invest.amrelhadeka.com/plan</a> واكتب الإيميل ده، هيوصلك لينك جديد.</td></tr>
+<tr><td align="center" style="font-size:13px;line-height:20px;padding-bottom:24px;color:#424245;">Questions? Just reply to this email. · <span dir="rtl">عندك سؤال؟ رد على الإيميل ده.</span></td></tr>
+<tr><td align="center" style="font-size:12px;line-height:20px;padding-bottom:6px;">Educational content only, not personal financial advice. Investing involves risk, including loss of capital.</td></tr>
+<tr><td align="center" dir="rtl" style="font-size:12px;line-height:22px;padding-bottom:28px;">محتوى تعليمي بس، مش نصيحة مالية شخصية. الاستثمار فيه مخاطرة، وممكن تخسر جزء من فلوسك.</td></tr>
+<tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;">Investing Made Simple &middot; <span dir="rtl">الاستثمار ببساطة</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a></td></tr>
+</table></td></tr></table></body></html>`}
+async function sendPlanMail(env,c,kind){if(!env.BREVO_API_KEY)throw new Error("BREVO_API_KEY missing");
+ const url=ORIGIN+"/plan/in?t="+encodeURIComponent(await planLinkToken(env,c.email));
+ const r=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{"api-key":env.BREVO_API_KEY,"Content-Type":"application/json",accept:"application/json"},body:JSON.stringify({sender:SESSION_SENDER,replyTo:SESSION_SENDER,to:[{email:c.email,name:c.name||c.email}],subject:kind==="link"?"Your sign-in link · لينك الدخول":"Your Money plan is ready · خطة فلوسك جاهزة",htmlContent:planMailHtml(c,url,kind),tags:["money-plan",kind]})});
+ if(!r.ok)throw new Error("Brevo "+r.status+": "+(await r.text()).slice(0,200));
+ await env.DB.prepare("UPDATE plan_clients SET last_mail_at=datetime('now') WHERE email=?").bind(c.email).run()}
+function planLoginPage(note,status=200){const n=note?'<p class="note">'+note+'</p>':'';
+ return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Money plan · sign in</title><style>body{margin:0;font:17px/1.6 system-ui,-apple-system,sans-serif;color:#1D1D1F;background:#fff;display:grid;place-items:center;min-height:100vh;padding:24px}main{width:100%;max-width:420px}h1{font-size:28px;line-height:1.15;margin:0 0 4px}.ar{direction:rtl}label{display:block;font-size:14px;margin:18px 0 6px}input{width:100%;box-sizing:border-box;font:17px system-ui,sans-serif;padding:12px 14px;border:1.5px solid #c7c7cc;border-radius:12px;min-height:50px}input:focus,button:focus-visible{outline:2px solid #1D1D1F;outline-offset:2px}button{width:100%;margin-top:12px;font:600 17px system-ui,sans-serif;min-height:50px;border:0;border-radius:12px;background:#1D1D1F;color:#fff;cursor:pointer}.note{border:2px solid #1D1D1F;border-radius:12px;padding:12px 14px;font-size:15px}.alt{font-size:14px;margin-top:22px}a{color:#1D1D1F;font-weight:600}</style></head><body><main>
+<h1>Your Money plan</h1><p class="ar" style="margin:0 0 6px;font-weight:700;font-size:20px">خطة فلوسك</p>${n}
+<form method="post" action="/plan/login"><label for="e">Your email · <span class="ar">الإيميل بتاعك</span></label><input id="e" name="email" type="email" autocomplete="email" required placeholder="name@gmail.com"><button>Send me a sign-in link · ابعتلي لينك</button></form>
+<p class="alt">Or <a href="/plan/login/google">continue with Google</a> · <span class="ar">أو ادخل بحساب Google</span></p></main></body></html>`,{status,headers:{...htmlHeaders,"Content-Type":"text/html; charset=utf-8"}})}
 async function planRoute(context,env,req,path){
-  if(path==="/plan/login")return startOAuth("plan",env);
+  if(path==="/plan/login/google")return startOAuth("plan",env);
+  if(path==="/plan/login"&&req.method==="POST"){
+    if(req.headers.get("Origin")!==ORIGIN)return planLoginPage("Please try again from this page.",403);
+    let email="";try{email=String((await req.formData()).get("email")||"").trim().toLowerCase().slice(0,200)}catch(e){}
+    const sent="If this email has access, a sign-in link is on its way. Check your inbox (and spam).<br><span class=\"ar\">لو الإيميل ده عنده اشتراك، هيوصلك لينك الدخول دلوقتي. بص على الإنبوكس (والـ spam).</span>";
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return planLoginPage("Enter a valid email · <span class=\"ar\">اكتب إيميل صحيح</span>",400);
+    await planTable(env);
+    const c=await env.DB.prepare("SELECT email,name,expires_at FROM plan_clients WHERE email=? AND expires_at>datetime('now') AND (last_mail_at IS NULL OR last_mail_at<datetime('now','-2 minutes'))").bind(email).first();
+    if(c){try{await sendPlanMail(env,c,"link")}catch(e){console.log("plan link mail failed",String(e&&e.message||e))}}
+    return planLoginPage(sent)}
+  if(path==="/plan/login")return planLoginPage("");
+  if(path==="/plan/in"){const email=await planLinkEmail(env,new URL(req.url).searchParams.get("t"));
+    if(!email)return planLoginPage("This link has expired. Enter your email to get a new one.<br><span class=\"ar\">اللينك ده خلص. اكتب الإيميل بتاعك وهيوصلك لينك جديد.</span>",410);
+    const ok=await planAllowed(env,email);
+    if(!ok)return planPage("Your access has ended","Your 3 months of access to the money plan tool are over. To renew, book a follow-up session with Amr: <a href=\"https://invest.amrelhadeka.com/\">invest.amrelhadeka.com</a>.",403);
+    return redirect(ORIGIN+"/plan/",[cookieP(PLAN_SESSION,await signSession("email:"+email,email,env.GOOGLE_CLIENT_SECRET),604800)])}
   const u=await planUser(req,env);
   if(!u)return redirect(ORIGIN+"/plan/login");
   if(path==="/plan/logout")return redirect(ORIGIN+"/",[cookieP(PLAN_SESSION,"",0)]);
@@ -466,6 +519,7 @@ async function recordSessionPayment(env,o,mode){
 async function calTable(env){await env.DB.prepare("CREATE TABLE IF NOT EXISTS hq_calbookings (uid TEXT PRIMARY KEY, email TEXT, name TEXT, start TEXT, status TEXT, mailed_at TEXT, created_at TEXT DEFAULT (datetime('now')))").run()}
 function calPayUrl(b){const q=new URLSearchParams({attendeeName:b.name||"",email:b.email||"",startTime:b.start||""});if(b.phone)q.set("attendeePhoneNumber",b.phone);return ORIGIN+"/pay/session/?"+q.toString()}
 function calWhen(iso,lang){try{return new Date(iso).toLocaleString(lang==="ar"?"ar-EG":"en-GB",{timeZone:"Africa/Cairo",weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit",hour12:true})}catch(e){return iso}}
+const SESSION_SENDER={name:"Amr El Hadeka",email:"invest@amrelhadeka.com"};
 const escH=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function calPayEmail(b){const url=escH(calPayUrl(b)),first=escH((b.name||"").split(" ")[0]),en=escH(calWhen(b.start,"en")),ar=escH(calWhen(b.start,"ar"));
  const btn=(href,label,dark)=>`<table cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="${dark?"#1D1D1F":"#FFFFFF"}" style="background:${dark?"#1D1D1F":"#FFFFFF"};border:2px solid #1D1D1F;border-radius:10px;"><a href="${href}" target="_blank" style="display:inline-block;padding:13px 30px;color:${dark?"#FFFFFF":"#1D1D1F"};font-size:15px;font-weight:700;text-decoration:none;font-family:Helvetica,Arial,sans-serif;">${label}</a></td></tr></table>`;
@@ -486,7 +540,7 @@ function calPayEmail(b){const url=escH(calPayUrl(b)),first=escH((b.name||"").spl
 <tr><td align="center" style="border-top:1px solid #1D1D1F;padding-top:20px;font-size:13px;line-height:20px;">Investing Made Simple &middot; <span dir="rtl">الاستثمار ببساطة</span><br><a href="https://invest.amrelhadeka.com/" style="color:#1D1D1F;">invest.amrelhadeka.com</a></td></tr>
 </table></td></tr></table></body></html>`}
 async function sendCalPayEmail(env,b){if(!env.BREVO_API_KEY)throw new Error("BREVO_API_KEY missing");
- const r=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{"api-key":env.BREVO_API_KEY,"Content-Type":"application/json",accept:"application/json"},body:JSON.stringify({sender:{name:"Amr El Hadeka",email:"invest@amrelhadeka.com"},replyTo:{email:"invest@amrelhadeka.com",name:"Amr El Hadeka"},to:[{email:b.email,name:b.name||b.email}],subject:"Confirm your session · أكّد جلستك",htmlContent:calPayEmail(b),tags:["session-payment"]})});
+ const r=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{"api-key":env.BREVO_API_KEY,"Content-Type":"application/json",accept:"application/json"},body:JSON.stringify({sender:SESSION_SENDER,replyTo:SESSION_SENDER,to:[{email:b.email,name:b.name||b.email}],subject:"Confirm your session · أكّد جلستك",htmlContent:calPayEmail(b),tags:["session-payment"]})});
  if(!r.ok)throw new Error("Brevo "+r.status+": "+(await r.text()).slice(0,200));}
 async function calUpsertContact(env,b,line,booked){await ensureTable(env);const email=String(b.email||"").toLowerCase();if(!email)return;
  const f=await env.DB.prepare("SELECT id,data FROM hq_docs WHERE col='contacts' AND lower(json_extract(data,'$.email'))=? ORDER BY (json_extract(data,'$.deletedAt') IS NULL) DESC LIMIT 1").bind(email).first();
@@ -782,7 +836,10 @@ async function api(path,req,env,user){
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||email.length>200)return json({error:"Enter a valid email"},400);
     if(m==="POST"){const name=String(b.name||"").trim().slice(0,120);
       await env.DB.prepare("INSERT INTO plan_clients(email,name,added_at,expires_at) VALUES(?,?,datetime('now'),datetime('now','+"+PLAN_DAYS+" days')) ON CONFLICT(email) DO UPDATE SET name=COALESCE(NULLIF(excluded.name,''),plan_clients.name),expires_at=excluded.expires_at").bind(email,name).run();
-      await audit(env,user.email,"plan_clients",email,"grant 90 days",name);return json({ok:true})}
+      await audit(env,user.email,"plan_clients",email,"grant 90 days",name);
+      const c=await env.DB.prepare("SELECT email,name,expires_at FROM plan_clients WHERE email=?").bind(email).first();
+      let mailed=true,mailError="";try{await sendPlanMail(env,c,"grant")}catch(e){mailed=false;mailError=String(e&&e.message||e).slice(0,160)}
+      return json({ok:true,mailed,mailError})}
     if(m==="DELETE"){await env.DB.prepare("DELETE FROM plan_clients WHERE email=?").bind(email).run();await audit(env,user.email,"plan_clients",email,"removed","");return json({ok:true})}
     return json({error:"Method not allowed"},405)}
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
