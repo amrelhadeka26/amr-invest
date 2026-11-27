@@ -331,8 +331,9 @@ async function linkClient(text,amount,date,what){text=String(text||'').trim();if
  if(!c){const m=text.match(/^(.*?)\s*<([^>]+)>\s*$/);const name=m?m[1]:(text.includes('@')?'':text),email=(m?m[2]:(text.includes('@')?text:'')).toLowerCase();
   const id=await put('contacts',null,{name,email,type:'Client',stage:'Won',since:date||today(),wonAt:date||today(),log:[line],createdBy:'money'});return id}
  const log=(c.log||[]).filter(l=>l.key!==line.key).concat([line]);const patch={log};
- if(c.type!=='Partner')patch.type='Client';if(c.stage!=='Won'){patch.stage='Won';patch.wonAt=date||today()}if(!c.since)patch.since=date||today();
+ if(c.type!=='Partner')patch.type='Client';if(c.stage!=='Won'){patch.stage='Won';patch.wonAt=date||today()}else if(!c.wonAt)patch.wonAt=date||today();if(!c.since)patch.since=date||today();
  await put('contacts',c.id,patch);return c.id}
+const wonDate=c=>c.wonAt||paidBy(c).map(m=>m.date||'').filter(Boolean).sort()[0]||c.since||'';
 const paidBy=c=>{const nm=String(c.name||'').trim().toLowerCase(),em=String(c.email||'').toLowerCase();return live(S.money).filter(m=>m.kind==='in'&&(m.contactId===c.id||(()=>{const v=String(m.contact||'').trim().toLowerCase();return v&&(v===nm||v===em||v===(cLabel(c)).toLowerCase())})()))};
 
 /* ---------- work: priorities P0–P3, "blocked by", and the next action ---------- */
@@ -596,7 +597,7 @@ function pSales(){const t={contacts:'Contacts',clients:'Clients'}[S.page]||'Pipe
  const open=pipe.filter(c=>!['Won','Lost'].includes(c.stage)),val=open.reduce((s,c)=>s+(+c.value||0),0);
  const m0=today().slice(0,7)+'-01',d30=ymd(new Date(Date.now()-30*864e5));
  let h=head('Sales','Everyone who gave you their email, your pipeline and your clients',`<button class="pri" data-act="newContact" data-type="Workshop lead">+ Contact</button>`);
- h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Open pipeline',money(val),open.length+' open deal'+(open.length===1?'':'s'))}${kpi('Follow-ups due',followUps().length,followUps().length?'see Needs attention':'none due')}${kpi('Won this month',all.filter(c=>c.stage==='Won'&&(c.wonAt||'')>=m0).length)}${kpi('Contacts',all.length,all.filter(c=>added(c)>=d30).length+' new in 30 days')}</div>`;
+ h+=`<div class="grid g4" style="margin-bottom:14px">${kpi('Open pipeline',money(val),open.length+' open deal'+(open.length===1?'':'s'))}${kpi('Follow-ups due',followUps().length,followUps().length?'see Needs attention':'none due')}${kpi('Won this month',all.filter(c=>c.stage==='Won'&&wonDate(c)>=m0).length)}${kpi('Contacts',all.length,all.filter(c=>added(c)>=d30).length+' new in 30 days')}</div>`;
  if(t==='Pipeline')h+=pipeline();
  if(t==='Clients')h+=clients();
  if(t==='Contacts'){const f=S.cf||'all',q=(S.cq||'').toLowerCase();
