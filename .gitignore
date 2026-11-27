@@ -4,3 +4,5 @@ qa/*.json
 qa/pages.txt
 .wrangler/
 .dev.vars
+
+graphify-out/
