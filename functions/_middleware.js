@@ -633,6 +633,40 @@ async function pushSend(env,note){await noteTables(env);const subs=(await env.DB
 async function notify(env,kind,title,body,link){try{await noteTables(env);const n={kind,title:String(title).slice(0,120),body:String(body||"").slice(0,240),link:link||"/hq/home/"};
  await env.DB.prepare("INSERT INTO hq_notes(at,kind,title,body,link) VALUES(datetime('now'),?,?,?,?)").bind(n.kind,n.title,n.body,n.link).run();
  await env.DB.prepare("DELETE FROM hq_notes WHERE id NOT IN (SELECT id FROM hq_notes ORDER BY id DESC LIMIT 300)").run();await pushSend(env,n)}catch(e){console.log("notify failed",String(e&&e.message||e))}}
+
+/* ---------- AI operating system: engine alerts, marketing intelligence, automation health (free plan only) ---------- */
+const ENGINE_URL="https://amr-engine.amrelhadeka.workers.dev";
+const OPP_STATUS=["new","to_content","rejected","scripted"];
+// Free limits shown in HQ. Keep in sync with amr-os/engine/worker.js LIMITS.
+const FREE_LIMITS=[{source:"youtube",metric:"units",cap:10000,per:"day",label:"YouTube Data API units"},{source:"instagram",metric:"hashtags_7d",cap:30,per:"7 days",label:"Instagram hashtag searches"},{source:"cloudflare",metric:"workflow_runs",cap:50,per:"day",label:"Automation runs (our own cap)"},{source:"apify",metric:"credit_usd",cap:5,per:"month",label:"Apify free credit (TikTok, weekly)"}];
+function sameKey(a,b){a=String(a||"");b=String(b||"");if(!a||a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0}
+async function opsHook(req,env){if(!env.OPS_KEY||!sameKey(req.headers.get("X-Ops-Key"),env.OPS_KEY))return json({error:"Unauthorized"},401);
+ const b=await readBody(req,4000).catch(()=>({}));const link=/^\/hq\/[a-z0-9\/#._-]*$/i.test(String(b.link||""))?String(b.link):"/hq/ops/";
+ await notify(env,"ops",String(b.title||"Automation alert"),String(b.body||""),link);return json({ok:true})}
+async function miOpps(env,dayQ){const days=((await env.DB.prepare("SELECT DISTINCT day FROM mi_opportunities ORDER BY day DESC LIMIT 14").all()).results||[]).map(x=>x.day);
+ const d=DD.test(dayQ||"")?dayQ:(days[0]||null);
+ const items=d?((await env.DB.prepare("SELECT id,day,rank,title,topic,score,confidence,fields,evidence,status,rating,updated_at FROM mi_opportunities WHERE day=? ORDER BY rank LIMIT 50").bind(d).all()).results||[]).map(x=>({...x,fields:safeJSON(x.fields,{}),evidence:safeJSON(x.evidence,[])})):[];
+ const c=await env.DB.prepare("SELECT (SELECT COUNT(*) FROM mi_videos) videos,(SELECT COUNT(*) FROM mi_creators) creators,(SELECT COUNT(*) FROM mi_comments) comments,(SELECT COUNT(*) FROM mi_terms WHERE active=1) terms,(SELECT COUNT(*) FROM mi_snapshots) snapshots").first();
+ return {day:d,days,items,counts:c||{}}}
+function safeJSON(s,f){try{return s?JSON.parse(s):f}catch{return f}}
+async function miOppUpdate(env,user,b){const id=String(b.id||"");if(!id||id.length>120)throw Object.assign(Error("Invalid opportunity"),{status:400});
+ const sets=[],vals=[];if("rating" in b){const r=b.rating===null?null:parseInt(b.rating);if(r!==null&&!(r>=1&&r<=5))throw Object.assign(Error("Rating must be 1 to 5"),{status:400});sets.push("rating=?");vals.push(r)}
+ if("status" in b){if(!OPP_STATUS.includes(b.status))throw Object.assign(Error("Invalid status"),{status:400});sets.push("status=?");vals.push(b.status)}
+ if(!sets.length)throw Object.assign(Error("Nothing to change"),{status:400});
+ const r=await env.DB.prepare("UPDATE mi_opportunities SET "+sets.join(",")+",updated_at=datetime('now') WHERE id=?").bind(...vals,id).run();
+ if(!r.meta||!r.meta.changes)throw Object.assign(Error("Opportunity not found"),{status:404});
+ await audit(env,user.email,"mi_opportunities",id,"updated",JSON.stringify({rating:b.rating,status:b.status}).slice(0,120));return {ok:true}}
+async function opsReport(env){const runs=(await env.DB.prepare("SELECT id,job,started_at,finished_at,status,items,error,detail FROM ops_runs ORDER BY started_at DESC LIMIT 60").all()).results||[];
+ const jobs={};for(const r of runs)if(!jobs[r.job])jobs[r.job]=r;
+ const since=new Date(Date.now()-29*864e5).toISOString().slice(0,10),today=new Date().toISOString().slice(0,10),month=today.slice(0,7);
+ const usage=(await env.DB.prepare("SELECT day,source,metric,used,cap FROM ops_usage WHERE day>=? ORDER BY day DESC").bind(since).all()).results||[];
+ const wk=new Date(Date.now()-6*864e5).toISOString().slice(0,10);
+ const limits=FREE_LIMITS.map(l=>{const rows=usage.filter(u=>u.source===l.source&&u.metric===l.metric);const pick=l.per==="day"?rows.filter(u=>u.day===today):l.per==="7 days"?rows.filter(u=>u.day>=wk):rows.filter(u=>u.day.startsWith(month));
+  const used=pick.reduce((a,u)=>a+(u.used||0),0);return {...l,used,pct:l.cap?Math.round(used/l.cap*100):0}});
+ return {runs:runs.map(r=>({...r,detail:safeJSON(r.detail,{})})),jobs:Object.values(jobs).map(r=>({...r,detail:safeJSON(r.detail,{})})),limits,monthlyCost:0,alertAt:70}}
+async function opsRun(env){if(!env.OPS_KEY)throw Object.assign(Error("The automation key is not set up"),{status:503});
+ const r=await fetch(ENGINE_URL+"/run",{method:"POST",headers:{"Content-Type":"application/json","X-Ops-Key":env.OPS_KEY},body:"{}"});const j=await r.json().catch(()=>({}));
+ if(!r.ok)throw Object.assign(Error(j.error||"The automation did not start ("+r.status+")"),{status:r.status===429?429:502});return j}
 async function notesList(env){await noteTables(env);const notes=(await env.DB.prepare("SELECT id,at,kind,title,body,link,read_at FROM hq_notes ORDER BY id DESC LIMIT 60").all()).results||[];
  const unread=(await env.DB.prepare("SELECT COUNT(*) n FROM hq_notes WHERE read_at IS NULL").first()).n;const devices=(await env.DB.prepare("SELECT COUNT(*) n FROM hq_push_subs").first()).n;return {notes,unread,devices}}
 async function pushSubscribe(env,b,ua){const ep=String(b&&b.endpoint||""),k=(b&&b.keys)||{};let u;try{u=new URL(ep)}catch(e){throw Object.assign(new Error("Bad subscription"),{status:400})}
@@ -843,6 +877,10 @@ async function api(path,req,env,user){
     if(m==="DELETE"){await env.DB.prepare("DELETE FROM plan_clients WHERE email=?").bind(email).run();await audit(env,user.email,"plan_clients",email,"removed","");return json({ok:true})}
     return json({error:"Method not allowed"},405)}
   if(path==="/hq/api/cal-status"&&m==="GET"){const row=await calendarRow(env);return json({connected:!!row,canConnect:user.email===CALENDAR_MANAGER})}
+  if(path==="/hq/api/mi/opps"&&m==="GET")return json(await miOpps(env,new URL(req.url).searchParams.get("day")));
+  if(path==="/hq/api/mi/opps"&&m==="POST")return json(await miOppUpdate(env,user,await readBody(req,2000)));
+  if(path==="/hq/api/ops"&&m==="GET")return json(await opsReport(env));
+  if(path==="/hq/api/ops/run"&&m==="POST"){const j=await opsRun(env);await audit(env,user.email,"ops","run","started manual run");return json(j)}
   return json({error:"Unknown HQ API route"},404);
 }
 async function callback(req,env) {
@@ -890,6 +928,7 @@ export async function onRequest(context) {
   if(path==="/hq/hook/zernio" && req.method==="POST")return zernioHook(req,env);
   if(path==="/hq/hook/paymob" && req.method==="POST")return paymobHook(req,env);
   if(path==="/hq/hook/calcom" && req.method==="POST")return calcomHook(req,env);
+  if(path==="/hq/hook/ops" && req.method==="POST")return opsHook(req,env);
   if(path==="/hq/auth/login" && req.method==="GET")return startOAuth("login",env);
   if(path==="/hq/auth/callback" && req.method==="GET")return callback(req,env);
   const user=await sessionUser(req,env);

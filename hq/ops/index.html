@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Automation health and costs · AH HQ</title>
+<link rel="icon" href="/assets/ah-hq-icon-192.png">
+<style>
+:root{--ink:#1D1D1F;--line:#e3e3e5;--soft:#f6f6f7;--red:#DC2626;--green:#15803D}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:#fff}
+main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
+a{color:var(--ink)}
+h1{font-size:30px;line-height:1.1;margin:8px 0 6px}
+h2{font-size:20px;margin:28px 0 8px}
+.sub{margin:0 0 18px;opacity:.75}
+button{font:600 14px Inter,system-ui,sans-serif;min-height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{min-height:22px;font-size:14px;margin:8px 0}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+th{font-size:12px;opacity:.7;font-weight:500}
+.ok{color:var(--green);font-weight:600}.failed{color:var(--red);font-weight:600}.skipped,.running{font-weight:600;opacity:.75}
+.meter{height:8px;border-radius:4px;background:var(--soft);overflow:hidden;margin-top:4px;min-width:90px}.meter i{display:block;height:100%;background:var(--ink)}.meter i.hot{background:var(--red)}
+.big{font-size:34px;font-weight:700;line-height:1}
+.card{border:1.5px solid var(--line);border-radius:16px;padding:14px 16px}
+.note{font-size:13px;opacity:.7}
+.todo li{margin:4px 0}
+@media(max-width:620px){thead{display:none}tr{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:6px 0;border-bottom:1px solid var(--line)}td{border:0;padding:2px 0}}
+</style></head><body><main>
+<a href="/hq/home/">← Back to HQ</a>
+<h1>Automation health</h1>
+<p class="sub">Every automated job, its last run and any failure. Everything runs on free plans: at a limit a job stops with an error, nothing is billed. You get an alert when a limit passes 70% or a job fails twice in a row.</p>
+<div class="bar"><button id="run">Run now</button><a href="/hq/intel/" style="margin-left:auto;font-size:14px">Marketing intelligence →</a></div>
+<div class="msg" id="msg" role="status"></div>
+<h2 style="margin-top:12px">Jobs</h2>
+<table><thead><tr><th>Job</th><th>Last run</th><th>Status</th><th>Note</th></tr></thead><tbody id="jobs"><tr><td colspan="4">Loading…</td></tr></tbody></table>
+<h2 id="costs">Costs and free limits</h2>
+<div class="card" style="margin-bottom:12px"><div class="big" id="cost">$0</div><div class="note">New monthly cost of the operating system. No paid plan is switched on without your yes.</div></div>
+<table><thead><tr><th>Free limit</th><th>Used</th><th>Period</th></tr></thead><tbody id="limits"></tbody></table>
+<h2>To switch on collection</h2>
+<ul class="todo note" id="todo"><li>Add the free YouTube Data API key (I guide you; it goes into a Cloudflare secret).</li><li>Connect Meta: your Instagram professional account linked to a Facebook Page.</li></ul>
+<h2>Recent runs</h2>
+<table><thead><tr><th>Job</th><th>Started</th><th>Status</th><th>Items</th></tr></thead><tbody id="runs"></tbody></table>
+</main>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const when=s=>s?new Date(s).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Africa/Cairo'}):'–';
+const NAME={heartbeat:'Engine check',youtube:'YouTube collection',instagram:'Instagram collection',tiktok:'TikTok weekly',score:'Scoring',comments:'Comment sorting'};
+async function call(url,method){const r=await fetch(url,{method:method||'GET',headers:{'Content-Type':'application/json'},body:method==='POST'?'{}':undefined});
+ if(r.status===401){location.href='/hq/auth/login';return}const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Something went wrong');return j}
+async function load(){try{const j=await call('/hq/api/ops');
+ $('jobs').innerHTML=(j.jobs||[]).map(x=>`<tr><td><b>${esc(NAME[x.job]||x.job)}</b></td><td>${when(x.started_at)}</td><td class="${esc(x.status)}">${esc(x.status)}</td><td>${esc(x.error||(x.detail&&x.detail.note)||'')}</td></tr>`).join('')||'<tr><td colspan="4">No runs yet.</td></tr>';
+ $('cost').textContent='$'+(j.monthlyCost||0)+' a month';
+ $('limits').innerHTML=(j.limits||[]).map(l=>`<tr><td>${esc(l.label)}</td><td>${l.used.toLocaleString('en-US')} of ${l.cap.toLocaleString('en-US')} (${l.pct}%)<div class="meter"><i class="${l.pct>=j.alertAt?'hot':''}" style="width:${Math.min(100,l.pct)}%"></i></div></td><td>per ${esc(l.per)}</td></tr>`).join('');
+ const skip=(j.jobs||[]).filter(x=>x.status==='skipped');$('todo').parentElement&&($('todo').style.display=skip.length?'':'none');
+ $('runs').innerHTML=(j.runs||[]).slice(0,30).map(x=>`<tr><td>${esc(NAME[x.job]||x.job)}</td><td>${when(x.started_at)}</td><td class="${esc(x.status)}">${esc(x.status)}</td><td>${x.items||0}</td></tr>`).join('');
+ }catch(e){$('jobs').innerHTML='<tr><td colspan="4" class="failed">'+esc(e.message)+'</td></tr>'}}
+$('run').addEventListener('click',async()=>{$('msg').textContent='Starting…';try{await call('/hq/api/ops/run','POST');$('msg').textContent='Started. Results appear in about a minute.';setTimeout(load,20000)}catch(e){$('msg').textContent=e.message}});
+load();
+}
+</script></body></html>

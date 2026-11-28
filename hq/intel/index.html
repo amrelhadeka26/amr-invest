@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Marketing intelligence · AH HQ</title>
+<link rel="icon" href="/assets/ah-hq-icon-192.png">
+<style>
+:root{--ink:#1D1D1F;--line:#e3e3e5;--soft:#f6f6f7;--red:#DC2626;--green:#15803D}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:#fff}
+main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
+a{color:var(--ink)}
+h1{font-size:30px;line-height:1.1;margin:8px 0 6px}
+h2{font-size:18px;margin:0 0 6px}
+.sub{margin:0 0 18px;opacity:.75}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 16px}
+select,button{font:600 14px Inter,system-ui,sans-serif;min-height:40px;padding:0 12px;border-radius:12px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+button.pri{background:var(--ink);color:#fff}
+button:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 18px}
+.kpi{border:1px solid var(--line);border-radius:14px;padding:10px 12px}.kpi b{display:block;font-size:22px}.kpi span{font-size:12px;opacity:.7}
+.card{border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;margin:0 0 12px}
+.top{display:flex;gap:10px;align-items:baseline}.rank{font-weight:700;font-size:20px;min-width:28px}
+.meta{font-size:13px;opacity:.75;margin:2px 0 8px}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);margin:0 4px 4px 0}
+.st-to_content{border-color:var(--green);color:var(--green)}.st-rejected{border-color:var(--red);color:var(--red)}
+dl{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:4px 12px;margin:8px 0;font-size:14px}dt{opacity:.65}dd{margin:0}
+.ev a{font-size:13px;margin-right:10px}
+.act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.act button{min-height:34px;font-size:13px}
+.stars button{min-width:34px;padding:0}.stars button.on{background:var(--ink);color:#fff}
+.empty{border:1.5px dashed var(--line);border-radius:16px;padding:20px;opacity:.85}
+.msg{min-height:22px;font-size:14px;margin:0 0 8px}
+@media(max-width:620px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}dl{grid-template-columns:minmax(0,1fr)}dt{margin-top:6px}}
+</style></head><body><main>
+<a href="/hq/home/">← Back to HQ</a>
+<h1>Marketing intelligence</h1>
+<p class="sub">The 5 best content opportunities each day, ranked by evidence from YouTube, Instagram and TikTok. Rate them so the scoring learns what you find useful; the top 3 each week go to Content automatically.</p>
+<div class="kpis" id="kpis"></div>
+<div class="bar"><label for="day" style="font-size:13px;opacity:.75">Day</label><select id="day"></select><a href="/hq/ops/" style="margin-left:auto;font-size:14px">Automation health →</a></div>
+<div class="msg" id="msg" role="status"></div>
+<div id="list"><div class="empty">Loading…</div></div>
+</main>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LABEL={new:'New',to_content:'Sent to Content',rejected:'Rejected',scripted:'Scripted'};
+const FIELD={problem:'Audience problem',angle:'Angle',hook:'Suggested hook',format:'Format',why_now:'Why now',evidence_summary:'Evidence',competitors:'Who covered it',gap:'Gap we can fill',egypt_fit:'Egypt beginners fit',partner:'Partner fit',cta:'Call to action',risk:'Compliance risk',source_platforms:'Platforms',metrics:'Key numbers',confidence_reason:'Why this confidence'};
+async function call(url,method,body){const r=await fetch(url,{method:method||'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+ if(r.status===401){location.href='/hq/auth/login';return}const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Something went wrong');return j}
+let cur=null;
+async function load(day){try{const j=await call('/hq/api/mi/opps'+(day?'?day='+encodeURIComponent(day):''));cur=j;const c=j.counts||{};
+ $('kpis').innerHTML=[['videos','Videos tracked'],['snapshots','Snapshots'],['creators','Creators'],['comments','Comments read'],['terms','Search terms']].map(([k,l])=>`<div class="kpi"><b>${(c[k]||0).toLocaleString('en-US')}</b><span>${l}</span></div>`).join('');
+ $('day').innerHTML=(j.days||[]).map(d=>`<option ${d===j.day?'selected':''}>${esc(d)}</option>`).join('')||'<option>No days yet</option>';
+ const it=j.items||[];
+ $('list').innerHTML=it.length?it.map(x=>{const f=x.fields||{};const rows=Object.keys(FIELD).filter(k=>f[k]).map(k=>`<dt>${FIELD[k]}</dt><dd>${esc(Array.isArray(f[k])?f[k].join(', '):f[k])}</dd>`).join('');
+  const ev=(x.evidence||[]).slice(0,6).map(e=>e&&e.url&&/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.label||'Source')} ↗</a>`:'').join('');
+  return `<div class="card"><div class="top"><span class="rank">${x.rank||'–'}</span><div><h2>${esc(x.title)}</h2><div class="meta">${x.topic?esc(x.topic)+' · ':''}Score ${x.score!=null?Math.round(x.score):'–'} · Confidence ${esc(x.confidence||'–')}</div></div></div>
+  <span class="pill st-${esc(x.status)}">${LABEL[x.status]||esc(x.status)}</span>${rows?`<dl>${rows}</dl>`:''}${ev?`<div class="ev">${ev}</div>`:''}
+  <div class="act"><span class="stars" aria-label="Rate usefulness">${[1,2,3,4,5].map(n=>`<button class="${x.rating>=n?'on':''}" data-id="${esc(x.id)}" data-rate="${n}" aria-label="Rate ${n} of 5">${n}</button>`).join(' ')}</span>
+  <button data-id="${esc(x.id)}" data-st="to_content">Send to Content</button><button data-id="${esc(x.id)}" data-st="rejected">Reject</button></div></div>`}).join('')
+  :`<div class="empty"><h2>No opportunities yet</h2><p style="margin:0">The engine is running daily at 7:07 Cairo time. Collection starts once the free YouTube key and Meta access are added (see <a href="/hq/ops/">Automation health</a>). The first ranked list appears the day after.</p></div>`;
+ }catch(e){$('list').innerHTML='<div class="empty" style="color:var(--red)">'+esc(e.message)+'</div>'}}
+$('day').addEventListener('change',e=>load(e.target.value));
+$('list').addEventListener('click',async ev=>{const b=ev.target.closest('button');if(!b||!b.dataset.id)return;
+ try{const body={id:b.dataset.id};if(b.dataset.rate)body.rating=+b.dataset.rate;if(b.dataset.st)body.status=b.dataset.st;await call('/hq/api/mi/opps','POST',body);$('msg').textContent='Saved.';load(cur&&cur.day)}catch(e){$('msg').textContent=e.message}});
+load();
+}
+</script></body></html>
