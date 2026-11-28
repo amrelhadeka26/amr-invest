@@ -638,7 +638,7 @@ async function notify(env,kind,title,body,link){try{await noteTables(env);const 
 const ENGINE_URL="https://amr-engine.amrelhadeka.workers.dev";
 const OPP_STATUS=["new","to_content","rejected","scripted"];
 // Free limits shown in HQ. Keep in sync with amr-os/engine/worker.js LIMITS.
-const FREE_LIMITS=[{source:"youtube",metric:"units",cap:10000,per:"day",label:"YouTube Data API units"},{source:"instagram",metric:"hashtags_7d",cap:30,per:"7 days",label:"Instagram hashtag searches"},{source:"cloudflare",metric:"workflow_runs",cap:50,per:"day",label:"Automation runs (our own cap)"},{source:"apify",metric:"credit_usd",cap:5,per:"month",label:"Apify free credit (TikTok, weekly)"}];
+const FREE_LIMITS=[{source:"apify",metric:"credit_cents",cap:500,per:"month",label:"Apify free credit, US cents (TikTok research)"},{source:"cloudflare",metric:"workflow_runs",cap:50,per:"day",label:"Automation runs (our own cap)"}];
 function sameKey(a,b){a=String(a||"");b=String(b||"");if(!a||a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0}
 async function opsHook(req,env){if(!env.OPS_KEY||!sameKey(req.headers.get("X-Ops-Key"),env.OPS_KEY))return json({error:"Unauthorized"},401);
  const b=await readBody(req,4000).catch(()=>({}));const link=/^\/hq\/[a-z0-9\/#._-]*$/i.test(String(b.link||""))?String(b.link):"/hq/ops/";
