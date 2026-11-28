@@ -664,6 +664,13 @@ async function opsReport(env){const runs=(await env.DB.prepare("SELECT id,job,st
  const limits=FREE_LIMITS.map(l=>{const rows=usage.filter(u=>u.source===l.source&&u.metric===l.metric);const pick=l.per==="day"?rows.filter(u=>u.day===today):l.per==="7 days"?rows.filter(u=>u.day>=wk):rows.filter(u=>u.day.startsWith(month));
   const used=pick.reduce((a,u)=>a+(u.used||0),0);return {...l,used,pct:l.cap?Math.round(used/l.cap*100):0}});
  return {runs:runs.map(r=>({...r,detail:safeJSON(r.detail,{})})),jobs:Object.values(jobs).map(r=>({...r,detail:safeJSON(r.detail,{})})),limits,monthlyCost:0,alertAt:70}}
+// Business automation map: hq_kv 'ops:bizmap' holds {updated, week, items:[{d,n,s,job?,note?}]}; s = auto|part|none|you.
+// Items with a job get live health from their latest ops_runs row (two failures in a row = failing).
+async function bizMap(env){const row=await env.DB.prepare("SELECT v FROM hq_kv WHERE k='ops:bizmap'").first();const M=safeJSON(row&&row.v,{items:[]});
+ const jobs=[...new Set((M.items||[]).map(x=>x.job).filter(Boolean))];
+ for(const j of jobs){const r=(await env.DB.prepare("SELECT status,started_at FROM ops_runs WHERE job=? ORDER BY started_at DESC LIMIT 2").bind(j).all()).results||[];
+  const failed=r.length===2&&r.every(x=>x.status==="failed");for(const x of M.items)if(x.job===j){x.health=failed?"failed":"ok";x.lastRun=r[0]?r[0].started_at:null}}
+ return M}
 async function opsRun(env){if(!env.OPS_KEY)throw Object.assign(Error("The automation key is not set up"),{status:503});
  const r=await fetch(ENGINE_URL+"/run",{method:"POST",headers:{"Content-Type":"application/json","X-Ops-Key":env.OPS_KEY},body:"{}"});const j=await r.json().catch(()=>({}));
  if(!r.ok)throw Object.assign(Error(j.error||"The automation did not start ("+r.status+")"),{status:r.status===429?429:502});return j}
@@ -880,6 +887,7 @@ async function api(path,req,env,user){
   if(path==="/hq/api/mi/opps"&&m==="GET")return json(await miOpps(env,new URL(req.url).searchParams.get("day")));
   if(path==="/hq/api/mi/opps"&&m==="POST")return json(await miOppUpdate(env,user,await readBody(req,2000)));
   if(path==="/hq/api/ops"&&m==="GET")return json(await opsReport(env));
+  if(path==="/hq/api/ops/map"&&m==="GET")return json(await bizMap(env));
   if(path==="/hq/api/ops/run"&&m==="POST"){const j=await opsRun(env);await audit(env,user.email,"ops","run","started manual run");return json(j)}
   return json({error:"Unknown HQ API route"},404);
 }
